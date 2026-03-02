@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bookmark, BookmarkCheck, ChevronDown, ChevronUp, Info, AlertTriangle } from "lucide-react";
+import { Bookmark, BookmarkCheck, ChevronDown, ChevronUp, Info, AlertTriangle, CheckCircle, ShieldAlert, Pill, Clock, Utensils, XCircle } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -50,179 +50,267 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
   };
 
   const sourceBadge = {
-    database:      { label: "✓ Verified",    color: "bg-green-100 text-green-700" },
-    OpenFDA:       { label: "OpenFDA",        color: "bg-blue-100 text-blue-700" },
-    "AI Generated":{ label: "AI Generated",  color: "bg-yellow-100 text-yellow-700" },
-  }[source] || { label: source, color: "bg-gray-100 text-gray-600" };
+    database:      { label: "Verified", icon: <CheckCircle size={12} />, color: "bg-blue-600 text-white" },
+    OpenFDA:       { label: "FDA Data", icon: <ShieldAlert size={12} />, color: "bg-blue-700 text-white" },
+    "AI Generated":{ label: "AI Info", icon: <AlertTriangle size={12} />, color: "bg-blue-500 text-white" },
+  }[source] || { label: source, icon: <Info size={12} />, color: "bg-gray-600 text-white" };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-
-      {/* ── Card Header ───────────────────────────────────────────────── */}
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h3 className="font-bold text-gray-900 text-lg truncate">{medicine.name}</h3>
-              <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full shrink-0 ${sourceBadge.color}`}>
-                {sourceBadge.label}
+    <div className="bg-white border border-gray-300 shadow-sm hover:shadow-md transition-shadow">
+      
+      {/* Medicine Header */}
+      <div className="border-b border-gray-300 bg-gray-50 px-6 py-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-2xl font-bold text-gray-900">{medicine.name}</h2>
+              <span className={`text-xs font-bold px-2 py-1 rounded ${sourceBadge.color} flex items-center gap-1`}>
+                {sourceBadge.icon} {sourceBadge.label}
               </span>
             </div>
-            <p className="text-sm text-gray-500">
-              {medicine.brand && <span className="font-medium text-gray-600">{medicine.brand}</span>}
-              {medicine.generic && <span> · {medicine.generic}</span>}
-              {medicine.category && <span> · <span className="capitalize">{medicine.category}</span></span>}
-            </p>
+            <div className="text-sm text-gray-600">
+              {medicine.brand && <span className="font-semibold">{medicine.brand}</span>}
+              {medicine.generic && <span> | Generic: {medicine.generic}</span>}
+              {medicine.category && <span> | {medicine.category}</span>}
+            </div>
           </div>
-
-          {/* Save Button */}
           {medicine._id && (
-            <button onClick={handleSave}
-              className={`shrink-0 p-2 rounded-xl border transition ${
-                isSaved
-                  ? "bg-blue-50 border-blue-200 text-blue-600"
-                  : "border-gray-200 text-gray-400 hover:border-blue-200 hover:text-blue-600"
-              }`}
-            >
-              {isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+            <button onClick={handleSave} className={`p-2 border rounded transition ${isSaved ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:border-blue-600"}`}>
+              {isSaved ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
             </button>
           )}
         </div>
+      </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
-          {medicine.dosage && (
-            <div className="bg-gray-50 rounded-xl px-3 py-2">
-              <p className="text-[10px] text-gray-400 mb-0.5">Dosage</p>
-              <p className="text-sm font-semibold text-gray-700">{medicine.dosage}</p>
-            </div>
-          )}
-          {medicine.requiresPrescription !== undefined && (
-            <div className={`rounded-xl px-3 py-2 ${medicine.requiresPrescription ? "bg-red-50" : "bg-green-50"}`}>
-              <p className="text-[10px] text-gray-400 mb-0.5">Prescription</p>
-              <p className={`text-sm font-semibold ${medicine.requiresPrescription ? "text-red-600" : "text-green-600"}`}>
-                {medicine.requiresPrescription ? "Required" : "Not Required"}
-              </p>
-            </div>
-          )}
-          {medicine.price > 0 && (
-            <div className="bg-gray-50 rounded-xl px-3 py-2">
-              <p className="text-[10px] text-gray-400 mb-0.5">Price</p>
-              <p className="text-sm font-semibold text-gray-700">Rs. {medicine.price}</p>
-            </div>
-          )}
-        </div>
+      <div className="p-6">
+        
+        {/* Key Information Table */}
+        <table className="w-full mb-6 border border-gray-300">
+          <tbody>
+            {medicine.dosage && (
+              <tr className="border-b border-gray-300">
+                <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700 w-1/3">Standard Dosage</td>
+                <td className="px-4 py-3 text-sm text-gray-900">{medicine.dosage}</td>
+              </tr>
+            )}
+            {medicine.requiresPrescription !== undefined && (
+              <tr className="border-b border-gray-300">
+                <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">Prescription Status</td>
+                <td className="px-4 py-3 text-sm">
+                  <span className={`font-semibold flex items-center gap-1 ${medicine.requiresPrescription ? "text-blue-700" : "text-blue-600"}`}>
+                    {medicine.requiresPrescription ? <><AlertTriangle size={14} /> Prescription Required</> : <><CheckCircle size={14} /> Over-the-Counter</>}
+                  </span>
+                </td>
+              </tr>
+            )}
+            {medicine.price > 0 && (
+              <tr className="border-b border-gray-300">
+                <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">Price</td>
+                <td className="px-4 py-3 text-sm text-gray-900 font-semibold">Rs. {medicine.price}</td>
+              </tr>
+            )}
+            {medicine.category && (
+              <tr>
+                <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">Drug Class</td>
+                <td className="px-4 py-3 text-sm text-gray-900 capitalize">{medicine.category}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
         {/* Description */}
         {medicine.description && (
-          <p className="text-sm text-gray-600 leading-relaxed mb-3 line-clamp-2">{medicine.description}</p>
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Description</h3>
+            <p className="text-sm text-gray-700 leading-relaxed">{medicine.description}</p>
+          </div>
         )}
 
         {/* AI Explanation */}
         {medicine.aiExplanation && (
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-3">
-            <p className="text-[10px] font-semibold text-blue-500 mb-1 flex items-center gap-1">
-              <Info size={10} /> AI Explanation
-            </p>
-            <p className="text-xs text-blue-800 leading-relaxed">{medicine.aiExplanation}</p>
-          </div>
-        )}
-
-        {/* Personalized Dosage */}
-        {medicine._id && (
-          <div className="mb-1">
-            {!dosage ? (
-              <button onClick={handleGetDosage} disabled={loadingDosage}
-                className="w-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-sm font-medium py-2.5 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {loadingDosage ? (
-                  <><span className="animate-spin">⏳</span> Calculating...</>
-                ) : (
-                  <>💊 Get My Personalized Dosage</>
-                )}
-              </button>
-            ) : (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
-                <p className="text-[10px] font-semibold text-indigo-500 mb-1">💊 Your Personalized Dosage</p>
-                <p className="text-xs text-indigo-800 leading-relaxed">{dosage}</p>
-                <button onClick={() => setDosage(null)}
-                  className="text-[10px] text-indigo-400 hover:text-indigo-600 mt-1 transition"
-                >
-                  Hide
-                </button>
-              </div>
-            )}
+          <div className="mb-6 bg-blue-50 border-l-4 border-blue-600 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Info size={16} className="text-blue-600" />
+              <h3 className="text-sm font-bold text-blue-900 uppercase">AI-Generated Information</h3>
+            </div>
+            <p className="text-sm text-gray-800 leading-relaxed">{medicine.aiExplanation}</p>
           </div>
         )}
 
         {/* Misuse Warning */}
         {medicine.isCommonlyMisused && (
-          <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-xl px-3 py-2 mt-2">
-            <AlertTriangle size={13} className="text-orange-500 shrink-0" />
-            <p className="text-xs text-orange-700 font-medium">Commonly misused medicine — use with caution</p>
+          <div className="mb-6 bg-blue-50 border-l-4 border-blue-700 p-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={16} className="text-blue-700" />
+              <p className="text-sm font-bold text-blue-900">WARNING: This medicine is commonly misused. Use only as directed by a healthcare professional.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Personalized Dosage */}
+        {medicine._id && (
+          <div className="mb-6">
+            {!dosage ? (
+              <button onClick={handleGetDosage} disabled={loadingDosage} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-3 px-4 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                {loadingDosage ? <><Clock size={16} className="animate-spin" /> Calculating Personalized Dosage...</> : <><Pill size={16} /> Get Personalized Dosage Recommendation</>}
+              </button>
+            ) : (
+              <div className="bg-indigo-50 border-l-4 border-indigo-600 p-4">
+                <h3 className="text-sm font-bold text-indigo-900 mb-2 uppercase">Your Personalized Dosage</h3>
+                <p className="text-sm text-gray-800 leading-relaxed mb-3">{dosage}</p>
+                <button onClick={() => setDosage(null)} className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline">Hide Recommendation</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Dosage Guide */}
+        {medicine.dosageGuide && (Object.values(medicine.dosageGuide).some(v => v)) && (
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wide">Dosage Guidelines</h3>
+            <table className="w-full border border-gray-300">
+              <tbody>
+                {medicine.dosageGuide.adult && (
+                  <tr className="border-b border-gray-300">
+                    <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700 w-1/4">Adults</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{medicine.dosageGuide.adult}</td>
+                  </tr>
+                )}
+                {medicine.dosageGuide.child && (
+                  <tr className="border-b border-gray-300">
+                    <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">Children</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{medicine.dosageGuide.child}</td>
+                  </tr>
+                )}
+                {medicine.dosageGuide.elderly && (
+                  <tr>
+                    <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">Elderly</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{medicine.dosageGuide.elderly}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            {medicine.dosageGuide.notes && (
+              <p className="text-xs text-gray-600 mt-2 italic bg-blue-50 p-3 border-l-4 border-blue-400">
+                <strong>Note:</strong> {medicine.dosageGuide.notes}
+              </p>
+            )}
           </div>
         )}
       </div>
 
-      {/* ── Expandable Details ─────────────────────────────────────────── */}
-      <div className="border-t border-gray-100">
-        <button onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-between px-5 py-3 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition"
-        >
-          <span>{expanded ? "Hide Details" : "Show Full Details"}</span>
-          {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+      {/* Clinical Details Section */}
+      <div className="border-t-2 border-gray-300 bg-gray-50">
+        <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center justify-between px-6 py-4 text-sm font-bold text-gray-900 hover:bg-gray-100 transition uppercase tracking-wide">
+          <span>Clinical Information</span>
+          {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </button>
 
         {expanded && (
-          <div className="px-5 pb-5 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-4">
-
-            {/* Dosage Guide */}
-            {medicine.dosageGuide && (Object.values(medicine.dosageGuide).some(v => v)) && (
-              <div className="md:col-span-2">
-                <p className="text-xs font-semibold text-gray-600 mb-2">Dosage Guide</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  {medicine.dosageGuide.adult   && <div className="bg-gray-50 rounded-xl p-2.5"><p className="text-[10px] text-gray-400">Adult</p><p className="text-xs text-gray-700 font-medium">{medicine.dosageGuide.adult}</p></div>}
-                  {medicine.dosageGuide.child   && <div className="bg-gray-50 rounded-xl p-2.5"><p className="text-[10px] text-gray-400">Child</p><p className="text-xs text-gray-700 font-medium">{medicine.dosageGuide.child}</p></div>}
-                  {medicine.dosageGuide.elderly && <div className="bg-gray-50 rounded-xl p-2.5"><p className="text-[10px] text-gray-400">Elderly</p><p className="text-xs text-gray-700 font-medium">{medicine.dosageGuide.elderly}</p></div>}
-                </div>
-                {medicine.dosageGuide.notes && <p className="text-xs text-gray-500 italic mt-2">{medicine.dosageGuide.notes}</p>}
-              </div>
-            )}
-
-            {/* Info Sections */}
-            {[
-              { label: "Side Effects",        items: medicine.sideEffects,       color: "text-orange-600" },
-              { label: "Long Term Effects",   items: medicine.longTermEffects,   color: "text-red-600" },
-              { label: "Who Should NOT Take", items: medicine.contraindications, color: "text-red-700" },
-              { label: "Food Interactions",   items: medicine.foodInteractions,  color: "text-yellow-700" },
-              { label: "Drug Interactions",   items: medicine.drugInteractions,  color: "text-purple-700" },
-              { label: "Warnings",            items: medicine.warnings,          color: "text-red-600" },
-            ].map(({ label, items, color }) =>
-              items?.length > 0 ? (
-                <div key={label}>
-                  <p className="text-xs font-semibold text-gray-600 mb-1.5">{label}</p>
-                  <ul className="space-y-1">
-                    {items.map((item, i) => (
-                      <li key={i} className={`text-xs ${color} flex items-start gap-1.5`}>
-                        <span className="mt-1.5 w-1 h-1 rounded-full bg-current shrink-0" />
-                        {item}
-                      </li>
+          <div className="bg-white">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-300">
+              
+              {/* Side Effects */}
+              {medicine.sideEffects?.length > 0 && (
+                <div className="bg-white p-5">
+                  <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-blue-500">
+                    <div className="w-8 h-8 bg-blue-500 text-white flex items-center justify-center font-bold text-sm rounded"><AlertTriangle size={16} /></div>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Adverse Effects</h3>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {medicine.sideEffects.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-800 pl-4 border-l-2 border-blue-200 py-1">{item}</li>
                     ))}
                   </ul>
                 </div>
-              ) : null
-            )}
+              )}
 
-            {/* Safe Alternatives */}
+              {/* Contraindications */}
+              {medicine.contraindications?.length > 0 && (
+                <div className="bg-white p-5">
+                  <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-blue-700">
+                    <div className="w-8 h-8 bg-blue-700 text-white flex items-center justify-center font-bold text-sm rounded"><XCircle size={16} /></div>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Contraindications</h3>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {medicine.contraindications.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-800 pl-4 border-l-2 border-blue-200 py-1">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Warnings */}
+              {medicine.warnings?.length > 0 && (
+                <div className="bg-white p-5">
+                  <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-blue-700">
+                    <div className="w-8 h-8 bg-blue-700 text-white flex items-center justify-center font-bold text-lg rounded"><AlertTriangle size={18} /></div>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Warnings & Precautions</h3>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {medicine.warnings.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-800 pl-4 border-l-2 border-blue-200 py-1">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Drug Interactions */}
+              {medicine.drugInteractions?.length > 0 && (
+                <div className="bg-white p-5">
+                  <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-blue-600">
+                    <div className="w-8 h-8 bg-blue-600 text-white flex items-center justify-center font-bold text-sm rounded"><Pill size={16} /></div>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Drug Interactions</h3>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {medicine.drugInteractions.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-800 pl-4 border-l-2 border-blue-200 py-1">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Food Interactions */}
+              {medicine.foodInteractions?.length > 0 && (
+                <div className="bg-white p-5">
+                  <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-blue-500">
+                    <div className="w-8 h-8 bg-blue-500 text-white flex items-center justify-center font-bold text-sm rounded"><Utensils size={16} /></div>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Food Interactions</h3>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {medicine.foodInteractions.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-800 pl-4 border-l-2 border-blue-200 py-1">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Long Term Effects */}
+              {medicine.longTermEffects?.length > 0 && (
+                <div className="bg-white p-5">
+                  <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-blue-600">
+                    <div className="w-8 h-8 bg-blue-600 text-white flex items-center justify-center font-bold text-sm rounded"><Clock size={16} /></div>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Long-Term Effects</h3>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {medicine.longTermEffects.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-800 pl-4 border-l-2 border-blue-200 py-1">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Safe Alternatives - Full Width */}
             {medicine.safeAlternatives?.length > 0 && (
-              <div className="md:col-span-2">
-                <p className="text-xs font-semibold text-gray-600 mb-2">Safe Alternatives</p>
-                <div className="flex flex-wrap gap-2">
+              <div className="bg-blue-50 border-t-4 border-blue-600 p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 bg-blue-600 text-white flex items-center justify-center font-bold text-sm rounded"><CheckCircle size={16} /></div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Alternative Medications</h3>
+                </div>
+                <div className="flex flex-wrap gap-3">
                   {medicine.safeAlternatives.map((alt, i) => (
-                    <button key={i}
-                      onClick={() => navigate(`/search?q=${alt}`)}
-                      className="bg-green-50 text-green-700 border border-green-200 text-xs px-3 py-1.5 rounded-full hover:bg-green-100 transition"
-                    >
+                    <button key={i} onClick={() => navigate(`/search?q=${alt}`)} className="bg-white border-2 border-blue-600 text-blue-700 text-sm font-bold px-5 py-2.5 hover:bg-blue-600 hover:text-white transition uppercase tracking-wide">
                       {alt}
                     </button>
                   ))}

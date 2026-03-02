@@ -1,41 +1,40 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { FileText, Loader, X, Image as ImageIcon, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import MediBot from "../components/MediBot";
 
 const MedicineItem = ({ med, index }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white shadow-sm transition-all hover:border-pink-200">
+    <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white hover:border-gray-300 transition">
       <div 
-        className="flex items-center justify-between p-4 sm:p-5 cursor-pointer select-none active:bg-gray-50" 
+        className="flex items-center justify-between p-4 cursor-pointer" 
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3">
-          <span className="w-8 h-8 md:w-10 md:h-10 bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center text-sm md:text-base font-bold shrink-0">
+          <span className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-semibold">
             {index + 1}
           </span>
-          <p className="font-bold text-gray-800 text-sm md:text-base">{med.name}</p>
+          <p className="font-semibold text-gray-900">{med.name}</p>
         </div>
-        <div className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}>
-          <ChevronDown size={20} className="text-gray-400" />
-        </div>
+        {expanded ? <ChevronUp size={18} className="text-gray-500" /> : <ChevronDown size={18} className="text-gray-500" />}
       </div>
       
       {expanded && (
-        <div className="p-4 sm:p-5 border-t border-gray-50 bg-pink-50/20 animate-in slide-in-from-top-2 duration-300">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-[10px] font-black text-pink-400 uppercase tracking-widest">Dosage</p>
-              <p className="text-sm text-gray-700 leading-relaxed font-medium">
-                {med.details?.dosage || "Not specified by doctor"}
+        <div className="p-4 border-t-2 border-gray-100 bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs font-semibold text-gray-600 mb-1">Dosage</p>
+              <p className="text-sm text-gray-900">
+                {med.details?.dosage || "Not specified"}
               </p>
             </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-black text-pink-400 uppercase tracking-widest">Intended Use</p>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {med.details?.use || "General medicinal use"}
+            <div>
+              <p className="text-xs font-semibold text-gray-600 mb-1">Intended Use</p>
+              <p className="text-sm text-gray-900">
+                {med.details?.use || "General use"}
               </p>
             </div>
           </div>
@@ -50,7 +49,38 @@ const PrescriptionScanner = () => {
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const fileRef = useRef();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleFile = (f) => {
+    if (!f?.type.startsWith("image/")) return toast.error("Please upload a valid image file");
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setResult(null);
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
 
   const handleScan = async () => {
     if (!file) return;
@@ -69,30 +99,32 @@ const PrescriptionScanner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-white border-b px-4 py-8 md:py-12 text-center">
-        <div className="max-w-xl mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-100 rounded-3xl mb-4 shadow-sm">
-            <FileText size={32} className="text-pink-600" />
-          </div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Prescription Scanner</h1>
-          <p className="text-gray-500 text-sm md:text-base mt-2 px-4">
-            Upload your prescription to digitize medication names and dosages.
-          </p>
+    <>
+    <div className="min-h-screen bg-white">
+      <main className="max-w-5xl mx-auto px-6 py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Prescription Scanner</h1>
+          <p className="text-gray-600">Upload your prescription to extract medication information</p>
         </div>
-      </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 md:py-10 space-y-6">
         {!preview ? (
           <div 
-            onClick={() => fileRef.current.click()} 
-            className="group bg-white border-2 border-dashed border-gray-200 rounded-3xl p-10 md:p-16 text-center cursor-pointer hover:border-pink-400 hover:bg-pink-50/30 transition-all active:scale-[0.98]"
+            onClick={() => fileRef.current.click()}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            className={`bg-white border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-all ${
+              dragActive 
+                ? "border-blue-500 bg-blue-50" 
+                : "border-gray-300 hover:border-blue-500 hover:bg-blue-50"
+            }`}
           >
-            <div className="bg-pink-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <ImageIcon size={32} className="text-pink-300 group-hover:text-pink-500" />
+            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <ImageIcon size={32} className="text-gray-400" />
             </div>
-            <p className="text-gray-700 font-bold md:text-lg">Upload Prescription Image</p>
-            <p className="text-xs text-gray-400 mt-1">Supports JPG, PNG (Max 5MB)</p>
+            <p className="font-semibold text-gray-900 mb-1">Click or drag to upload prescription</p>
+            <p className="text-sm text-gray-600">Supports JPG, PNG (Max 5MB)</p>
             <input 
               ref={fileRef} 
               type="file" 
@@ -100,24 +132,22 @@ const PrescriptionScanner = () => {
               className="hidden" 
               onChange={(e) => {
                 if (e.target.files[0]) {
-                  setFile(e.target.files[0]);
-                  setPreview(URL.createObjectURL(e.target.files[0]));
-                  setResult(null);
+                  handleFile(e.target.files[0]);
                 }
               }} 
             />
           </div>
         ) : (
-          <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-             <div className="relative rounded-3xl overflow-hidden border-4 border-white bg-white shadow-xl shadow-gray-200">
+          <div className="space-y-4">
+             <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50">
                 <img 
                   src={preview} 
                   alt="Prescription Preview" 
-                  className="w-full max-h-72 md:max-h-96 object-contain rounded-2xl" 
+                  className="w-full h-96 object-contain" 
                 />
                 <button 
                   onClick={() => { setPreview(null); setFile(null); setResult(null); }} 
-                  className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-900 p-2 rounded-full shadow-lg hover:bg-red-50 hover:text-red-500 transition-colors"
+                  className="absolute top-3 right-3 bg-white hover:bg-gray-100 text-gray-700 p-2 rounded-lg shadow-md transition"
                 >
                   <X size={20}/>
                 </button>
@@ -127,12 +157,12 @@ const PrescriptionScanner = () => {
                <button 
                  onClick={handleScan} 
                  disabled={loading} 
-                 className="w-full bg-pink-600 hover:bg-pink-700 disabled:bg-pink-300 text-white font-black py-4 rounded-2xl shadow-lg shadow-pink-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-4 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                >
                  {loading ? (
-                   <><Loader className="animate-spin" size={20} /> Analyzing Handwriting...</>
+                   <><Loader className="animate-spin" size={20} /> Analyzing...</>
                  ) : (
-                   <><Sparkles size={20} /> Extract Medicine Info</>
+                   <><Sparkles size={20} /> Extract Information</>
                  )}
                </button>
              )}
@@ -140,29 +170,30 @@ const PrescriptionScanner = () => {
         )}
 
         {result?.medicines && (
-          <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center justify-between px-1">
-                <h3 className="font-black text-gray-900 uppercase tracking-wider text-xs">
-                  Detected Medications ({result.medicines.length})
-                </h3>
-                {loading && <Loader size={16} className="animate-spin text-pink-600" />}
-            </div>
-            
-            <div className="space-y-3">
-              {result.medicines.map((m, i) => (
-                <MedicineItem key={i} index={i} med={m} />
-              ))}
+          <div className="space-y-4 mt-6">
+            <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6">
+              <h3 className="font-semibold text-gray-900 mb-4 text-lg">
+                Detected Medications ({result.medicines.length})
+              </h3>
+              
+              <div className="space-y-3">
+                {result.medicines.map((m, i) => (
+                  <MedicineItem key={i} index={i} med={m} />
+                ))}
+              </div>
             </div>
 
-            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mt-6">
-              <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                <strong>Medical Notice:</strong> AI can misinterpret handwriting. Please double-check these results against the original physical prescription before taking any medication.
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-5 flex gap-4">
+              <p className="text-sm text-amber-800 leading-relaxed">
+                <strong>Important:</strong> AI may misinterpret handwriting. Please verify these results against your original prescription.
               </p>
             </div>
           </div>
         )}
       </main>
     </div>
+    <MediBot />
+    </>
   );
 };
 
