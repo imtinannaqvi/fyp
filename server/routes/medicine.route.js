@@ -7,6 +7,7 @@ import {
   getMedicines,
   getMedicineById,
   searchMedicines,
+  autocompleteMedicines,
   updateMedicine,
   deleteMedicine,
   approveMedicine,
@@ -25,6 +26,7 @@ const isAdmin = (req, res, next) => {
 };
 
 // ─── Public routes ────────────────────────────────────────────────────────────
+router.get("/autocomplete",  autocompleteMedicines); // GET /api/medicine/autocomplete?q=p
 router.get("/smart-search", smartSearch);  // GET /api/medicine/smart-search?q=aspirin
 router.get("/search",       searchMedicines); // GET /api/medicine/search?q=panadol
 router.get("/",             getMedicines);    // GET /api/medicine?q=&category=
