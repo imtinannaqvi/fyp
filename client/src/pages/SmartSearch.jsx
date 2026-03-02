@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import API from "../api/axios";
 import toast from "react-hot-toast";
-import { Search, AlertTriangle, Loader, Inbox } from "lucide-react";
+import { Search, AlertTriangle, Loader, Inbox, Database } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MedicineCard from "../components/MedicineCard";
 import MediBot from "../components/MediBot";
@@ -15,6 +15,9 @@ const SmartSearch = () => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [savedIds, setSavedIds] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   const doSearch = useCallback(async (searchQuery) => {
     const term = searchQuery?.trim();
@@ -24,6 +27,7 @@ const SmartSearch = () => {
     }
 
     setLoading(true);
+    setShowDropdown(false);
     try {
       const { data } = await API.get(`/medicine/smart-search?q=${encodeURIComponent(term)}`);
       setResults(data);
@@ -40,6 +44,24 @@ const SmartSearch = () => {
     }
   }, [user]);
 
+  const fetchSuggestions = useCallback(async (searchQuery) => {
+    const term = searchQuery?.trim();
+    if (!term || term.length < 1) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    try {
+      const { data } = await API.get(`/medicine/autocomplete?q=${encodeURIComponent(term)}`);
+      setSuggestions(data.suggestions || []);
+      setShowDropdown(data.suggestions?.length > 0);
+    } catch (err) {
+      setSuggestions([]);
+      setShowDropdown(false);
+    }
+  }, []);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     const q = searchParams.get("q");
@@ -52,17 +74,40 @@ const SmartSearch = () => {
     }
   }, [searchParams, doSearch]);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleSearch = (e) => {
     e.preventDefault();
     const trimmedQuery = query.trim();
     
     if (!trimmedQuery) return;
 
+    setShowDropdown(false);
     if (trimmedQuery === searchParams.get("q")) {
       doSearch(trimmedQuery);
     } else {
       setSearchParams({ q: trimmedQuery });
     }
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    fetchSuggestions(value);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setQuery(suggestion.name);
+    setShowDropdown(false);
+    setSearchParams({ q: suggestion.name });
   };
 
   const handleSaveToggle = (medicineId, isSaved) => {
@@ -78,20 +123,45 @@ const SmartSearch = () => {
       <div className="bg-white border-b border-gray-200 sticky top-0 md:top-16 z-10 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 py-6">
           <h1 className="text-xl font-semibold text-gray-900 mb-4">Medicine Information Search</h1>
-          <form onSubmit={handleSearch} className="flex gap-3">
-            <div className="flex-1 flex items-center gap-3 bg-white border-2 border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all duration-200">
-              <Search size={20} className="text-blue-500" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Enter medicine name (brand or generic)..."
-                className="flex-1 text-sm bg-transparent focus:outline-none text-gray-900 placeholder:text-gray-400"
-              />
+          <form onSubmit={handleSearch} className="relative">
+            <div className="flex gap-3">
+              <div ref={dropdownRef} className="flex-1 relative">
+                <div className="flex items-center gap-3 bg-white border-2 border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all duration-200">
+                  <Search size={20} className="text-blue-500" />
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={handleInputChange}
+                    onFocus={() => query && suggestions.length > 0 && setShowDropdown(true)}
+                    placeholder="Enter medicine name (brand or generic)..."
+                    className="flex-1 text-sm bg-transparent focus:outline-none text-gray-900 placeholder:text-gray-400"
+                  />
+                </div>
+                {showDropdown && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
+                    {suggestions.map((suggestion) => (
+                      <div
+                        key={suggestion._id}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                      >
+                        <div className="font-medium text-gray-900 text-sm">{suggestion.name}</div>
+                        {(suggestion.brand || suggestion.generic) && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {suggestion.brand && <span>Brand: {suggestion.brand}</span>}
+                            {suggestion.brand && suggestion.generic && <span className="mx-1">•</span>}
+                            {suggestion.generic && <span>Generic: {suggestion.generic}</span>}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button type="submit" disabled={loading} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-medium text-sm px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                {loading ? <Loader size={18} className="animate-spin" /> : "Search"}
+              </button>
             </div>
-            <button type="submit" disabled={loading} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-medium text-sm px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-              {loading ? <Loader size={18} className="animate-spin" /> : "Search"}
-            </button>
           </form>
         </div>
       </div>
@@ -109,7 +179,7 @@ const SmartSearch = () => {
         {!loading && !results && !searchParams.get("q") && (
           <div className="bg-white border border-gray-200 p-12">
             <div className="max-w-3xl mx-auto text-center">
-              
+              <Database size={48} className="mx-auto text-blue-600 mb-4" />
               <h2 className="text-2xl font-semibold text-gray-900 mb-3">Medicine Database</h2>
               <p className="text-gray-600 mb-8 leading-relaxed">
                 Search for prescription and over-the-counter medications to view dosage information, 

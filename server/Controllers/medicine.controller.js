@@ -167,6 +167,39 @@ export const searchMedicines = async (req, res) => {
 };
 
 // ------------------------
+// Autocomplete Suggestions
+// ------------------------
+export const autocompleteMedicines = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 1) return res.json({ suggestions: [] });
+
+    const medicines = await Medicine.find({
+      $or: [
+        { name:    { $regex: `^${q}`, $options: "i" } },
+        { brand:   { $regex: `^${q}`, $options: "i" } },
+        { generic: { $regex: `^${q}`, $options: "i" } },
+      ],
+      isApproved: true,
+    })
+      .select("name brand generic")
+      .limit(10)
+      .sort({ name: 1 });
+
+    const suggestions = medicines.map(m => ({
+      _id: m._id,
+      name: m.name,
+      brand: m.brand,
+      generic: m.generic,
+    }));
+
+    res.json({ suggestions });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ------------------------
 // Update Medicine
 // ------------------------
 export const updateMedicine = async (req, res) => {
