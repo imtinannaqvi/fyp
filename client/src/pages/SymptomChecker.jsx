@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { Plus, X, Stethoscope, Loader, AlertTriangle, ChevronRight, Info } from "lucide-react";
+import MediBot from "../components/MediBot";
 
 const severityConfig = {
   mild: { color: "bg-green-100 text-green-700 border-green-200", label: "Mild" },
@@ -22,6 +23,10 @@ const SymptomChecker = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const addSymptom = (s) => {
     const trimmed = s.trim();
@@ -51,57 +56,49 @@ const SymptomChecker = () => {
   const severity = result ? severityConfig[result.severity] || severityConfig.mild : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      {/* Header */}
-      <div className="bg-white border-b px-4 py-6 md:py-10">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-emerald-100 rounded-2xl mb-4">
-            <Stethoscope size={24} className="text-emerald-600 md:w-7 md:h-7" />
-          </div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Symptom Checker</h1>
-          <p className="text-gray-500 text-xs md:text-sm mt-2 max-w-sm mx-auto">
-            Add your symptoms and get AI-powered medicine suggestions
-          </p>
+    <>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Symptom Checker</h1>
+          <p className="text-gray-600">AI-powered medicine suggestions based on your symptoms</p>
         </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Symptom Input Section */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
-          <h2 className="font-semibold text-gray-800 mb-4 text-sm md:text-base">Enter Your Symptoms</h2>
+        <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="font-semibold text-gray-900 mb-4">Enter Your Symptoms</h2>
 
           {/* Input Area */}
-          <div className="flex flex-col sm:flex-row gap-2 mb-6">
+          <div className="flex gap-3 mb-6">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addSymptom(input)}
-              placeholder="Type a symptom..."
-              className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+              placeholder="Type a symptom and press Enter..."
+              className="flex-1 border-2 border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
             />
             <button
               onClick={() => addSymptom(input)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl transition flex items-center justify-center gap-2 font-medium"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium"
             >
               <Plus size={18} />
-              <span className="sm:hidden">Add Symptom</span>
+              Add
             </button>
           </div>
 
-          {/* Common symptoms list */}
+          {/* Common symptoms */}
           <div className="mb-6">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-3">Suggested:</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Select</p>
             <div className="flex flex-wrap gap-2">
               {commonSymptoms.map((s) => (
                 <button
                   key={s}
                   onClick={() => addSymptom(s)}
                   disabled={symptoms.includes(s)}
-                  className={`text-xs px-3 py-2 rounded-lg border transition-all ${
+                  className={`text-sm px-4 py-2 rounded-lg border-2 transition-all ${
                     symptoms.includes(s)
-                      ? "bg-emerald-50 border-emerald-100 text-emerald-400 cursor-not-allowed"
-                      : "bg-gray-50 border-gray-200 text-gray-600 active:scale-95 hover:border-emerald-300"
+                      ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-white border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600"
                   }`}
                 >
                   {s}
@@ -112,19 +109,18 @@ const SymptomChecker = () => {
 
           {/* Active Chips */}
           {symptoms.length > 0 && (
-            <div className="pt-4 border-t border-gray-50">
-              <p className="text-xs font-medium text-gray-500 mb-3">Selected ({symptoms.length}/8):</p>
+            <div className="pt-4 border-t border-gray-200">
+              <p className="text-sm font-medium text-gray-700 mb-3">Selected Symptoms ({symptoms.length}/8):</p>
               <div className="flex flex-wrap gap-2">
                 {symptoms.map((s) => (
                   <span
                     key={s}
-                    className="flex items-center gap-2 bg-emerald-600 text-white text-xs md:text-sm px-3 py-2 rounded-xl shadow-sm animate-in fade-in zoom-in duration-200"
+                    className="flex items-center gap-2 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg shadow-sm"
                   >
                     {s}
                     <button 
                       onClick={() => removeSymptom(s)} 
-                      className="hover:bg-emerald-500 p-0.5 rounded-full transition"
-                      aria-label="Remove symptom"
+                      className="hover:bg-blue-700 p-1 rounded-full transition"
                     >
                       <X size={14} />
                     </button>
@@ -137,10 +133,10 @@ const SymptomChecker = () => {
           <button
             onClick={handleCheck}
             disabled={loading || symptoms.length === 0}
-            className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:grayscale text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+            className="w-full mt-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-4 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
           >
             {loading ? (
-              <><Loader size={20} className="animate-spin" /> Analyzing Symptoms...</>
+              <><Loader size={20} className="animate-spin" /> Analyzing...</>
             ) : (
               <><Stethoscope size={20} /> Get Recommendations</>
             )}
@@ -149,48 +145,45 @@ const SymptomChecker = () => {
 
         {/* Results Section */}
         {result && (
-          <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-6">
             {/* Condition Card */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6">
+              <div className="flex items-start justify-between gap-4 mb-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">AI Analysis</p>
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900">{result.possibleCondition}</h3>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Possible Condition</p>
+                  <h3 className="text-xl font-semibold text-gray-900">{result.possibleCondition}</h3>
                 </div>
                 {severity && (
-                  <span className={`inline-flex self-start sm:self-center text-xs font-bold px-3 py-1.5 rounded-full border ${severity.color}`}>
-                    {severity.label} Severity
+                  <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg border ${severity.color}`}>
+                    {severity.label}
                   </span>
                 )}
               </div>
 
               {result.whenToSeeDoctor && (
-                <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex gap-3">
-                  <AlertTriangle size={20} className="text-red-500 shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-800 leading-relaxed font-medium">{result.whenToSeeDoctor}</p>
+                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 flex gap-3">
+                  <AlertTriangle size={20} className="text-red-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-800 leading-relaxed">{result.whenToSeeDoctor}</p>
                 </div>
               )}
             </div>
 
             {/* Medicines List */}
             {result.suggestedMedicines?.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6">
-                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
-                  Suggested Care
-                </h3>
+              <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6">
+                <h3 className="font-semibold text-gray-900 mb-4 text-lg">Suggested Medicines</h3>
                 <div className="space-y-4">
                   {result.suggestedMedicines.map((med, i) => (
-                    <div key={i} className="border border-gray-100 rounded-2xl p-4 hover:shadow-md transition-shadow bg-gray-50/30">
+                    <div key={i} className="border-2 border-gray-200 rounded-lg p-5 hover:border-blue-300 transition-all">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-sm">
+                          <span className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-semibold">
                             {i + 1}
                           </span>
                           <div>
-                            <h4 className="font-bold text-gray-800">{med.name}</h4>
+                            <h4 className="font-semibold text-gray-900">{med.name}</h4>
                             {med.inDatabase && (
-                                <span className="text-[10px] font-bold text-blue-600 uppercase">Verified in Database</span>
+                              <span className="text-xs font-semibold text-blue-600">✓ Verified</span>
                             )}
                           </div>
                         </div>
@@ -208,15 +201,15 @@ const SymptomChecker = () => {
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {med.dosage && (
-                          <div className="bg-blue-50/80 rounded-xl px-4 py-3">
-                            <p className="text-[10px] uppercase font-bold text-blue-400 mb-1">Standard Dosage</p>
-                            <p className="text-sm text-blue-900 font-semibold">{med.dosage}</p>
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                            <p className="text-xs font-semibold text-blue-600 mb-1">Dosage</p>
+                            <p className="text-sm text-gray-900">{med.dosage}</p>
                           </div>
                         )}
                         {med.warning && (
-                          <div className="bg-amber-50 rounded-xl px-4 py-3">
-                            <p className="text-[10px] uppercase font-bold text-amber-500 mb-1">Safety Warning</p>
-                            <p className="text-xs text-amber-900 leading-snug">{med.warning}</p>
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                            <p className="text-xs font-semibold text-amber-600 mb-1">Warning</p>
+                            <p className="text-sm text-gray-900">{med.warning}</p>
                           </div>
                         )}
                       </div>
@@ -228,12 +221,12 @@ const SymptomChecker = () => {
 
             {/* Home Remedies */}
             {result.homeRemedies?.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6">
-                <h3 className="font-bold text-gray-800 mb-4">Self-Care Steps</h3>
-                <div className="grid grid-cols-1 gap-2">
+              <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6">
+                <h3 className="font-semibold text-gray-900 mb-4 text-lg">Self-Care Tips</h3>
+                <div className="space-y-2">
                   {result.homeRemedies.map((remedy, i) => (
-                    <div key={i} className="flex items-start gap-3 text-sm text-gray-600 bg-emerald-50/30 p-3 rounded-xl border border-emerald-50">
-                      <span className="text-emerald-500 font-bold mt-0.5">✓</span>
+                    <div key={i} className="flex items-start gap-3 text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <span className="text-blue-600 font-bold mt-0.5">✓</span>
                       {remedy}
                     </div>
                   ))}
@@ -242,17 +235,17 @@ const SymptomChecker = () => {
             )}
 
             {/* Disclaimer */}
-            <div className="bg-blue-900 text-blue-50 rounded-2xl p-5 flex gap-4">
-              <Info size={24} className="shrink-0 text-blue-300" />
-              <div className="space-y-1">
-                <p className="text-xs font-bold uppercase tracking-widest text-blue-300">Medical Disclaimer</p>
-                <p className="text-xs leading-relaxed opacity-90">{result.disclaimer}</p>
+            <div className="bg-blue-600 text-white rounded-lg p-5 flex gap-4">
+              <Info size={24} className="shrink-0" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2">Medical Disclaimer</p>
+                <p className="text-sm leading-relaxed opacity-95">{result.disclaimer}</p>
               </div>
             </div>
 
             <button
               onClick={() => { setResult(null); setSymptoms([]); window.scrollTo(0,0); }}
-              className="w-full bg-white border-2 border-gray-200 text-gray-600 font-bold py-4 rounded-2xl hover:bg-gray-50 transition-all mb-10"
+              className="w-full bg-white border-2 border-gray-300 text-gray-700 font-semibold py-4 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all"
             >
               Start New Assessment
             </button>
@@ -260,6 +253,8 @@ const SymptomChecker = () => {
         )}
       </div>
     </div>
+    <MediBot />
+    </>
   );
 };
 

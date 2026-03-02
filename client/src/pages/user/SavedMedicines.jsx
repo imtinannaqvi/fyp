@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
 import { Bookmark, Loader, Trash2, ChevronRight, Pill } from "lucide-react";
+import MediBot from "../../components/MediBot";
 
 const SavedMedicines = () => {
   const [medicines, setMedicines] = useState([]);
@@ -10,6 +11,7 @@ const SavedMedicines = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const fetch = async () => {
       try {
         const { data } = await API.get("/user/saved-medicines");
@@ -35,54 +37,72 @@ const SavedMedicines = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <div className="bg-white border-b px-4 py-8 md:px-8">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black text-gray-900">Favorites</h1>
-            <p className="text-gray-500 text-sm mt-1">{medicines.length} saved items</p>
-          </div>
-          <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-            <Bookmark size={24} fill="currentColor" />
-          </div>
+    <>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Saved Medicines</h1>
+          <p className="text-gray-600">{medicines.length} {medicines.length === 1 ? 'medicine' : 'medicines'} saved</p>
         </div>
-      </div>
 
-      <div className="max-w-5xl mx-auto px-4 mt-8">
         {medicines.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-gray-100">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Pill size={40} className="text-gray-200" />
+          <div className="bg-white border-2 border-gray-200 rounded-lg p-12 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Bookmark size={32} className="text-gray-400" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800">No Favorites Yet</h2>
-            <p className="text-gray-400 text-sm mt-2 mb-8">Your saved medicines will appear here.</p>
-            <button onClick={() => navigate("/search")} className="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl">Start Searching</button>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">No Saved Medicines</h2>
+            <p className="text-gray-600 mb-6">Your saved medicines will appear here</p>
+            <button 
+              onClick={() => navigate("/search")} 
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
+            >
+              Start Searching
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {medicines.map((item, i) => {
               const med = item.medicine;
               if (!med) return null;
               return (
-                <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition group">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold">
-                      {med.name.charAt(0)}
+                <div key={i} className="bg-white border-2 border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-all">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center font-semibold text-lg">
+                          {med.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-lg">{med.name}</h3>
+                          {med.brand && <p className="text-sm text-gray-600">{med.brand}</p>}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 mt-4">
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-lg ${
+                          med.requiresPrescription 
+                            ? 'bg-red-50 text-red-700 border border-red-200' 
+                            : 'bg-green-50 text-green-700 border border-green-200'
+                        }`}>
+                          {med.requiresPrescription ? 'Prescription Required' : 'Over the Counter'}
+                        </span>
+                      </div>
                     </div>
-                    <button onClick={() => handleRemove(med._id)} className="text-gray-300 hover:text-red-500 transition p-1">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                  <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition truncate">{med.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1 uppercase tracking-tight font-medium">{med.brand}</p>
-                  
-                  <div className="mt-6 flex items-center justify-between">
-                    <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${med.requiresPrescription ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                      {med.requiresPrescription ? 'Rx Required' : 'Over Counter'}
-                    </span>
-                    <button onClick={() => navigate(`/search?q=${med.name}`)} className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:underline">
-                      View <ChevronRight size={14} />
-                    </button>
+                    
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => navigate(`/search?q=${med.name}`)} 
+                        className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition flex items-center gap-1 font-medium text-sm"
+                      >
+                        View <ChevronRight size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleRemove(med._id)} 
+                        className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -91,6 +111,8 @@ const SavedMedicines = () => {
         )}
       </div>
     </div>
+    <MediBot />
+    </>
   );
 };
 

@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import API from "../api/axios";
 import toast from "react-hot-toast";
-import { Search, AlertTriangle, Loader, Inbox } from "lucide-react"; // Added Inbox for empty states
+import { Search, AlertTriangle, Loader, Inbox } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MedicineCard from "../components/MedicineCard";
+import MediBot from "../components/MediBot";
 
 const SmartSearch = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +28,6 @@ const SmartSearch = () => {
       const { data } = await API.get(`/medicine/smart-search?q=${encodeURIComponent(term)}`);
       setResults(data);
       
-      // Log history only on successful search
       if (user) {
         API.post("/user/search-history", { query: term }).catch(() => {});
       }
@@ -40,11 +40,11 @@ const SmartSearch = () => {
     }
   }, [user]);
 
-  // Sync: Listen to URL changes and trigger search
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const q = searchParams.get("q");
     if (q) {
-      setQuery(q); // Sync input field with URL
+      setQuery(q);
       doSearch(q);
     } else {
       setResults(null);
@@ -58,8 +58,6 @@ const SmartSearch = () => {
     
     if (!trimmedQuery) return;
 
-    // If searching for the same thing again, manually trigger search 
-    // because setSearchParams won't trigger the useEffect if the value is identical
     if (trimmedQuery === searchParams.get("q")) {
       doSearch(trimmedQuery);
     } else {
@@ -74,75 +72,82 @@ const SmartSearch = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      <div className="bg-white border-b sticky top-0 md:top-16 z-10 px-4 py-4">
-        <div className="max-w-3xl mx-auto">
-          <form onSubmit={handleSearch} className="flex gap-2 sm:gap-3">
-            <div className="flex-1 flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
-              <Search size={18} className="text-gray-400 shrink-0" />
+    <>
+    <div className="min-h-screen bg-gray-50">
+      {/* Search Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 md:top-16 z-10 shadow-sm">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <h1 className="text-xl font-semibold text-gray-900 mb-4">Medicine Information Search</h1>
+          <form onSubmit={handleSearch} className="flex gap-3">
+            <div className="flex-1 flex items-center gap-3 bg-white border-2 border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all duration-200">
+              <Search size={20} className="text-blue-500" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search brand or generic..."
-                className="flex-1 text-sm bg-transparent focus:outline-none text-gray-700"
+                placeholder="Enter medicine name (brand or generic)..."
+                className="flex-1 text-sm bg-transparent focus:outline-none text-gray-900 placeholder:text-gray-400"
               />
             </div>
-            <button 
-              type="submit" 
-              disabled={loading} 
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium text-sm px-5 sm:px-8 rounded-xl transition-colors shrink-0"
-            >
+            <button type="submit" disabled={loading} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-medium text-sm px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
               {loading ? <Loader size={18} className="animate-spin" /> : "Search"}
             </button>
           </form>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* State 1: Loading */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Loading */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader size={32} className="text-blue-600 animate-spin" />
-            <p className="text-gray-500 text-sm animate-pulse">Analyzing medical database...</p>
+          <div className="flex flex-col items-center justify-center py-20 bg-white border border-gray-200">
+            <Loader size={40} className="text-blue-600 animate-spin mb-4" />
+            <p className="text-gray-600 text-sm">Searching database...</p>
           </div>
         )}
 
-        {/* State 2: No Search Performed yet */}
+        {/* Empty State */}
         {!loading && !results && !searchParams.get("q") && (
-          <div className="text-center py-20 animate-in fade-in duration-500">
-            <div className="text-6xl mb-4">💊</div>
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">Search Any Medicine</h2>
-            <p className="text-gray-400 text-sm mb-8 max-w-xs mx-auto">Enter a medicine name to get dosage, side effects, and precautions.</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {["Panadol", "Aspirin", "Brufen", "Flagyl"].map((s) => (
-                <button 
-                  key={s} 
-                  onClick={() => setSearchParams({ q: s })} 
-                  className="bg-white border border-gray-200 hover:border-blue-300 text-gray-600 hover:text-blue-600 text-sm px-4 py-2 rounded-xl transition-all active:scale-95"
-                >
-                  {s}
-                </button>
-              ))}
+          <div className="bg-white border border-gray-200 p-12">
+            <div className="max-w-3xl mx-auto text-center">
+              
+              <h2 className="text-2xl font-semibold text-gray-900 mb-3">Medicine Database</h2>
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Search for prescription and over-the-counter medications to view dosage information, 
+                side effects, warnings, and drug interactions.
+              </p>
+              <div className="border-t border-gray-200 pt-6">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Search</p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {["Panadol", "Aspirin", "Brufen", "Flagyl"].map((s) => (
+                    <button 
+                      key={s} 
+                      onClick={() => setSearchParams({ q: s })} 
+                      className="bg-white border border-gray-300 hover:border-blue-600 hover:text-blue-600 text-gray-700 text-sm font-medium px-5 py-2 transition"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* State 3: Search Results Found */}
+        {/* Results */}
         {!loading && results && results.medicines?.length > 0 && (
-          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center justify-between">
-               <p className="text-sm text-gray-500">
-                Found <span className="font-bold text-gray-800">{results.medicines.length}</span> results
-               </p>
-               {results.source === "AI Generated" && (
-                 <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full">
-                   <AlertTriangle size={12} /> AI Assisted Info
-                 </span>
-               )}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between bg-white border border-gray-200 px-6 py-4">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold text-gray-900">{results.medicines.length}</span> {results.medicines.length === 1 ? 'result' : 'results'} found
+              </p>
+              {results.source === "AI Generated" && (
+                <span className="flex items-center gap-2 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1">
+                  <AlertTriangle size={14} /> AI-Generated
+                </span>
+              )}
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               {results.medicines.map((med, i) => (
                 <MedicineCard 
                   key={med._id || `med-${i}`} 
@@ -156,16 +161,18 @@ const SmartSearch = () => {
           </div>
         )}
 
-        {/* State 4: Search Performed but 0 Results */}
+        {/* No Results */}
         {!loading && results && results.medicines?.length === 0 && (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+          <div className="bg-white border border-gray-200 p-12 text-center">
             <Inbox size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-700">No results for "{query}"</h3>
-            <p className="text-sm text-gray-400 mt-1">Try checking the spelling or use a generic name.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Results Found</h3>
+            <p className="text-gray-600">No matches for "{query}". Please check the spelling or try a generic name.</p>
           </div>
         )}
       </div>
     </div>
+    <MediBot />
+    </>
   );
 };
 

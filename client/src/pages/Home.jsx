@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ArrowRight, X, ShieldAlert, Star, ChevronRight, Zap, ScanLine, FileText, Stethoscope, Heart } from "lucide-react";
+import { Search, ArrowRight, X, ShieldAlert, Star, ChevronRight, Zap, ScanLine, FileText, Stethoscope, Heart, AlertTriangle, Pill, Activity, Camera, ClipboardList, Calculator } from "lucide-react";
 
 const features = [
-  { icon: "🔍", title: "Smart Medicine Search",     desc: "Full details, dosage, side effects and AI explanation instantly.", link: "/search" },
-  { icon: "🩺", title: "Symptom Checker",           desc: "AI-powered medicine suggestions based on your symptoms.",          link: "/symptoms" },
-  { icon: "⚡", title: "Drug Interaction Checker", desc: "Know if your medicines are safe to take together.",                link: "/interactions" },
-  { icon: "📷", title: "Fake Medicine Detector",   desc: "AI detects counterfeit or unregistered medicines via image.",      link: "/ocr" },
-  { icon: "📋", title: "Prescription Scanner",      desc: "Scan prescriptions to get full info on all prescribed medicines.", link: "/prescription" },
-  { icon: "💊", title: "Personalized Dosage",       desc: "AI calculates your safe dose based on age, weight and conditions.", link: "/search" },
+  { icon: <Search size={32} />, title: "Smart Medicine Search",     desc: "Full details, dosage, side effects and AI explanation instantly.", link: "/search" },
+  { icon: <Stethoscope size={32} />, title: "Symptom Checker",           desc: "AI-powered medicine suggestions based on your symptoms.",          link: "/symptoms" },
+  { icon: <Zap size={32} />, title: "Drug Interaction Checker", desc: "Know if your medicines are safe to take together.",                link: "/interactions" },
+  { icon: <Camera size={32} />, title: "Fake Medicine Detector",   desc: "AI detects counterfeit or unregistered medicines via image.",      link: "/ocr" },
+  { icon: <ClipboardList size={32} />, title: "Prescription Scanner",      desc: "Scan prescriptions to get full info on all prescribed medicines.", link: "/prescription" },
+  { icon: <Calculator size={32} />, title: "Personalized Dosage",       desc: "AI calculates your safe dose based on age, weight and conditions.", link: "/search" },
 ];
 
 const risks = [
@@ -19,10 +19,10 @@ const risks = [
 ];
 
 const techStack = [
-  { icon: "🔍", name: "AI Search Engine", role: "DB → OpenFDA → Groq AI pipeline" },
-  { icon: "📷", name: "OCR Scanner",      role: "Computer vision fake detection" },
-  { icon: "🧠", name: "Groq LLaMA 3.3",   role: "70B model for AI analysis" },
-  { icon: "🗄️", name: "MongoDB Atlas",    role: "Verified medicine database" },
+  { icon: <Search size={20} />, name: "AI Search Engine", role: "DB → OpenFDA → Groq AI pipeline" },
+  { icon: <Camera size={20} />, name: "OCR Scanner",      role: "Computer vision fake detection" },
+  { icon: <Activity size={20} />, name: "Groq LLaMA 3.3",   role: "70B model for AI analysis" },
+  { icon: <Pill size={20} />, name: "MongoDB Atlas",    role: "Verified medicine database" },
 ];
 
 // ── Fade-in on scroll hook ─────────────────────────────────────────────────
@@ -69,18 +69,18 @@ const RobotAssistant = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const suggestions = [
-    { label: "Search a medicine",       link: "/search",       icon: "🔍" },
-    { label: "Check my symptoms",       link: "/symptoms",     icon: "🩺" },
-    { label: "Check drug interactions", link: "/interactions", icon: "⚡" },
-    { label: "Scan a medicine image",   link: "/ocr",           icon: "📷" },
-    { label: "Scan my prescription",    link: "/prescription", icon: "📋" },
+    { label: "Search a medicine",       link: "/search",       icon: <Search size={16} /> },
+    { label: "Check my symptoms",       link: "/symptoms",     icon: <Stethoscope size={16} /> },
+    { label: "Check drug interactions", link: "/interactions", icon: <Zap size={16} /> },
+    { label: "Scan a medicine image",   link: "/ocr",           icon: <Camera size={16} /> },
+    { label: "Scan my prescription",    link: "/prescription", icon: <ClipboardList size={16} /> },
   ];
   return (
     <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end gap-2">
       {!open && (
-        <div className="bg-white border border-gray-200 shadow-lg rounded-xl px-3 py-2 text-[10px] md:text-xs font-medium text-gray-600 mr-1 mb-1 animate-bounce"
+        <div className="bg-white border border-gray-200 shadow-lg rounded-xl px-3 py-2 text-[10px] md:text-xs font-medium text-gray-600 mr-1 mb-1 animate-bounce flex items-center gap-1"
           style={{ animationDuration: "3s" }}>
-          👋 Need help?
+          <Heart size={12} className="text-blue-600" /> Need help?
         </div>
       )}
       {open && (
@@ -88,7 +88,7 @@ const RobotAssistant = () => {
           style={{ animation: "slideUp 0.2s ease-out" }}>
           <div className="bg-gray-900 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-white">
-              <span>🤖</span>
+              <Activity size={18} />
               <p className="font-semibold text-sm">MediBot</p>
             </div>
             <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white transition">
@@ -101,7 +101,7 @@ const RobotAssistant = () => {
                 className="w-full flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-blue-50 transition text-left group"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <span className="text-base">{s.icon}</span>
+                <span className="text-blue-600">{s.icon}</span>
                 <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600 transition-colors">{s.label}</span>
                 <ArrowRight size={12} className="ml-auto text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
               </button>
@@ -115,7 +115,7 @@ const RobotAssistant = () => {
       >
         {open ? <X size={20} className="text-white" /> : (
           <>
-            <span className="text-2xl">🤖</span>
+            <Activity size={24} className="text-white" />
             <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white">
               <span className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75" />
             </span>
@@ -243,7 +243,7 @@ const Home = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
                 {techStack.map((t, i) => (
                   <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <span className="text-xl">{t.icon}</span>
+                    <span className="text-blue-600">{t.icon}</span>
                     <div>
                       <p className="font-bold text-xs text-gray-900">{t.name}</p>
                       <p className="text-[10px] text-gray-500">{t.role}</p>
@@ -279,7 +279,7 @@ const Home = () => {
                 <div key={i} onClick={() => navigate(f.link)}
                   className="bg-white p-6 rounded-2xl border border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer group"
                 >
-                  <div className="text-3xl mb-4 group-hover:scale-110 transition-transform inline-block">{f.icon}</div>
+                  <div className="text-blue-600 mb-4 group-hover:scale-110 transition-transform inline-block">{f.icon}</div>
                   <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
                   <p className="text-xs text-gray-500 leading-relaxed mb-4">{f.desc}</p>
                   <div className="flex items-center text-blue-600 text-xs font-bold gap-1">
@@ -287,6 +287,93 @@ const Home = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── MEDICINE SAFETY AWARENESS ──────────────────────────────────── */}
+        <section className="py-16 md:py-24 border-t border-gray-100">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-red-600 mb-4">Important Safety Information</p>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Medicine Safety Guidelines</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">Essential tips to ensure safe and effective medication use</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-300 transition">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                    <ShieldAlert size={20} className="text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2">Always Consult Your Doctor</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Never self-medicate. Always consult a qualified healthcare professional before starting any new medication.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-300 transition">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                    <AlertTriangle size={20} className="text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2">Check Expiry Dates</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Always verify the expiration date before taking any medicine. Expired medications can be ineffective or harmful.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-300 transition">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                    <FileText size={20} className="text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2">Follow Prescribed Dosage</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Take medications exactly as prescribed. Never increase or decrease dosage without medical advice.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-300 transition">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                    <Heart size={20} className="text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2">Store Properly</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Keep medicines in a cool, dry place away from direct sunlight and out of reach of children.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+              <div className="flex items-start gap-4">
+                <ShieldAlert size={24} className="text-red-600 shrink-0" />
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-2">Warning: Counterfeit Medicines</h3>
+                  <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                    Pakistan faces a serious issue with fake medicines. Always purchase from licensed pharmacies and verify packaging authenticity. Use our Fake Medicine Detector to scan suspicious products.
+                  </p>
+                  <button 
+                    onClick={() => navigate('/ocr')} 
+                    className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-6 py-2 rounded-lg transition"
+                  >
+                    Scan Medicine Now
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
