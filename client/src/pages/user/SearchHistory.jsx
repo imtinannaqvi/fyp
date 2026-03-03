@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
-import { History, Loader, Trash2, Search, ChevronRight, Calendar } from "lucide-react";
+import { History, Loader, Trash2, Search, ChevronRight, Calendar, Clock } from "lucide-react";
 
 const SearchHistory = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredId, setHoveredId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,73 +38,96 @@ const SearchHistory = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-base font-semibold text-gray-900">Search History</h1>
-              <p className="text-xs text-gray-500 mt-0.5">{history.length} recent searches</p>
-            </div>
-            {history.length > 0 && (
-              <button onClick={handleClear} className="text-xs font-medium text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg transition border border-red-200">
-                Clear All
-              </button>
-            )}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Search History</h1>
+            <p className="text-gray-600">{history.length} recent {history.length === 1 ? 'search' : 'searches'}</p>
           </div>
+          {history.length > 0 && (
+            <button 
+              onClick={handleClear} 
+              className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-6 py-2.5 rounded-xl border border-red-200 transition-all"
+            >
+              Clear All
+            </button>
+          )}
         </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-5">
         {history.length === 0 ? (
-          <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-10 text-center">
-            <Search size={36} className="text-gray-300 mx-auto mb-3" />
-            <h2 className="text-sm font-semibold text-gray-900 mb-1">No Search History</h2>
-            <p className="text-xs text-gray-500 mb-5">Your medicine searches will appear here</p>
-            <button onClick={() => navigate("/search")} className="bg-blue-600 text-white text-xs font-medium px-5 py-2 rounded-lg hover:bg-blue-700">
-              Search Medicines
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-16 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Search size={40} className="text-blue-600" strokeWidth={1.5} />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">No Search History</h2>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">Your medicine searches will be saved here for quick access</p>
+            <button 
+              onClick={() => navigate("/search")} 
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-sm hover:shadow-md transition-all inline-flex items-center gap-2"
+            >
+              Search Medicines <ChevronRight size={18} />
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {history.map((item, i) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {history.map((item) => {
               const date = new Date(item.createdAt);
               const isValidDate = !isNaN(date.getTime());
+              const isHovered = hoveredId === item._id;
               
               return (
                 <div 
-                  key={i} 
-                  onClick={() => navigate(`/search?q=${item.query}`)}
-                  className="bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-500 hover:shadow-lg transition-all cursor-pointer group"
+                  key={item._id} 
+                  onMouseEnter={() => setHoveredId(item._id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-blue-300 transition-all duration-300 overflow-hidden"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                      <Search size={18} />
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
+                          <Search size={24} className="text-white" strokeWidth={2} />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900 text-base leading-tight line-clamp-2">{item.query}</h3>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition">
-                    {item.query}
-                  </h3>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Calendar size={13} className="text-gray-400" />
-                      <span className="font-medium">
-                        {isValidDate ? date.toLocaleDateString("en-US", { 
-                          month: 'short', 
-                          day: 'numeric', 
-                          year: 'numeric'
-                        }) : 'Date unavailable'}
-                      </span>
+                    
+                    <div className="space-y-3 mb-5">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={14} className="text-gray-400" />
+                        <span className="text-xs text-gray-600 font-medium">
+                          {isValidDate ? date.toLocaleDateString("en-US", { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric'
+                          }) : 'Date unavailable'}
+                        </span>
+                      </div>
+                      
+                      {isValidDate && (
+                        <div className="flex items-center gap-2">
+                          <Clock size={14} className="text-gray-400" />
+                          <span className="text-xs text-gray-600">
+                            {date.toLocaleTimeString("en-US", { 
+                              hour: 'numeric', 
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span className="w-[13px]"></span>
-                      <span>
-                        {isValidDate ? date.toLocaleTimeString("en-US", { 
-                          hour: 'numeric', 
-                          minute: '2-digit',
-                          hour12: true
-                        }) : ''}
-                      </span>
+                    
+                    <div className="pt-4 border-t border-gray-100">
+                      <button 
+                        onClick={() => navigate(`/search?q=${item.query}`)} 
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
+                      >
+                        Search Again
+                        <ChevronRight size={16} />
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -18,6 +18,8 @@ import interactionRoutes  from "./routes/interaction.js";
 import adminRoutes        from "./routes/admin.route.js";
 import prescriptionRoutes from "./routes/prescription.route.js";
 import symptomRoutes      from "./routes/symptom.route.js";
+import reminderRoutes     from "./routes/reminder.routes.js";
+import fakeReportRoutes   from "./routes/fakeReport.routes.js";
 
 app.use("/api/auth",         authRoutes);
 app.use("/api/medicine",     medicineRoutes);
@@ -28,6 +30,8 @@ app.use("/api/interaction",  interactionRoutes);
 app.use("/api/admin",        adminRoutes);
 app.use("/api/prescription",  prescriptionRoutes);
 app.use("/api/symptom",      symptomRoutes);
+app.use("/api/user",         reminderRoutes);
+app.use("/api/fake-report",  fakeReportRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => res.json({ message: "Medico Guidance API running ✅" }));

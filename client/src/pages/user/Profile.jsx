@@ -104,86 +104,85 @@ const Profile = () => {
     .filter(w => w.medicines.length > 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-base font-semibold text-gray-900">Profile</h1>
-              <p className="text-xs text-gray-500 mt-0.5">Manage health information</p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setTab("overview")} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${tab === "overview" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}>Overview</button>
-              <button onClick={() => setTab("edit")} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${tab === "edit" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}>Edit</button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
+            <p className="text-gray-600">Manage your health information</p>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setTab("overview")} className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === "overview" ? "bg-blue-600 text-white shadow-md shadow-blue-200" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}>Overview</button>
+            <button onClick={() => setTab("edit")} className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === "edit" ? "bg-blue-600 text-white shadow-md shadow-blue-200" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}>Edit</button>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-5">
         {tab === "overview" ? (
-          <div className="space-y-4">
-            <div className="bg-white rounded-lg border p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+              <div className="flex items-center gap-5">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-md">
                   {profile?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-sm font-semibold text-gray-900">{profile?.name}</h2>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
-                    <Mail size={12} />
+                  <h2 className="text-xl font-bold text-gray-900 mb-1">{profile?.name}</h2>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                    <Mail size={16} />
                     {profile?.email}
                   </div>
-                  <div className="flex gap-1.5 mt-2">
-                    {profile?.age && <span className="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-0.5 rounded">{profile.age}y</span>}
-                    {profile?.gender && <span className="bg-purple-50 text-purple-700 text-xs font-medium px-2 py-0.5 rounded capitalize">{profile.gender}</span>}
-                    {profile?.weight && <span className="bg-green-50 text-green-700 text-xs font-medium px-2 py-0.5 rounded">{profile.weight}kg</span>}
+                  <div className="flex gap-2">
+                    {profile?.age && <span className="bg-blue-50 text-blue-700 text-sm font-semibold px-3 py-1 rounded-lg">{profile.age} years</span>}
+                    {profile?.gender && <span className="bg-purple-50 text-purple-700 text-sm font-semibold px-3 py-1 rounded-lg capitalize">{profile.gender}</span>}
+                    {profile?.weight && <span className="bg-green-50 text-green-700 text-sm font-semibold px-3 py-1 rounded-lg">{profile.weight} kg</span>}
                   </div>
                 </div>
               </div>
             </div>
 
             {!hasProfile ? (
-              <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-                <Activity size={36} className="text-blue-600 mx-auto mb-2" />
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Complete Health Profile</h3>
-                <p className="text-xs text-gray-500 mb-4">Add info for personalized alerts</p>
-                <button onClick={() => setTab("edit")} className="bg-blue-600 text-white text-xs font-medium px-5 py-2 rounded-lg hover:bg-blue-700">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-16 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Activity size={40} className="text-blue-600" strokeWidth={1.5} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Complete Health Profile</h3>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto">Add your health information for personalized medicine alerts and recommendations</p>
+                <button onClick={() => setTab("edit")} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-sm hover:shadow-md transition-all inline-flex items-center gap-2">
                   Complete Now
                 </button>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {[
-                    { icon: <Calendar size={16} />, label: "Age", value: ageGroup.label, bg: "bg-blue-50", color: "text-blue-600" },
-                    { icon: <Scale size={16} />, label: "BMI", value: bmi.label, bg: "bg-green-50", color: "text-green-600" },
-                    { icon: <Activity size={16} />, label: "Conditions", value: profile?.conditions?.length || 0, bg: "bg-red-50", color: "text-red-600" },
-                    { icon: <AlertTriangle size={16} />, label: "Allergies", value: profile?.allergies?.length || 0, bg: "bg-amber-50", color: "text-amber-600" },
+                    { icon: <Calendar size={18} />, label: "Age Group", value: ageGroup.label, color: "text-blue-600", bg: "bg-blue-50" },
+                    { icon: <Scale size={18} />, label: "BMI Status", value: bmi.label, color: "text-green-600", bg: "bg-green-50" },
+                    { icon: <Activity size={18} />, label: "Conditions", value: profile?.conditions?.length || 0, color: "text-red-600", bg: "bg-red-50" },
+                    { icon: <AlertTriangle size={18} />, label: "Allergies", value: profile?.allergies?.length || 0, color: "text-amber-600", bg: "bg-amber-50" },
                   ].map((s, i) => (
-                    <div key={i} className="bg-white rounded-lg p-3 border">
-                      <div className={`w-9 h-9 ${s.bg} ${s.color} rounded-lg flex items-center justify-center mb-2`}>{s.icon}</div>
-                      <p className="text-base font-bold text-gray-900">{s.value}</p>
-                      <p className="text-xs font-medium text-gray-500">{s.label}</p>
+                    <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+                      <div className={`w-11 h-11 ${s.bg} rounded-xl flex items-center justify-center mb-4`}>
+                        <div className={s.color}>{s.icon}</div>
+                      </div>
+                      <p className="text-2xl font-bold text-gray-900 mb-1">{s.value}</p>
+                      <p className="text-sm font-medium text-gray-600">{s.label}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {conditionWarnings.length > 0 && (
-                    <div className="bg-white rounded-lg border border-red-200 overflow-hidden">
-                      <div className="bg-red-500 px-4 py-2.5 flex items-center gap-2">
-                        <AlertTriangle size={16} className="text-white" />
-                        <h3 className="text-xs font-semibold text-white">Condition Warnings</h3>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-red-600 px-6 py-4 flex items-center gap-3">
+                        <AlertTriangle size={20} className="text-white" />
+                        <h3 className="text-base font-bold text-white">Condition Warnings</h3>
                       </div>
-                      <div className="p-4 space-y-3">
+                      <div className="p-6 space-y-5">
                         {conditionWarnings.map((w, i) => (
-                          <div key={i}>
-                            <span className="bg-red-100 text-red-700 text-xs font-semibold uppercase px-2 py-0.5 rounded">{w.condition}</span>
-                            <p className="text-xs text-gray-600 mt-1.5">{w.tip}</p>
-                            <div className="flex flex-wrap gap-1.5 mt-2">
+                          <div key={i} className="pb-5 border-b border-gray-100 last:border-0 last:pb-0">
+                            <span className="inline-block bg-red-100 text-red-700 text-sm font-bold uppercase px-3 py-1 rounded-lg mb-3">{w.condition}</span>
+                            <p className="text-sm text-gray-700 mb-3 leading-relaxed">{w.tip}</p>
+                            <div className="flex flex-wrap gap-2">
                               {w.avoid.map((m, j) => (
-                                <span key={j} className="bg-red-50 border border-red-200 text-red-700 text-xs px-2 py-0.5 rounded">⛔ {m}</span>
+                                <span key={j} className="bg-red-50 border border-red-200 text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg">⛔ {m}</span>
                               ))}
                             </div>
                           </div>
@@ -193,19 +192,19 @@ const Profile = () => {
                   )}
 
                   {allergyWarnings.length > 0 && (
-                    <div className="bg-white rounded-lg border border-amber-200 overflow-hidden">
-                      <div className="bg-amber-500 px-4 py-2.5 flex items-center gap-2">
-                        <ShieldCheck size={16} className="text-white" />
-                        <h3 className="text-xs font-semibold text-white">Allergy Alerts</h3>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-amber-600 px-6 py-4 flex items-center gap-3">
+                        <ShieldCheck size={20} className="text-white" />
+                        <h3 className="text-base font-bold text-white">Allergy Alerts</h3>
                       </div>
-                      <div className="p-4 space-y-3">
+                      <div className="p-6 space-y-5">
                         {allergyWarnings.map((w, i) => (
-                          <div key={i}>
-                            <span className="bg-amber-100 text-amber-700 text-xs font-semibold uppercase px-2 py-0.5 rounded">{w.allergy}</span>
-                            <p className="text-xs text-gray-600 mt-1.5">Avoid:</p>
-                            <div className="flex flex-wrap gap-1.5 mt-2">
+                          <div key={i} className="pb-5 border-b border-gray-100 last:border-0 last:pb-0">
+                            <span className="inline-block bg-amber-100 text-amber-700 text-sm font-bold uppercase px-3 py-1 rounded-lg mb-3">{w.allergy}</span>
+                            <p className="text-sm text-gray-700 mb-3">Avoid these medicines:</p>
+                            <div className="flex flex-wrap gap-2">
                               {w.medicines.map((m, j) => (
-                                <span key={j} className="bg-amber-50 border border-amber-200 text-amber-700 text-xs px-2 py-0.5 rounded">⚠️ {m}</span>
+                                <span key={j} className="bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-lg">⚠️ {m}</span>
                               ))}
                             </div>
                           </div>
@@ -218,46 +217,46 @@ const Profile = () => {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-lg border">
-            <div className="bg-blue-600 px-4 py-2.5">
-              <h2 className="text-xs font-semibold text-white">Edit Profile</h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+              <h2 className="text-base font-bold text-white">Edit Profile</h2>
             </div>
-            <div className="p-4 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 block mb-1">Name</label>
-                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <label className="text-sm font-semibold text-gray-700 block mb-2">Name</label>
+                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 block mb-1">Gender</label>
-                  <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="">Select</option>
+                  <label className="text-sm font-semibold text-gray-700 block mb-2">Gender</label>
+                  <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <option value="">Select Gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 block mb-1">Age</label>
-                  <input type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <label className="text-sm font-semibold text-gray-700 block mb-2">Age</label>
+                  <input type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} placeholder="Enter age" className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 block mb-1">Weight (kg)</label>
-                  <input type="number" value={form.weight} onChange={(e) => setForm({ ...form, weight: e.target.value })} className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <label className="text-sm font-semibold text-gray-700 block mb-2">Weight (kg)</label>
+                  <input type="number" value={form.weight} onChange={(e) => setForm({ ...form, weight: e.target.value })} placeholder="Enter weight" className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-700 block mb-1">Conditions</label>
-                <textarea value={form.conditions} onChange={(e) => setForm({ ...form, conditions: e.target.value })} placeholder="diabetes, asthma..." className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none h-20 resize-none" />
+                <label className="text-sm font-semibold text-gray-700 block mb-2">Medical Conditions</label>
+                <textarea value={form.conditions} onChange={(e) => setForm({ ...form, conditions: e.target.value })} placeholder="e.g., diabetes, asthma, hypertension (comma separated)" className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none h-24 resize-none transition" />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-700 block mb-1">Allergies</label>
-                <textarea value={form.allergies} onChange={(e) => setForm({ ...form, allergies: e.target.value })} placeholder="penicillin, aspirin..." className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none h-20 resize-none" />
+                <label className="text-sm font-semibold text-gray-700 block mb-2">Allergies</label>
+                <textarea value={form.allergies} onChange={(e) => setForm({ ...form, allergies: e.target.value })} placeholder="e.g., penicillin, aspirin, ibuprofen (comma separated)" className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none h-24 resize-none transition" />
               </div>
-              <div className="flex gap-2">
-                <button onClick={handleSave} disabled={saving} className="flex-1 bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 text-sm">
-                  {saving ? <Loader className="animate-spin" size={14} /> : <><Save size={14} /> Save</>}
+              <div className="flex gap-3 pt-4">
+                <button onClick={handleSave} disabled={saving} className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3.5 rounded-xl shadow-md shadow-blue-200 hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm">
+                  {saving ? <Loader className="animate-spin" size={18} /> : <><Save size={18} /> Save Changes</>}
                 </button>
-                <button onClick={() => setTab("overview")} className="px-4 bg-gray-100 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-200 text-sm">Cancel</button>
+                <button onClick={() => setTab("overview")} className="px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-all text-sm">Cancel</button>
               </div>
             </div>
           </div>

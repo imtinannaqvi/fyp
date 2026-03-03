@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
   otp:       { type: String },
   otpExpiry: { type: Date },
 
+  // Password Reset
+  resetPasswordToken:  { type: String },
+  resetPasswordExpire: { type: Date },
+
   // Health Profile
   gender:     { type: String, enum: ["male", "female", "other"], default: null },
   age:        { type: Number, default: null },

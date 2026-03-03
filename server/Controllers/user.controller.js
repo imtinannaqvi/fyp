@@ -58,13 +58,13 @@ export const saveMedicine = async (req, res) => {
 
     // Check if already saved
     const alreadySaved = user.savedMedicines.some(
-      (s) => s.medicine.toString() === medicineId
+      (id) => id.toString() === medicineId
     );
     if (alreadySaved) {
       return res.status(400).json({ message: "Medicine already saved" });
     }
 
-    user.savedMedicines.push({ medicine: medicineId });
+    user.savedMedicines.push(medicineId);
     await user.save();
 
     res.json({ message: "Medicine saved successfully" });
@@ -80,7 +80,7 @@ export const removeSavedMedicine = async (req, res) => {
     const { medicineId } = req.params;
 
     user.savedMedicines = user.savedMedicines.filter(
-      (s) => s.medicine.toString() !== medicineId
+      (id) => id.toString() !== medicineId
     );
 
     await user.save();
@@ -94,15 +94,19 @@ export const removeSavedMedicine = async (req, res) => {
 export const getSavedMedicines = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate(
-      "savedMedicines.medicine",
+      "savedMedicines",
       "name brand category image description requiresPrescription isCommonlyMisused"
     );
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const savedMedicines = user.savedMedicines.map(medicine => ({
+      medicine: medicine
+    }));
+
     res.json({
-      total: user.savedMedicines.length,
-      savedMedicines: user.savedMedicines,
+      total: savedMedicines.length,
+      savedMedicines: savedMedicines,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

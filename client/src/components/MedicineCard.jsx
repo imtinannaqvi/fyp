@@ -19,13 +19,16 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
       if (isSaved) {
         await API.delete(`/user/save-medicine/${medicine._id}`);
         toast.success("Removed from saved");
+        onSaveToggle?.(medicine._id, false);
       } else {
         await API.post(`/user/save-medicine/${medicine._id}`);
         toast.success("Medicine saved!");
+        onSaveToggle?.(medicine._id, true);
       }
-      onSaveToggle?.(medicine._id, !isSaved);
-    } catch {
-      toast.error("Failed to update saved medicines");
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Failed to update saved medicines";
+      toast.error(errorMsg);
+      console.error("Save medicine error:", err);
     }
   };
 

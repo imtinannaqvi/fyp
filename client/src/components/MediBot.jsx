@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Stethoscope, Zap, Camera, ClipboardList, Activity, Heart, X, ArrowRight } from "lucide-react";
+import { X, Heart, Activity, ArrowRight, Search, Stethoscope, Zap, Camera, ClipboardList } from "lucide-react";
 
 const MediBot = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   
   const suggestions = [
-    { label: "Search a medicine",       link: "/search",       icon: <Search size={16} /> },
-    { label: "Check my symptoms",       link: "/symptoms",     icon: <Stethoscope size={16} /> },
+    { label: "Search a medicine", link: "/search", icon: <Search size={16} /> },
+    { label: "Check my symptoms", link: "/symptoms", icon: <Stethoscope size={16} /> },
     { label: "Check drug interactions", link: "/interactions", icon: <Zap size={16} /> },
-    { label: "Scan a medicine image",   link: "/ocr",          icon: <Camera size={16} /> },
-    { label: "Scan my prescription",    link: "/prescription", icon: <ClipboardList size={16} /> },
+    { label: "Scan a medicine image", link: "/ocr", icon: <Camera size={16} /> },
+    { label: "Scan my prescription", link: "/prescription", icon: <ClipboardList size={16} /> },
   ];
 
   return (
@@ -40,7 +40,10 @@ const MediBot = () => {
                 <Activity size={18} />
                 <p className="font-semibold text-sm">MediBot</p>
               </div>
-              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white transition">
+              <button 
+                onClick={() => setOpen(false)} 
+                className="text-gray-400 hover:text-white transition"
+              >
                 <X size={15} />
               </button>
             </div>
