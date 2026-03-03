@@ -69,8 +69,9 @@ const SavedMedicines = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center font-semibold text-lg">
-                          {med.name.charAt(0)}
+                        <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center font-semibold text-lg uppercase">
+                          {/* Fixed by adding ?. to prevent the charAt error */}
+                          {med.name?.charAt(0) || "M"}
                         </div>
                         <div>
                           <h3 className="font-semibold text-gray-900 text-lg">{med.name}</h3>
