@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, ArrowRight, X, ShieldAlert, Star, ChevronRight, Zap, ScanLine, FileText, Stethoscope, Heart, AlertTriangle, Pill, Activity, Camera, ClipboardList, Calculator } from "lucide-react";
+import { useMenu } from "../context/MenuContext";
+import { useAuth } from "../context/AuthContext";
 
 const features = [
   { icon: <Search size={32} />, title: "Smart Medicine Search",     desc: "Full details, dosage, side effects and AI explanation instantly.", link: "/search" },
@@ -64,79 +66,40 @@ const CountUp = ({ target, suffix = "" }) => {
   return <span ref={ref}>{isNaN(parseInt(target)) ? target : count}{suffix}</span>;
 };
 
-// ── MediBot ────────────────────────────────────────────────────────────────
-const RobotAssistant = () => {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const suggestions = [
-    { label: "Search a medicine",       link: "/search",       icon: <Search size={16} /> },
-    { label: "Check my symptoms",       link: "/symptoms",     icon: <Stethoscope size={16} /> },
-    { label: "Check drug interactions", link: "/interactions", icon: <Zap size={16} /> },
-    { label: "Scan a medicine image",   link: "/ocr",           icon: <Camera size={16} /> },
-    { label: "Scan my prescription",    link: "/prescription", icon: <ClipboardList size={16} /> },
-  ];
-  return (
-    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end gap-2">
-      {!open && (
-        <div className="bg-white border border-gray-200 shadow-lg rounded-xl px-3 py-2 text-[10px] md:text-xs font-medium text-gray-600 mr-1 mb-1 animate-bounce flex items-center gap-1"
-          style={{ animationDuration: "3s" }}>
-          <Heart size={12} className="text-blue-600" /> Need help?
-        </div>
-      )}
-      {open && (
-        <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[280px] md:w-64 overflow-hidden mb-2"
-          style={{ animation: "slideUp 0.2s ease-out" }}>
-          <div className="bg-gray-900 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white">
-              <Activity size={18} />
-              <p className="font-semibold text-sm">MediBot</p>
-            </div>
-            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white transition">
-              <X size={15} />
-            </button>
-          </div>
-          <div className="p-3 space-y-1.5">
-            {suggestions.map((s, i) => (
-              <button key={s.link} onClick={() => { navigate(s.link); setOpen(false); }}
-                className="w-full flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-blue-50 transition text-left group"
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
-                <span className="text-blue-600">{s.icon}</span>
-                <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600 transition-colors">{s.label}</span>
-                <ArrowRight size={12} className="ml-auto text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
-              </button>
-            ))}
-          </div>
-          <p className="text-[10px] text-gray-400 text-center pb-3 px-4">AI guidance is not a medical diagnosis.</p>
-        </div>
-      )}
-      <button onClick={() => setOpen(!open)}
-        className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gray-900 hover:bg-blue-600 shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 relative"
-      >
-        {open ? <X size={20} className="text-white" /> : (
-          <>
-            <Activity size={24} className="text-white" />
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white">
-              <span className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75" />
-            </span>
-          </>
-        )}
-      </button>
-    </div>
-  );
-};
-
 const Home = () => {
   const navigate = useNavigate();
+  const { isMenuOpen } = useMenu();
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [hoveredRisk, setHoveredRisk] = useState(null);
+  const [showSticky, setShowSticky] = useState(false);
+  const footerRef = useRef(null);
 
   const [aboutRef, aboutVisible]     = useFadeIn();
   const [warningRef, warningVisible] = useFadeIn();
   const [howRef, howVisible]         = useFadeIn();
   const [featRef, featVisible]       = useFadeIn();
   const [ctaRef, ctaVisible]         = useFadeIn();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Show sticky after 600px scroll
+      const shouldShow = scrollY > 600;
+      
+      // Hide sticky when near footer (within 300px of bottom)
+      const nearFooter = scrollY + windowHeight > documentHeight - 300;
+      
+      setShowSticky(shouldShow && !nearFooter);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -147,11 +110,13 @@ const Home = () => {
     <>
       <style>{`
         @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeSlideLeft { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         .hero-gradient { background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 50%, #312e81 100%); background-size: 200% 200%; animation: gradientShift 8s ease infinite; }
         .fade-up { animation: fadeSlideUp 0.6s ease-out forwards; }
+        .animate-slideDown { animation: slideDown 0.3s ease-out; }
         .stagger-1 { animation-delay: 0.1s; opacity: 0; }
         .stagger-2 { animation-delay: 0.2s; opacity: 0; }
         .stagger-3 { animation-delay: 0.3s; opacity: 0; }
@@ -159,6 +124,18 @@ const Home = () => {
       `}</style>
 
       <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+
+        {showSticky && !isMenuOpen && (
+          <div className="fixed top-20 left-0 right-0 z-[60] bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg px-4 py-4 animate-slideDown">
+            <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex items-center gap-2 bg-white rounded-xl p-1.5 shadow-lg">
+              <div className="flex items-center flex-1 px-3">
+                <Search size={18} className="text-gray-400 shrink-0" />
+                <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search medicine..." className="w-full text-sm text-gray-900 placeholder-gray-400 focus:outline-none bg-transparent py-2.5 px-3" />
+              </div>
+              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-8 py-2.5 rounded-lg transition-all">Search</button>
+            </form>
+          </div>
+        )}
 
         {/* ── HERO ───────────────────────────────────────────────────────── */}
         <section className="hero-gradient text-white relative overflow-hidden">
@@ -230,36 +207,41 @@ const Home = () => {
         </section>
 
         {/* ── ABOUT ──────────────────────────────────────────────────────── */}
-        <section ref={aboutRef} className="py-16 md:py-24 border-b border-gray-100 overflow-hidden"
+        <section ref={aboutRef} className="py-20 md:py-28 bg-white border-b border-gray-100 overflow-hidden"
           style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? "none" : "translateY(20px)", transition: "all 0.8s ease" }}
         >
-          <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 mb-4">The Mission</p>
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight mb-6">Built for Pakistan's<br />Healthcare Gap.</h2>
-              <p className="text-gray-500 text-sm md:text-base leading-relaxed mb-6">
+              <p className="text-sm font-bold uppercase tracking-wider text-blue-600 mb-4">The Mission</p>
+              <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
+                Built for Pakistan's<br />
+                <span className="text-blue-600">Healthcare Gap</span>
+              </h2>
+              <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-8">
                 Every year, thousands of Pakistanis suffer from counterfeit medicines, dangerous drug combinations and incorrect dosages because of limited access to verified data.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {techStack.map((t, i) => (
-                  <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <span className="text-blue-600">{t.icon}</span>
+                  <div key={i} className="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-2xl hover:shadow-lg hover:border-blue-300 transition-all group">
+                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-all flex-shrink-0">
+                      <span className="text-blue-600">{t.icon}</span>
+                    </div>
                     <div>
-                      <p className="font-bold text-xs text-gray-900">{t.name}</p>
-                      <p className="text-[10px] text-gray-500">{t.role}</p>
+                      <p className="font-bold text-sm text-gray-900">{t.name}</p>
+                      <p className="text-xs text-gray-600 mt-0.5">{t.role}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="order-1 lg:order-2 relative">
-              <div className="aspect-square bg-blue-600 rounded-3xl rotate-3 absolute inset-0 opacity-10 scale-95" />
-              <div className="aspect-square bg-white border-2 border-gray-100 rounded-3xl shadow-2xl relative flex flex-col items-center justify-center p-8 text-center">
-                 <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                    <ShieldAlert size={40} className="text-blue-600" />
+              <div className="aspect-square bg-gradient-to-br from-blue-100 to-blue-50 rounded-3xl rotate-2 absolute inset-0 opacity-40 scale-95" />
+              <div className="aspect-square bg-white border-2 border-gray-200 rounded-3xl shadow-xl relative flex flex-col items-center justify-center p-8 text-center hover:shadow-2xl transition-all">
+                 <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center mb-4 shadow-md">
+                    <ShieldAlert size={32} className="text-blue-600" />
                  </div>
-                 <h3 className="text-xl font-black text-gray-900 mb-2">Verified Data</h3>
-                 <p className="text-xs text-gray-400">Aggregating OpenFDA, local pharmacopeia, and Groq-processed AI insights for 99% accuracy.</p>
+                 <h3 className="text-xl font-bold text-gray-900 mb-2">Verified Data</h3>
+                 <p className="text-xs text-gray-600 leading-relaxed">Aggregating OpenFDA, local pharmacopeia, and Groq-processed AI insights for 99% accuracy.</p>
               </div>
             </div>
           </div>
@@ -386,7 +368,9 @@ const Home = () => {
               <p className="text-blue-100 mb-10 text-sm md:text-base max-w-xl mx-auto">Join thousands of users making safer healthcare choices with AI. Start searching now.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button onClick={() => navigate("/search")} className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-black text-sm hover:shadow-2xl transition-all">Search Medicine</button>
-                <button onClick={() => navigate("/register")} className="bg-white/10 border border-white/20 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-white/20 transition-all">Create Free Account</button>
+                {!user && (
+                  <button onClick={() => navigate("/register")} className="bg-white/10 border border-white/20 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-white/20 transition-all">Create Free Account</button>
+                )}
               </div>
             </div>
           </div>
@@ -399,8 +383,6 @@ const Home = () => {
             ⚠️ <strong>Medical Disclaimer:</strong> This AI tool is for information only. Always consult a doctor.
           </p>
         </footer>
-
-        <RobotAssistant />
       </div>
     </>
   );
