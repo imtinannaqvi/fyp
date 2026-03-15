@@ -1,6 +1,34 @@
-import User from "../models/User.js";
+import User from "../models/user.js";
 import Medicine from "../models/Medicine.js";
 import OCRResult from "../models/ocrResult.js";
+import Reminder from "../models/Reminder.js";
+
+export const getTodayReminders = async (req, res) => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const reminders = await Reminder.find({
+      isActive: true,
+      startDate: { $lte: endOfDay },
+      $or: [{ endDate: null }, { endDate: { $gte: startOfDay } }],
+    }).sort({ createdAt: -1 });
+
+    res.json({ success: true, reminders });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+export const deleteReminder = async (req, res) => {
+  try {
+    await Reminder.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: "Reminder deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // ── Get all users ─────────────────────────────────────────────────────────────
 export const getAllUsers = async (req, res) => {

@@ -4,7 +4,7 @@ import Groq from "groq-sdk";
 
 // ── Helper: Generate AI explanation ──────────────────────────────────────────
 const generateMedicineExplanation = async (medicine) => {
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY }); // ✅ inside function
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   try {
     const response = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
@@ -25,7 +25,7 @@ Include: what it is used for, how it works, key warnings. Keep it to 3-4 sentenc
 
 // ── Helper: Generate personalized dosage ─────────────────────────────────────
 const generateDosageRecommendation = async (medicine, user) => {
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY }); // ✅ inside function
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   try {
     const response = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
@@ -97,8 +97,8 @@ export const getPersonalizedDosage = async (req, res) => {
     if (!recommendation) return res.status(500).json({ message: "Failed to generate dosage." });
 
     res.json({
-      medicine:           medicine.name,
-      brand:              medicine.brand,
+      medicine:        medicine.name,
+      brand:           medicine.brand,
       userProfile: {
         age:        user.age,
         weight:     user.weight,
@@ -106,7 +106,7 @@ export const getPersonalizedDosage = async (req, res) => {
         conditions: user.conditions,
         allergies:  user.allergies,
       },
-      standardDosage:     medicine.dosage || "Not specified",
+      standardDosage:  medicine.dosage || "Not specified",
       recommendation,
     });
   } catch (error) {
@@ -152,5 +152,59 @@ export const generateAllExplanations = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// ── MediBot Chat ──────────────────────────────────────────────────────────────
+// POST /api/ai/medibot
+export const medibotChat = async (req, res) => {
+  try {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages))
+      return res.status(400).json({ message: "Messages array is required" });
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `You are MediBot, an AI medicine safety assistant for Medico Guidance — a Pakistani health web app.
+Your job is to:
+1. Answer questions about self-medication risks and medicine safety
+2. Explain dangers of specific medicines when misused (e.g. Panadol overdose, antibiotic resistance)
+3. Guide users to the right feature of the app when relevant
+4. Answer general medicine safety questions in simple, clear English
+
+Available app pages you can refer users to:
+- /search → Search any medicine for info, dosage, side effects
+- /symptoms → Check symptoms
+- /interactions → Check drug interactions
+- /ocr → Scan a medicine image
+- /prescription → Scan a prescription
+- /reminders → Set medicine reminders
+- /awareness → Self-medication awareness page
+
+Rules:
+- Keep responses SHORT (2–4 sentences max)
+- Use simple language suitable for Pakistani users
+- When relevant, suggest an app page in this exact format: [GO:/path|Button Label]
+- Never diagnose. Always recommend consulting a doctor for serious concerns.
+- Be friendly and caring in tone`,
+        },
+        ...messages,
+      ],
+      max_tokens: 200,
+      temperature: 0.5,
+    });
+
+    const reply = response.choices?.[0]?.message?.content?.trim();
+    if (!reply) return res.status(500).json({ message: "No response from AI" });
+
+    res.json({ reply });
+  } catch (err) {
+    console.error("MediBot error:", err.message);
+    res.status(500).json({ message: err.message });
   }
 };

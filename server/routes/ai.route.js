@@ -1,11 +1,7 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import {
-  generateExplanation,
-  getPersonalizedDosage,
-  generateAllExplanations,
-} from "../Controllers/ai.controller.js";
-
+import { generateExplanation, getPersonalizedDosage, generateAllExplanations, medibotChat } from "../Controllers/ai.controller.js";
+import { translateMedicine } from "../Controllers/translate.controller.js";
 const router = express.Router();
 
 const isAdmin = (req, res, next) => {
@@ -25,5 +21,7 @@ router.post("/explain-all",          protect, isAdmin, generateAllExplanations);
 // ─── User routes ──────────────────────────────────────────────────────────────
 // Get personalized dosage based on user health profile
 router.get("/dosage/:medicineId",    protect, getPersonalizedDosage);
+router.post("/medibot", medibotChat); 
+router.post("/translate", translateMedicine);
 
 export default router;

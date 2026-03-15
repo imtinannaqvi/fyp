@@ -9,7 +9,7 @@ export const protect = async (req, res, next) => {
     if (!token) return res.status(401).json({ message: "No token provided" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded User:", decoded);
+    // console.log("Decoded User:", decoded);
     
     // This line was failing because 'User' wasn't imported
     req.user = await User.findById(decoded.id).select("-password");

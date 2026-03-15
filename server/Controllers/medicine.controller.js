@@ -1,5 +1,6 @@
 import Medicine from "../models/Medicine.js";
 import { detectDuplicateMedicine } from "../utils/fakeDetection.js";
+import Groq from "groq-sdk";
 
 // ------------------------
 // Create Medicine
@@ -8,7 +9,6 @@ export const createMedicine = async (req, res) => {
   try {
     const { name } = req.body;
 
-    // Duplicate check
     const duplicateCheck = await detectDuplicateMedicine(name);
     if (duplicateCheck.isDuplicate) {
       return res.status(400).json({
@@ -18,7 +18,6 @@ export const createMedicine = async (req, res) => {
       });
     }
 
-    // Parse array fields if sent as JSON strings (from form-data)
     const parseArray = (val) => {
       if (!val) return [];
       if (Array.isArray(val)) return val;
@@ -32,7 +31,6 @@ export const createMedicine = async (req, res) => {
     };
 
     const medicine = await Medicine.create({
-      // Basic Info
       name:        req.body.name,
       brand:       req.body.brand,
       generic:     req.body.generic,
@@ -40,34 +38,21 @@ export const createMedicine = async (req, res) => {
       description: req.body.description,
       price:       req.body.price,
       stock:       req.body.stock,
-
-      // Dosage
       dosage:      req.body.dosage,
+      barcode:     req.body.barcode || "",
       dosageGuide: parseObject(req.body.dosageGuide),
-
-      // Side Effects
-      sideEffects:     parseArray(req.body.sideEffects),
-      longTermEffects: parseArray(req.body.longTermEffects),
-
-      // Safety
+      sideEffects:       parseArray(req.body.sideEffects),
+      longTermEffects:   parseArray(req.body.longTermEffects),
       contraindications: parseArray(req.body.contraindications),
       foodInteractions:  parseArray(req.body.foodInteractions),
       drugInteractions:  parseArray(req.body.drugInteractions),
       warnings:          parseArray(req.body.warnings),
-
-      // Classification
       requiresPrescription: req.body.requiresPrescription === "true" || req.body.requiresPrescription === true,
       isCommonlyMisused:    req.body.isCommonlyMisused === "true" || req.body.isCommonlyMisused === true,
-      safeAlternatives:     parseArray(req.body.safeAlternatives),
-
-      // AI/OCR
+      safeAlternatives: parseArray(req.body.safeAlternatives),
       aiExplanation: req.body.aiExplanation,
       ocrData:       req.body.ocrData,
-
-      // Image
       image: req.file ? `/uploads/${req.file.originalname}` : req.body.image,
-
-      // Admin
       createdBy: req.user._id,
     });
 
@@ -78,18 +63,15 @@ export const createMedicine = async (req, res) => {
 };
 
 // ------------------------
-// Get All Medicines (with search + filter + pagination)
+// Get All Medicines
 // ------------------------
 export const getMedicines = async (req, res) => {
   try {
-    const page     = parseInt(req.query.page)     || 1;
-    const limit    = parseInt(req.query.limit)    || 10;
-    const skip     = (page - 1) * limit;
-
-    // Build query filters
+    const page  = parseInt(req.query.page)  || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip  = (page - 1) * limit;
     const filter = {};
 
-    // Text search — name, brand, generic, category
     if (req.query.q) {
       filter.$or = [
         { name:     { $regex: req.query.q, $options: "i" } },
@@ -99,7 +81,7 @@ export const getMedicines = async (req, res) => {
       ];
     }
 
-    if (req.query.category)            filter.category            = { $regex: req.query.category, $options: "i" };
+    if (req.query.category)             filter.category             = { $regex: req.query.category, $options: "i" };
     if (req.query.requiresPrescription) filter.requiresPrescription = req.query.requiresPrescription === "true";
     if (req.query.isApproved)           filter.isApproved           = req.query.isApproved === "true";
     if (req.query.isSuspicious)         filter.isSuspicious         = req.query.isSuspicious === "true";
@@ -114,12 +96,7 @@ export const getMedicines = async (req, res) => {
       Medicine.countDocuments(filter),
     ]);
 
-    res.json({
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      medicines,
-    });
+    res.json({ total, page, pages: Math.ceil(total / limit), medicines });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -140,7 +117,7 @@ export const getMedicineById = async (req, res) => {
 };
 
 // ------------------------
-// Search Medicines (dedicated search endpoint)
+// Search Medicines
 // ------------------------
 export const searchMedicines = async (req, res) => {
   try {
@@ -154,7 +131,7 @@ export const searchMedicines = async (req, res) => {
         { generic:  { $regex: q, $options: "i" } },
         { category: { $regex: q, $options: "i" } },
       ],
-      isApproved: true,   // only return approved medicines in public search
+      isApproved: true,
     })
       .select("name brand generic category description dosage requiresPrescription isCommonlyMisused image")
       .limit(20)
@@ -186,15 +163,41 @@ export const autocompleteMedicines = async (req, res) => {
       .limit(10)
       .sort({ name: 1 });
 
-    const suggestions = medicines.map(m => ({
-      _id: m._id,
-      name: m.name,
-      brand: m.brand,
-      generic: m.generic,
-    }));
+    if (medicines.length > 0) {
+      return res.json({
+        suggestions: medicines.map(m => ({
+          _id: m._id, name: m.name, brand: m.brand, generic: m.generic,
+        })),
+      });
+    }
 
-    res.json({ suggestions });
+    // Groq fallback
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `You are a medicine autocomplete assistant for a Pakistani medical app.
+Return ONLY a valid JSON array of up to 8 medicine objects.
+Each object must have exactly: "_id", "name", "brand", "generic".
+Set "_id" to null for all. Focus on medicines available in Pakistan.
+No explanation. No markdown. No extra text. Just the raw JSON array.`,
+        },
+        { role: "user", content: `Suggest medicines starting with or matching: "${q.trim()}"` },
+      ],
+      max_tokens: 400,
+      temperature: 0.2,
+    });
+
+    const text = response.choices[0]?.message?.content?.trim() || "[]";
+    const clean = text.replace(/```json|```/g, "").trim();
+    const aiSuggestions = JSON.parse(clean);
+
+    res.json({ suggestions: Array.isArray(aiSuggestions) ? aiSuggestions : [] });
+
   } catch (error) {
+    console.error("Autocomplete error:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -219,7 +222,6 @@ export const updateMedicine = async (req, res) => {
       try { return JSON.parse(val); } catch { return fallback; }
     };
 
-    // Basic Info
     medicine.name        = req.body.name        || medicine.name;
     medicine.brand       = req.body.brand       || medicine.brand;
     medicine.generic     = req.body.generic     || medicine.generic;
@@ -227,22 +229,16 @@ export const updateMedicine = async (req, res) => {
     medicine.description = req.body.description || medicine.description;
     medicine.price       = req.body.price       ?? medicine.price;
     medicine.stock       = req.body.stock       ?? medicine.stock;
-
-    // Dosage
     medicine.dosage      = req.body.dosage      || medicine.dosage;
+    medicine.barcode     = req.body.barcode     || medicine.barcode;
     medicine.dosageGuide = parseObject(req.body.dosageGuide, medicine.dosageGuide);
-
-    // Side Effects
-    medicine.sideEffects     = parseArray(req.body.sideEffects,     medicine.sideEffects);
-    medicine.longTermEffects = parseArray(req.body.longTermEffects, medicine.longTermEffects);
-
-    // Safety
+    medicine.sideEffects       = parseArray(req.body.sideEffects,       medicine.sideEffects);
+    medicine.longTermEffects   = parseArray(req.body.longTermEffects,   medicine.longTermEffects);
     medicine.contraindications = parseArray(req.body.contraindications, medicine.contraindications);
     medicine.foodInteractions  = parseArray(req.body.foodInteractions,  medicine.foodInteractions);
     medicine.drugInteractions  = parseArray(req.body.drugInteractions,  medicine.drugInteractions);
     medicine.warnings          = parseArray(req.body.warnings,          medicine.warnings);
 
-    // Classification
     if (req.body.requiresPrescription !== undefined)
       medicine.requiresPrescription = req.body.requiresPrescription === "true" || req.body.requiresPrescription === true;
     if (req.body.isCommonlyMisused !== undefined)
@@ -253,12 +249,9 @@ export const updateMedicine = async (req, res) => {
       medicine.isSuspicious = req.body.isSuspicious === "true" || req.body.isSuspicious === true;
 
     medicine.safeAlternatives = parseArray(req.body.safeAlternatives, medicine.safeAlternatives);
+    medicine.aiExplanation    = req.body.aiExplanation || medicine.aiExplanation;
+    medicine.ocrData          = req.body.ocrData       || medicine.ocrData;
 
-    // AI/OCR
-    medicine.aiExplanation = req.body.aiExplanation || medicine.aiExplanation;
-    medicine.ocrData       = req.body.ocrData       || medicine.ocrData;
-
-    // Image
     if (req.file) medicine.image = `/uploads/${req.file.originalname}`;
 
     await medicine.save();
@@ -282,7 +275,7 @@ export const deleteMedicine = async (req, res) => {
 };
 
 // ------------------------
-// Approve / Reject Medicine (Admin)
+// Approve Medicine (Admin)
 // ------------------------
 export const approveMedicine = async (req, res) => {
   try {
@@ -298,6 +291,9 @@ export const approveMedicine = async (req, res) => {
   }
 };
 
+// ------------------------
+// Reject Medicine (Admin)
+// ------------------------
 export const rejectMedicine = async (req, res) => {
   try {
     const medicine = await Medicine.findByIdAndUpdate(
@@ -311,3 +307,7 @@ export const rejectMedicine = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// ------------------------
+// Barcode Search ✅ Fixed — no dynamic import
+// ------------------------

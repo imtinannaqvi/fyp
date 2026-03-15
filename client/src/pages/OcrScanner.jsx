@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import API from "../api/axios";
 import toast from "react-hot-toast";
-import { ScanLine, Loader, CheckCircle, AlertTriangle, X, Image as ImageIcon, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ScanLine, Loader, AlertTriangle, X, Image as ImageIcon, ShieldAlert, ShieldCheck } from "lucide-react";
 import MediBot from "../components/MediBot";
 
 const OcrScanner = () => {
@@ -57,6 +57,12 @@ const OcrScanner = () => {
     }
   };
 
+  const handleReset = () => {
+    setPreview(null);
+    setFile(null);
+    setResult(null);
+  };
+
   return (
     <>
     <div className="min-h-screen bg-white">
@@ -69,15 +75,15 @@ const OcrScanner = () => {
         {/* Upload and Preview Area */}
         <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6 mb-6">
           {!preview ? (
-            <div 
+            <div
               onClick={() => fileRef.current.click()}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-all ${
-                dragActive 
-                  ? "border-blue-500 bg-blue-50" 
+                dragActive
+                  ? "border-blue-500 bg-blue-50"
                   : "border-gray-300 hover:border-blue-500 hover:bg-blue-50"
               }`}
             >
@@ -91,22 +97,22 @@ const OcrScanner = () => {
           ) : (
             <div className="space-y-4">
               <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50">
-                <img 
-                    src={preview} 
-                    alt="Preview" 
-                    className="w-full h-96 object-contain mx-auto" 
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="w-full h-96 object-contain mx-auto"
                 />
-                <button 
-                    onClick={() => {setPreview(null); setFile(null); setResult(null);}} 
-                    className="absolute top-3 right-3 p-2 bg-white hover:bg-gray-100 text-gray-700 rounded-lg shadow-md transition"
+                <button
+                  onClick={handleReset}
+                  className="absolute top-3 right-3 p-2 bg-white hover:bg-gray-100 text-gray-700 rounded-lg shadow-md transition"
                 >
-                    <X size={20}/>
+                  <X size={20} />
                 </button>
               </div>
 
               {!result && (
-                <button 
-                  onClick={handleScan} 
+                <button
+                  onClick={handleScan}
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-4 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                 >
@@ -123,66 +129,88 @@ const OcrScanner = () => {
 
         {/* Scan Results Area */}
         {result && (
-          <div className={`border-2 rounded-lg p-6 shadow-sm ${
-            result.isFake 
-            ? "bg-red-50 border-red-200" 
-            : "bg-green-50 border-green-200"
+          <div className={`border-2 rounded-lg p-6 shadow-sm mb-6 ${
+            result.isFake
+              ? "bg-red-50 border-red-200"
+              : "bg-green-50 border-green-200"
           }`}>
+            {/* Header */}
             <div className="flex items-start gap-4 mb-6">
               <div className={`p-3 rounded-lg bg-white shrink-0 ${result.isFake ? "text-red-600" : "text-green-600"}`}>
-                {result.isFake ? <ShieldAlert size={32}/> : <ShieldCheck size={32}/>}
+                {result.isFake ? <ShieldAlert size={32} /> : <ShieldCheck size={32} />}
               </div>
               <div>
                 <h2 className="font-semibold text-xl text-gray-900 mb-1">
-                    {result.isFake ? "Suspicious Product" : "Verified Authentic"}
+                  {result.isFake ? "Suspicious Product" : "Verified Authentic"}
                 </h2>
                 <p className={`text-sm ${result.isFake ? "text-red-700" : "text-green-700"}`}>
-                    {result.message}
+                  {result.message}
                 </p>
               </div>
             </div>
-            
-            {/* Stats Grid */}
+
+            {/* ── FIX: Stats Grid — use correct backend field names ── */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-               <div className="bg-white border border-gray-200 p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 font-semibold mb-1">Confidence</p>
-                  <p className="text-lg font-semibold text-gray-900">{result.confidence}%</p>
-               </div>
-               <div className="bg-white border border-gray-200 p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 font-semibold mb-1">Brand</p>
-                  <p className="text-lg font-semibold text-gray-900 truncate">{result.detectedBrand || "Unknown"}</p>
-               </div>
-               <div className="bg-white border border-gray-200 p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 font-semibold mb-1">Serial</p>
-                  <p className="text-lg font-semibold text-gray-900">{result.serialStatus || "Passed"}</p>
-               </div>
+              <div className="bg-white border border-gray-200 p-4 rounded-lg">
+                <p className="text-xs text-gray-600 font-semibold mb-1">Confidence</p>
+                <p className="text-lg font-semibold text-gray-900">{result.confidence}%</p>
+              </div>
+              <div className="bg-white border border-gray-200 p-4 rounded-lg">
+                <p className="text-xs text-gray-600 font-semibold mb-1">Matched With</p>
+                {/* backend returns matchedWith, not detectedBrand */}
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {result.matchedWith || "No match found"}
+                </p>
+              </div>
+              <div className="bg-white border border-gray-200 p-4 rounded-lg">
+                <p className="text-xs text-gray-600 font-semibold mb-1">Match Score</p>
+                {/* backend returns similarityScore (0-1), not serialStatus */}
+                <p className="text-lg font-semibold text-gray-900">
+                  {result.similarityScore != null
+                    ? (result.similarityScore * 100).toFixed(0) + "%"
+                    : "—"}
+                </p>
+              </div>
             </div>
 
+            {/* ── FIX: Show extracted text from backend ── */}
+            {result.extractedText && (
+              <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Extracted Text from Image
+                </p>
+                <p className="text-sm text-gray-700 leading-relaxed font-mono whitespace-pre-wrap break-words">
+                  {result.extractedText}
+                </p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
             <div className="flex gap-3">
-                <button 
-                    onClick={() => {setPreview(null); setFile(null); setResult(null);}}
-                    className="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-lg border-2 border-gray-300 transition"
+              <button
+                onClick={handleReset}
+                className="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-lg border-2 border-gray-300 transition"
+              >
+                Scan Another
+              </button>
+              {result.isFake && (
+                <button
+                  onClick={() => window.open('https://www.who.int/teams/regulation-prequalification/incidents-and-substandard/reporting', '_blank')}
+                  className="flex-1 bg-red-600 text-white font-medium py-3 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"
                 >
-                    Scan Another
+                  <AlertTriangle size={16} /> Report
                 </button>
-                {result.isFake && (
-                    <button 
-                        onClick={() => window.open('https://www.who.int/teams/regulation-prequalification/incidents-and-substandard/reporting', '_blank')}
-                        className="flex-1 bg-red-600 text-white font-medium py-3 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"
-                    >
-                        <AlertTriangle size={16} /> Report
-                    </button>
-                )}
+              )}
             </div>
           </div>
         )}
 
         {/* Info Box */}
         <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-5 flex gap-4">
-            <AlertTriangle className="text-amber-600 shrink-0" size={24} />
-            <p className="text-sm text-amber-800 leading-relaxed">
-                <strong>Important:</strong> This tool detects common discrepancies in packaging and labels. For complete verification, consult your pharmacist.
-            </p>
+          <AlertTriangle className="text-amber-600 shrink-0" size={24} />
+          <p className="text-sm text-amber-800 leading-relaxed">
+            <strong>Important:</strong> This tool detects common discrepancies in packaging and labels. For complete verification, consult your pharmacist.
+          </p>
         </div>
       </main>
     </div>

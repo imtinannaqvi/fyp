@@ -2,33 +2,49 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
-import { Bookmark, Loader, Trash2, ChevronRight, Pill, Calendar, Shield } from "lucide-react";
+import { Bookmark, Loader, Trash2, ChevronRight, Pill, Shield } from "lucide-react";
 import MediBot from "../../components/MediBot";
+import { useAuth } from "../../context/AuthContext";
 
 const SavedMedicines = () => {
   const [medicines, setMedicines] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]     = useState(true);
   const [hoveredId, setHoveredId] = useState(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    const fetch = async () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Redirect to login if not logged in
+    if (!user) {
+      toast.error("Please login to view saved medicines");
+      navigate("/login");
+      return;
+    }
+
+    const fetchSaved = async () => {
       try {
         const { data } = await API.get("/user/saved-medicines");
         setMedicines(data.savedMedicines || []);
-      } catch { toast.error("Failed to load"); }
-      finally { setLoading(false); }
+      } catch {
+        toast.error("Failed to load saved medicines");
+      } finally {
+        setLoading(false);
+      }
     };
-    fetch();
-  }, []);
+
+    fetchSaved();
+  }, [user]);
 
   const handleRemove = async (medicineId) => {
     try {
       await API.delete(`/user/save-medicine/${medicineId}`);
       setMedicines(prev => prev.filter(m => m.medicine?._id !== medicineId));
-      toast.success("Removed");
-    } catch { toast.error("Failed"); }
+      toast.success("Removed from saved");
+    } catch {
+      toast.error("Failed to remove");
+    }
   };
 
   if (loading) return (
@@ -43,7 +59,9 @@ const SavedMedicines = () => {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Saved Medicines</h1>
-          <p className="text-gray-600">{medicines.length} {medicines.length === 1 ? 'medicine' : 'medicines'} in your collection</p>
+          <p className="text-gray-600">
+            {medicines.length} {medicines.length === 1 ? "medicine" : "medicines"} in your collection
+          </p>
         </div>
 
         {medicines.length === 0 ? (
@@ -52,9 +70,11 @@ const SavedMedicines = () => {
               <Bookmark size={40} className="text-blue-600" strokeWidth={1.5} />
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">No Saved Medicines</h2>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">Start building your medicine collection by saving items from search results</p>
-            <button 
-              onClick={() => navigate("/search")} 
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              Start building your medicine collection by saving items from search results
+            </p>
+            <button
+              onClick={() => navigate("/search")}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-sm hover:shadow-md transition-all inline-flex items-center gap-2"
             >
               Browse Medicines <ChevronRight size={18} />
@@ -67,8 +87,8 @@ const SavedMedicines = () => {
               if (!med) return null;
               const isHovered = hoveredId === med._id;
               return (
-                <div 
-                  key={med._id} 
+                <div
+                  key={med._id}
                   onMouseEnter={() => setHoveredId(med._id)}
                   onMouseLeave={() => setHoveredId(null)}
                   className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-blue-300 transition-all duration-300 overflow-hidden"
@@ -85,7 +105,7 @@ const SavedMedicines = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3 mb-5">
                       {med.genericName && (
                         <div className="flex items-start gap-2">
@@ -93,31 +113,27 @@ const SavedMedicines = () => {
                           <span className="text-xs text-gray-700 flex-1">{med.genericName}</span>
                         </div>
                       )}
-                      
                       <div className="flex items-center gap-2">
-                        <Shield size={14} className={med.requiresPrescription ? 'text-red-600' : 'text-green-600'} />
-                        <span className={`text-xs font-semibold ${
-                          med.requiresPrescription ? 'text-red-700' : 'text-green-700'
-                        }`}>
-                          {med.requiresPrescription ? 'Prescription Required' : 'Over the Counter'}
+                        <Shield size={14} className={med.requiresPrescription ? "text-red-600" : "text-green-600"} />
+                        <span className={`text-xs font-semibold ${med.requiresPrescription ? "text-red-700" : "text-green-700"}`}>
+                          {med.requiresPrescription ? "Prescription Required" : "Over the Counter"}
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                      <button 
-                        onClick={() => navigate(`/search?q=${med.name}`)} 
+                      <button
+                        onClick={() => navigate(`/search?q=${med.name}`)}
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
                       >
-                        View Details
-                        <ChevronRight size={16} />
+                        View Details <ChevronRight size={16} />
                       </button>
-                      <button 
-                        onClick={() => handleRemove(med._id)} 
+                      <button
+                        onClick={() => handleRemove(med._id)}
                         className={`p-2.5 rounded-lg transition-all ${
-                          isHovered 
-                            ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                          isHovered
+                            ? "bg-red-50 text-red-600 hover:bg-red-100"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         <Trash2 size={18} />
