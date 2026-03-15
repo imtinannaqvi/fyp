@@ -1,24 +1,19 @@
+// routes/reminder.route.js
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import {
-  getReminders,
   createReminder,
-  updateReminder,
+  getUserReminders,
+  toggleReminder,
   deleteReminder,
-  logAdherence,
-  getAdherenceStats
 } from "../Controllers/reminder.controller.js";
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(protect);
-
-router.get("/reminders", getReminders);
-router.post("/reminders", createReminder);
-router.put("/reminders/:id", updateReminder);
-router.delete("/reminders/:id", deleteReminder);
-router.post("/reminders/:id/adherence", logAdherence);
-router.get("/reminders/stats/adherence", getAdherenceStats);
+// All routes require login
+router.post("/",            protect, createReminder);    // POST   /api/reminders
+router.get("/",             protect, getUserReminders);  // GET    /api/reminders
+router.patch("/:id/toggle", protect, toggleReminder);   // PATCH  /api/reminders/:id/toggle
+router.delete("/:id",       protect, deleteReminder);   // DELETE /api/reminders/:id
 
 export default router;

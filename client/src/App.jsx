@@ -7,6 +7,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import { MenuProvider } from "./context/MenuContext";
+import SelfMedicationAwareness from "./pages/SelfMedicationAwareness";
+import Compare from "./pages/Compare";
+import SearchAnalytics from "./pages/admin/SearchAnalytics";
 
 // Public Pages
 import Home from "./pages/Home";
@@ -25,16 +28,17 @@ import InteractionChecker from "./pages/InteractionChecker";
 import OcrScanner from "./pages/OcrScanner";
 import SymptomChecker from "./pages/SymptomChecker";
 import PrescriptionScanner from "./pages/PrescriptionScanner";
-import EmergencyContacts from "./pages/EmergencyContacts";
-import FindPharmacy from "./pages/FindPharmacy";
+// import EmergencyContacts from "./pages/EmergencyContacts";
+// import FindPharmacy from "./pages/FindPharmacy";
 import ReportFakeMedicine from "./pages/ReportFakeMedicine";
 import HealthBlog from "./pages/HealthBlog";
 import HealthCalculator from "./pages/HealthCalculator";
-import FirstAidGuide from "./pages/FirstAidGuide";
+// import FirstAidGuide from "./pages/FirstAidGuide";
 import Profile from "./pages/user/Profile";
 import SavedMedicines from "./pages/user/SavedMedicines";
 import SearchHistory from "./pages/user/SearchHistory";
 import Reminders from "./pages/user/Reminders";
+
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -72,12 +76,15 @@ function App() {
           <Route path="/ocr" element={<ProtectedRoute><OcrScanner /></ProtectedRoute>} />
           <Route path="/symptoms" element={<ProtectedRoute><SymptomChecker /></ProtectedRoute>} />
           <Route path="/prescription" element={<ProtectedRoute><PrescriptionScanner /></ProtectedRoute>} />
-          <Route path="/emergency" element={<ProtectedRoute><EmergencyContacts /></ProtectedRoute>} />
-          <Route path="/find-pharmacy" element={<ProtectedRoute><FindPharmacy /></ProtectedRoute>} />
+          {/* <Route path="/emergency" element={<ProtectedRoute><EmergencyContacts /></ProtectedRoute>} /> */}
+          {/* <Route path="/find-pharmacy" element={<ProtectedRoute><FindPharmacy /></ProtectedRoute>} /> */}
           <Route path="/report-fake" element={<ProtectedRoute><ReportFakeMedicine /></ProtectedRoute>} />
           <Route path="/health-blog" element={<ProtectedRoute><HealthBlog /></ProtectedRoute>} />
           <Route path="/health-calculator" element={<ProtectedRoute><HealthCalculator /></ProtectedRoute>} />
-          <Route path="/first-aid" element={<ProtectedRoute><FirstAidGuide /></ProtectedRoute>} />
+          <Route path="/awareness" element={<SelfMedicationAwareness />} />
+          <Route path="/compare" element={<Compare />} />
+
+          {/* <Route path="/first-aid" element={<ProtectedRoute><FirstAidGuide /></ProtectedRoute>} /> */}
 
           {/* User Account */}
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
@@ -90,7 +97,7 @@ function App() {
           <Route path="/admin/medicines" element={<AdminRoute><AdminMedicines /></AdminRoute>} />
           <Route path="/admin/add-medicine" element={<AdminRoute><AddMedicine /></AdminRoute>} />
           <Route path="/admin/ocr-history" element={<AdminRoute><OcrHistory /></AdminRoute>} />
-          
+          <Route path="/admin/search-analytics" element={<SearchAnalytics />} />
           {/* Fallback for 404 */}
           <Route path="*" element={<div className="flex items-center justify-center h-full py-20 font-bold text-gray-400">Page Not Found</div>} />
           </Routes>

@@ -154,6 +154,73 @@ export const getSearchHistory = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// ── Admin: Search Analytics ───────────────────────────────────────────────────
+// Add this to your user.controller.js
+
+export const getSearchAnalytics = async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    // Get all users with search history
+    const users = await User.find(
+      { "searchHistory.0": { $exists: true } },
+      { searchHistory: 1 }
+    );
+
+    // Flatten all searches
+    const allSearches = users.flatMap(u => u.searchHistory || []);
+
+    // Total searches
+    const totalSearches = allSearches.length;
+
+    // Recent searches — use searchedAt (not createdAt)
+    const recentSearches = allSearches.filter(s =>
+      new Date(s.searchedAt) >= since
+    ).length;
+
+    // Top searched medicines
+    const countMap = {};
+    allSearches.forEach(s => {
+      const q = s.query?.toLowerCase()?.trim();
+      if (q) countMap[q] = (countMap[q] || 0) + 1;
+    });
+
+    const topSearches = Object.entries(countMap)
+      .map(([query, count]) => ({ query, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Daily trend — use searchedAt
+    const trendMap = {};
+    allSearches.forEach(s => {
+      const date = new Date(s.searchedAt).toISOString().split("T")[0];
+      if (date && date !== "Invalid Date")
+        trendMap[date] = (trendMap[date] || 0) + 1;
+    });
+
+    const filledTrend = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      filledTrend.push({ date: key, count: trendMap[key] || 0 });
+    }
+
+    res.json({
+      success: true,
+      totalSearches,
+      recentSearches,
+      uniqueUsers: users.length,
+      topSearches,
+      dailyTrend: filledTrend,
+    });
+  } catch (error) {
+    console.error("Search analytics error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // ── Clear Search History ──────────────────────────────────────────────────────
 export const clearSearchHistory = async (req, res) => {

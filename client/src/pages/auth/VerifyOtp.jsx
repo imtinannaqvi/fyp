@@ -39,8 +39,7 @@ const VerifyOtp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 md:p-10 border border-white/50 text-center">
+<div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center px-6">      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 md:p-10 border border-white/50 text-center">
         <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600">
           <ShieldCheck size={32} />
         </div>

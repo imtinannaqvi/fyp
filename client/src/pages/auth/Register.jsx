@@ -2,108 +2,165 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
-import { UserPlus, User, Mail, Lock, Loader } from "lucide-react";
+import { User, Mail, Lock, Loader, Eye, EyeOff } from "lucide-react";
 
 const Register = () => {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+
+  const [form,setForm] = useState({
+    name:"",
+    email:"",
+    password:""
+  });
+
+  const [showPass,setShowPass] = useState(false);
+  const [loading,setLoading] = useState(false);
+
   const navigate = useNavigate();
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e)=>{
+    setForm({...form,[e.target.name]:e.target.value});
+  };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async(e)=>{
     e.preventDefault();
+
+    if(form.password.length < 6){
+      return toast.error("Password must be at least 6 characters");
+    }
+
     setLoading(true);
-    try {
-      await API.post("/auth/register", form);
-      toast.success("Account created! Verify your email.");
-      navigate("/verify-otp", { state: { email: form.email } });
-    } catch (err) {
+
+    try{
+
+      await API.post("/auth/register",form);
+
+      toast.success("Account created!");
+
+      navigate("/verify-otp",{state:{email:form.email}});
+
+    }catch(err){
       toast.error(err.response?.data?.message || "Registration failed");
-    } finally {
+    }finally{
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 md:p-10 border border-white/50">
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
-            <UserPlus className="text-white" size={28} />
+
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center px-6">
+
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-10 border border-blue-100">
+
+        <div className="text-center mb-8">
+
+          <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-xl">MG</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Join Medico</h1>
-          <p className="text-gray-500 text-sm mt-2">Start your health journey today</p>
+
+          <h1 className="text-3xl font-bold text-gray-900">
+            Create Account
+          </h1>
+
+          <p className="text-gray-500 text-sm mt-2">
+            Join MedicoGuidance
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Full Name</label>
-            <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+
+          <div>
+            <label className="text-sm font-semibold text-gray-700">
+              Full Name
+            </label>
+
+            <div className="relative mt-1">
+              <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"/>
+
               <input
                 type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="John Doe"
                 required
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                placeholder="John Doe"
+                className="w-full border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <div>
+            <label className="text-sm font-semibold text-gray-700">
+              Email
+            </label>
+
+            <div className="relative mt-1">
+              <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"/>
+
               <input
                 type="email"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="name@example.com"
                 required
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                placeholder="name@example.com"
+                className="w-full border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <div>
+            <label className="text-sm font-semibold text-gray-700">
+              Password
+            </label>
+
+            <div className="relative mt-1">
+
+              <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"/>
+
               <input
-                type="password"
+                type={showPass ? "text":"password"}
                 name="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="Min. 6 characters"
                 required
-                minLength={6}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                placeholder="Minimum 6 characters"
+                className="w-full border border-gray-200 rounded-xl pl-11 pr-11 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
+
+              <button
+                type="button"
+                onClick={()=>setShowPass(!showPass)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              >
+                {showPass ? <EyeOff size={18}/> : <Eye size={18}/>}
+              </button>
+
             </div>
           </div>
 
           <button
-            type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 disabled:opacity-70 mt-2"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition"
           >
-            {loading ? <Loader className="animate-spin" size={20} /> : "Create Account"}
+            {loading ? (
+              <>
+                <Loader className="animate-spin" size={18}/>
+                Creating...
+              </>
+            ) : "Create Account"}
           </button>
+
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-          <p className="text-sm text-gray-500">
-            Already have an account?{" "}
-            <Link to="/login" className="text-indigo-600 font-bold hover:text-indigo-700 underline underline-offset-4">
-              Login here
-            </Link>
-          </p>
-        </div>
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-600 font-semibold">
+            Login
+          </Link>
+        </p>
+
       </div>
+
     </div>
   );
 };
