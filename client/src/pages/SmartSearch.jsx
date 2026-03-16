@@ -6,10 +6,12 @@ import { Search, AlertTriangle, Loader, Inbox, Database } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MedicineCard from "../components/MedicineCard";
 import MediBot from "../components/MediBot";
+import { useTheme } from "../context/ThemeContext";
 
 const SmartSearch = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
+  const { isDark } = useTheme();
 
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [results, setResults] = useState(null);
@@ -136,13 +138,13 @@ const SmartSearch = () => {
     <>
       <div className="min-h-screen bg-gray-50">
         {/* Search Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 md:top-16 z-10 shadow-sm">
+        <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderBottom: isDark ? '1px solid #334155' : '1px solid #e5e7eb' }} className="sticky top-0 md:top-16 z-10 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 py-6">
             <h1 className="text-xl font-semibold text-gray-900 mb-4">Medicine Information Search</h1>
             <form onSubmit={handleSearch} className="relative">
               <div className="flex gap-3">
                 <div ref={dropdownRef} className="flex-1 relative">
-                  <div className="flex items-center gap-3 bg-white border-2 border-gray-300 rounded-lg px-4 py-3 shadow-sm hover:border-blue-400 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all duration-200">
+                  <div style={{ backgroundColor: isDark ? '#0f172a' : '#ffffff', borderColor: isDark ? '#475569' : '#d1d5db' }} className="flex items-center gap-3 border-2 rounded-lg px-4 py-3 shadow-sm transition-all duration-200">
                     <Search size={20} className="text-blue-500" />
                     <input
                       type="text"
@@ -150,7 +152,8 @@ const SmartSearch = () => {
                       onChange={handleInputChange}
                       onFocus={() => query && suggestions.length > 0 && setShowDropdown(true)}
                       placeholder="Enter medicine name (brand or generic)..."
-                      className="flex-1 text-sm bg-transparent focus:outline-none text-gray-900 placeholder:text-gray-400"
+                      style={{ backgroundColor: 'transparent', color: isDark ? '#f1f5f9' : '#111827', outline: 'none', border: 'none' }}
+                      className="hero-search-input flex-1 text-sm placeholder:text-gray-400"
                     />
                     {/* ✅ Clear button */}
                     {query && (

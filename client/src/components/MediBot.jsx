@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import {
   X, Heart, ArrowRight,
-  Send, Loader, User, RotateCcw
+  Send, Loader, User, RotateCcw, Bot
 } from "lucide-react";
 
 const ROBOT_IMG = "https://cdn-icons-png.flaticon.com/512/4711/4711987.png";
@@ -30,17 +30,11 @@ const parseMessage = (text) => {
 
 const RobotAvatar = ({ size = "sm" }) => {
   const dim = size === "sm" ? "w-7 h-7" : "w-10 h-10";
+  const iconSize = size === "sm" ? 16 : 20;
   return (
-    <div className={`${dim} rounded-xl bg-gray-900 flex items-center justify-center shrink-0 overflow-hidden`}>
-      <img
-        src={ROBOT_IMG}
-        alt="MediBot"
-        className="w-full h-full object-cover p-0.5"
-        onError={(e) => {
-          e.target.style.display = "none";
-          e.target.parentNode.innerHTML = '<span style="font-size:16px">🤖</span>';
-        }}
-      />
+    <div className={`${dim} rounded-xl flex items-center justify-center shrink-0`}
+      style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>
+      <Bot size={iconSize} className="text-white" />
     </div>
   );
 };
@@ -128,7 +122,7 @@ const MediBot = () => {
         .medibot-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
       `}</style>
 
-      <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end gap-2">
+      <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[60] flex flex-col items-end gap-2">
 
         {!open && (
           <div className="bg-white border border-gray-200 shadow-lg rounded-xl px-3 py-2 text-[10px] md:text-xs font-medium text-gray-600 mr-1 mb-1 animate-bounce flex items-center gap-1"
@@ -143,10 +137,9 @@ const MediBot = () => {
 
             <div className="bg-gray-900 px-4 py-3 flex items-center justify-between rounded-t-2xl shrink-0">
               <div className="flex items-center gap-2.5 text-white">
-                <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden border border-white/20">
-                  <img src={ROBOT_IMG} alt="MediBot" className="w-8 h-8 object-contain"
-                    onError={(e) => { e.target.style.display = "none"; e.target.parentNode.innerHTML = '<span style="font-size:20px">🤖</span>'; }}
-                  />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>
+                  <Bot size={20} className="text-white" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm leading-tight">MediBot</p>
@@ -208,18 +201,11 @@ const MediBot = () => {
           </div>
         )}
 
-        {/* ── Toggle button: ALWAYS shows robot, never X ── */}
+        {/* ── Toggle button ── */}
         <button onClick={() => setOpen(!open)}
-          className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gray-900 hover:bg-blue-600 shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 relative overflow-hidden">
-          <img
-            src={ROBOT_IMG}
-            alt="MediBot"
-            className="w-8 h-8 md:w-9 md:h-9 object-contain"
-            onError={(e) => {
-              e.target.style.display = "none";
-              e.target.parentNode.innerHTML += '<span style="font-size:22px">🤖</span>';
-            }}
-          />
+          className="w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 relative"
+          style={{ background: open ? 'linear-gradient(135deg, #000000, #000000)' : 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>
+          <Bot size={26} className="text-white" />
           {!open && (
             <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white">
               <span className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75" />

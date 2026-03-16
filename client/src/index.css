@@ -1,32 +1,115 @@
 @import "tailwindcss";
 
-/* ── Dark mode variant ───────────────────────────────────────────────────────── */
+/* Dark mode variant */
 @variant dark (&:where(.dark, .dark *));
-/* ── Dark mode CSS variables ─────────────────────────────────────────────────── */
+
+/* Base transitions - no lag */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Light mode */
 :root {
-  --bg-primary:    #ffffff;
-  --bg-secondary:  #f9fafb;
-  --text-primary:  #111827;
-  --text-secondary:#6b7280;
-  --border-color:  #e5e7eb;
+  color-scheme: light;
 }
 
+/* Dark mode - black background, white/blue text */
 .dark {
-  --bg-primary:    #0f172a;
-  --bg-secondary:  #1e293b;
-  --text-primary:  #f1f5f9;
-  --text-secondary:#94a3b8;
-  --border-color:  #334155;
+  color-scheme: dark;
 }
 
-/* ── Apply dark background to body ──────────────────────────────────────────── */
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+.dark body {
+  background-color: #0a0a0a;
+  color: #f1f5f9;
 }
 
-/* ── Animations ──────────────────────────────────────────────────────────────── */
+
+/* Dark mode - all white backgrounds become dark */
+.dark .bg-white {
+  background-color: #111827 !important;
+}
+
+/* Dark mode - fix gradient page backgrounds (only min-h-screen wrappers) */
+.dark .min-h-screen.bg-gradient-to-br,
+.dark .min-h-screen.bg-gradient-to-b {
+  background: #0f172a !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #1e293b !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: #334155 !important;
+}
+
+/* Dark mode - text colors */
+.dark .text-gray-900 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-gray-800 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-gray-700 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-gray-500 {
+  color: #64748b !important;
+}
+
+/* Dark mode - borders */
+.dark .border-gray-100 {
+  border-color: #1e293b !important;
+}
+
+.dark .border-gray-200 {
+  border-color: #334155 !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #475569 !important;
+}
+
+/* Dark mode - inputs */
+.dark input:not(.hero-search-input), .dark textarea, .dark select {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Dark mode - cards/panels */
+.dark .shadow-sm, .dark .shadow-md, .dark .shadow-lg {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+}
+
+/* Dark mode - keep colored icon backgrounds as-is */
+.dark .bg-blue-100 { background-color: #dbeafe !important; }
+.dark .bg-blue-50  { background-color: #eff6ff !important; }
+.dark .bg-red-100  { background-color: #fee2e2 !important; }
+.dark .bg-red-50   { background-color: #fff1f2 !important; }
+.dark .bg-green-100 { background-color: #dcfce7 !important; }
+.dark .bg-green-50  { background-color: #f0fdf4 !important; }
+.dark .bg-amber-100 { background-color: #fef3c7 !important; }
+.dark .bg-amber-50  { background-color: #fffbeb !important; }
+.dark .bg-purple-100 { background-color: #f3e8ff !important; }
+.dark .bg-orange-100 { background-color: #ffedd5 !important; }
+
+/* Animations */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }

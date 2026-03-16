@@ -159,7 +159,7 @@ const MedicineSearchBox = ({ label, medicine, onSelect, onClear, color }) => {
             value={query}
             onChange={handleInput}
             placeholder="Search medicine..."
-            className="flex-1 text-sm outline-none bg-transparent"
+            className="flex-1 text-sm outline-none bg-transparent placeholder-gray-900 text-gray-900"
           />
           {(searching || loading) && <Loader size={14} className="animate-spin text-gray-400 shrink-0" />}
         </div>
