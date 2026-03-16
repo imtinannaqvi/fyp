@@ -9,6 +9,7 @@ import {
   ShieldAlert, 
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import { useTheme } from "../context/ThemeContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -61,9 +62,11 @@ const Navbar = () => {
     { label: "Reminders",       path: "/reminders", icon: <Bell size={14} /> },
   ];
 
+  const { isDark } = useTheme();
+
   return (
     <>
-      <nav className={`sticky top-0 z-50 bg-white dark:bg-slate-900 transition-shadow duration-300 ${scrolled ? "shadow-lg" : "shadow-md"}`}>
+      <nav style={{ backgroundColor: isDark ? '#111827' : '#ffffff', borderBottom: isDark ? '1px solid #1f2937' : '1px solid #e5e7eb', boxShadow: scrolled ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none' }} className="sticky top-0 z-50 transition-shadow duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="h-16 sm:h-20 flex items-center justify-between gap-4 sm:gap-8">
 
@@ -74,7 +77,7 @@ const Navbar = () => {
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
                 </svg>
               </div>
-              <span className="font-extrabold text-gray-900 dark:text-white text-lg sm:text-xl tracking-tight">
+              <span style={{ color: isDark ? '#ffffff' : '#111827' }} className="font-extrabold text-lg sm:text-xl tracking-tight">
                 Medico<span className="text-blue-600">Guidance</span>
               </span>
             </Link>
@@ -83,10 +86,13 @@ const Navbar = () => {
             <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
               {navLinks.map((link) => (
                 <Link key={link.path} to={link.path}
+                  style={!isActive(link.path) ? { color: isDark ? '#e2e8f0' : '#374151' } : {}}
                   className={`flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-semibold transition-all ${
                     isActive(link.path)
                       ? "text-white bg-blue-600 shadow-md"
-                      : "text-gray-700 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800"
+                      : isDark
+                        ? "hover:text-white hover:bg-slate-700"
+                        : "hover:text-blue-600 hover:bg-blue-50"
                   }`}>
                   {link.icon} {link.label}
                 </Link>
@@ -99,14 +105,17 @@ const Navbar = () => {
               {user ? (
                 <div className="relative">
                   <button onClick={() => setUserDropdown(!userDropdown)}
-                    className={`flex items-center gap-2 h-11 pl-3 pr-4 rounded-xl text-sm font-semibold transition-all ${
-                      userDropdown
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"
-                    }`}>
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
-                      userDropdown ? "bg-white text-blue-600" : "bg-blue-600 text-white"
-                    }`}>
+                    style={userDropdown
+                      ? { backgroundColor: '#2563eb', color: '#ffffff', border: 'none' }
+                      : isDark
+                        ? { backgroundColor: '#1e293b', color: '#e2e8f0', border: '1px solid #334155' }
+                        : { backgroundColor: '#eff6ff', color: '#374151', border: '1px solid #dbeafe' }
+                    }
+                    className="flex items-center gap-2 h-11 pl-3 pr-4 rounded-xl text-sm font-semibold transition-all">
+                    <div style={userDropdown
+                      ? { backgroundColor: '#ffffff', color: '#2563eb' }
+                      : { backgroundColor: '#2563eb', color: '#ffffff' }
+                    } className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold shrink-0">
                       {user.name?.charAt(0).toUpperCase()}
                     </div>
                     <span className="max-w-[80px] truncate">{user.name?.split(" ")[0]}</span>
@@ -117,10 +126,10 @@ const Navbar = () => {
                   </button>
 
                   {userDropdown && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 py-2 z-50">
-                      <div className="px-4 py-3 bg-blue-50 dark:bg-slate-700 mx-2 rounded-xl mb-2">
-                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{user.email}</p>
+                    <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#334155' : '#f3f4f6' }} className="absolute right-0 top-full mt-2 w-64 rounded-2xl shadow-2xl border py-2 z-50">
+                      <div style={{ backgroundColor: isDark ? '#334155' : '#eff6ff' }} className="px-4 py-3 mx-2 rounded-xl mb-2">
+                        <p style={{ color: isDark ? '#ffffff' : '#111827' }} className="text-sm font-bold truncate">{user.name}</p>
+                        <p style={{ color: isDark ? '#94a3b8' : '#6b7280' }} className="text-xs truncate">{user.email}</p>
                       </div>
                       {user.role === "admin" && (
                         <div className="px-2 mb-1">
@@ -133,14 +142,14 @@ const Navbar = () => {
                       <div className="px-2">
                         {userMenuItems.map((item) => (
                           <Link key={item.path} to={item.path} onClick={() => setUserDropdown(false)}
-                            className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-xl transition">
+                            className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition">
                             {item.icon} {item.label}
                           </Link>
                         ))}
                       </div>
-                      <div className="border-t border-gray-100 dark:border-slate-700 mt-1 pt-1 px-2">
+                      <div style={{ borderColor: isDark ? '#334155' : '#f3f4f6' }} className="border-t mt-1 pt-1 px-2">
                         <button onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition">
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition">
                           <LogOut size={16} /> Sign Out
                         </button>
                       </div>
@@ -149,7 +158,7 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Link to="/login" className="text-sm font-bold text-gray-700 dark:text-slate-300 hover:text-blue-600 px-4 py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 transition">Sign In</Link>
+                  <Link to="/login" className="text-sm font-bold text-gray-600 hover:text-blue-600 px-4 py-2.5 rounded-xl hover:bg-blue-50 border border-gray-200 transition">Sign In</Link>
                   <Link to="/register" className="text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl shadow-md transition">Get Started</Link>
                 </div>
               )}
@@ -159,23 +168,26 @@ const Navbar = () => {
             <div className="md:hidden flex items-center gap-2 shrink-0">
               <ThemeToggle />
               <button
-                className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition"
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 transition"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
-                {isMenuOpen ? <X size={20} className="text-gray-700 dark:text-slate-300" /> : <Menu size={20} className="text-gray-700 dark:text-slate-300" />}
+                {isMenuOpen ? <X size={20} className="text-gray-700" /> : <Menu size={20} className="text-gray-700" />}
               </button>
             </div>
           </div>
         </div>
 
         {/* Secondary Bar - Desktop */}
-        <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800">
+        <div style={{ background: 'linear-gradient(to right, #2563eb, #1d4ed8, #1e40af)' }}>
           <div className="max-w-7xl mx-auto px-6">
             <div className="hidden md:flex items-center justify-center gap-1 py-2.5">
               {secondaryLinks.map((link) => (
                 <Link key={link.path} to={link.path}
+                  style={isActive(link.path) ? { backgroundColor: '#ffffff', color: '#1d4ed8' } : {}}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold transition-all ${
-                    isActive(link.path) ? "bg-white text-blue-700" : "text-white/90 hover:text-white hover:bg-white/10"
+                    isActive(link.path)
+                      ? ""
+                      : "text-white/90 hover:text-white hover:bg-white/10"
                   }`}>
                   {link.icon}
                   <span className="text-xs font-bold">{link.label}</span>
@@ -187,19 +199,19 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-700 shadow-lg max-h-[80vh] overflow-y-auto">
+          <div style={{ backgroundColor: isDark ? '#0f172a' : '#ffffff', borderTop: isDark ? '1px solid #334155' : '1px solid #f3f4f6' }} className="md:hidden shadow-lg max-h-[80vh] overflow-y-auto">
             <div className="px-4 py-5 space-y-5">
 
               {/* User Info */}
               {user && (
-                <div className="bg-blue-50 dark:bg-slate-800 rounded-2xl p-4 border border-blue-100 dark:border-slate-700">
+                <div style={{ backgroundColor: isDark ? '#1e293b' : '#eff6ff', borderColor: isDark ? '#334155' : '#dbeafe' }} className="rounded-2xl p-4 border">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 bg-blue-600 rounded-xl flex items-center justify-center text-white text-base font-bold shrink-0">
                       {user.name?.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{user.email}</p>
+                      <p style={{ color: isDark ? '#ffffff' : '#111827' }} className="text-sm font-bold truncate">{user.name}</p>
+                      <p style={{ color: isDark ? '#94a3b8' : '#6b7280' }} className="text-xs truncate">{user.email}</p>
                     </div>
                   </div>
                 </div>
@@ -207,14 +219,14 @@ const Navbar = () => {
 
               {/* Navigation */}
               <div>
-                <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">Navigation</p>
+                <p style={{ color: isDark ? '#64748b' : '#9ca3af' }} className="text-xs font-bold uppercase tracking-wider mb-2">Navigation</p>
                 <div className="grid grid-cols-2 gap-1">
                   {navLinks.map((link) => (
                     <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)}
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                         isActive(link.path)
                           ? "text-white bg-blue-600"
-                          : "text-gray-700 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800"
+                          : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                       }`}>
                       {link.icon} {link.label}
                     </Link>
@@ -224,14 +236,14 @@ const Navbar = () => {
 
               {/* Quick Access */}
               <div>
-                <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">Quick Access</p>
+                <p style={{ color: isDark ? '#64748b' : '#9ca3af' }} className="text-xs font-bold uppercase tracking-wider mb-2">Quick Access</p>
                 <div className="grid grid-cols-2 gap-1">
                   {secondaryLinks.map((link) => (
                     <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)}
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                         isActive(link.path)
                           ? "text-white bg-blue-600"
-                          : "text-gray-700 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 bg-gray-50 dark:bg-slate-800"
+                          : "text-gray-700 hover:text-blue-600 hover:bg-blue-50 bg-gray-50"
                       }`}>
                       {link.icon}
                       <span className="truncate">{link.label}</span>
@@ -243,11 +255,11 @@ const Navbar = () => {
               {/* Account */}
               {user && (
                 <div>
-                  <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">Account</p>
+                  <p style={{ color: isDark ? '#64748b' : '#9ca3af' }} className="text-xs font-bold uppercase tracking-wider mb-2">Account</p>
                   <div className="grid grid-cols-2 gap-1">
                     {userMenuItems.map((item) => (
                       <Link key={item.path} to={item.path} onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-xl transition-all">
+                        className="flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
                         {item.icon} {item.label}
                       </Link>
                     ))}
@@ -270,7 +282,7 @@ const Navbar = () => {
               ) : (
                 <div className="space-y-2">
                   <Link to="/login" onClick={() => setIsMenuOpen(false)}
-                    className="w-full flex items-center justify-center text-sm font-bold bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 py-3 rounded-xl hover:bg-gray-50 transition">
+                    className="w-full flex items-center justify-center text-sm font-bold bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl hover:bg-gray-50 transition">
                     Sign In
                   </Link>
                   <Link to="/register" onClick={() => setIsMenuOpen(false)}

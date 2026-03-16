@@ -3,6 +3,7 @@ import API from "../api/axios";
 import toast from "react-hot-toast";
 import { ScanLine, Loader, AlertTriangle, X, Image as ImageIcon, ShieldAlert, ShieldCheck } from "lucide-react";
 import MediBot from "../components/MediBot";
+import { useTheme } from "../context/ThemeContext";
 
 const OcrScanner = () => {
   const [file, setFile] = useState(null);
@@ -11,6 +12,8 @@ const OcrScanner = () => {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileRef = useRef();
+
+  const { isDark } = useTheme();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -65,7 +68,7 @@ const OcrScanner = () => {
 
   return (
     <>
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: isDark ? '#0f172a' : '#ffffff' }}>
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Medicine Verification Scanner</h1>
@@ -73,7 +76,7 @@ const OcrScanner = () => {
         </div>
 
         {/* Upload and Preview Area */}
-        <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6 mb-6">
+        <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#334155' : '#e5e7eb' }} className="border-2 rounded-lg shadow-sm p-6 mb-6">
           {!preview ? (
             <div
               onClick={() => fileRef.current.click()}
@@ -81,17 +84,19 @@ const OcrScanner = () => {
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-all ${
-                dragActive
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-300 hover:border-blue-500 hover:bg-blue-50"
-              }`}
+              style={{
+                backgroundColor: dragActive
+                  ? (isDark ? '#1e3a5f' : '#eff6ff')
+                  : (isDark ? '#0f172a' : '#ffffff'),
+                borderColor: dragActive ? '#3b82f6' : (isDark ? '#475569' : '#d1d5db')
+              }}
+              className="border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-all"
             >
-              <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <ImageIcon size={32} className="text-gray-400" />
+              <div style={{ backgroundColor: isDark ? '#334155' : '#f3f4f6' }} className="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <ImageIcon size={32} style={{ color: isDark ? '#94a3b8' : '#9ca3af' }} />
               </div>
-              <p className="font-semibold text-gray-900 mb-1">Click or drag to upload image</p>
-              <p className="text-sm text-gray-600">Take a clear photo of the medicine packaging</p>
+              <p style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="font-semibold mb-1">Click or drag to upload image</p>
+              <p style={{ color: isDark ? '#94a3b8' : '#4b5563' }} className="text-sm">Take a clear photo of the medicine packaging</p>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
             </div>
           ) : (

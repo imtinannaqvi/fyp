@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, ArrowRight, X, ShieldAlert, Star, ChevronRight, Zap, ScanLine, FileText, Stethoscope, Heart, AlertTriangle, Pill, Activity, Camera, ClipboardList, Calculator } from "lucide-react";
 import { useMenu } from "../context/MenuContext";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const features = [
   { icon: <Search size={32} />, title: "Smart Medicine Search",     desc: "Full details, dosage, side effects and AI explanation instantly.", link: "/search" },
@@ -70,6 +71,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { isMenuOpen } = useMenu();
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const [query, setQuery] = useState("");
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [hoveredRisk, setHoveredRisk] = useState(null);
@@ -120,19 +122,19 @@ const Home = () => {
         .stagger-1 { animation-delay: 0.1s; opacity: 0; }
         .stagger-2 { animation-delay: 0.2s; opacity: 0; }
         .stagger-3 { animation-delay: 0.3s; opacity: 0; }
-        .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+        .hero-search-input { background-color: transparent !important; color: #111827 !important; border: none !important; outline: none !important; }
       `}</style>
 
       <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
 
         {showSticky && !isMenuOpen && (
           <div className="fixed top-20 left-0 right-0 z-[60] bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg px-4 py-4 animate-slideDown">
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex items-center gap-2 bg-white rounded-xl p-1.5 shadow-lg">
+            <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex items-center gap-2 rounded-xl p-1.5 shadow-lg" style={{ backgroundColor: '#ffffff' }}>
               <div className="flex items-center flex-1 px-3">
-                <Search size={18} className="text-gray-400 shrink-0" />
-                <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search medicine..." className="w-full text-sm text-gray-900 placeholder-gray-400 focus:outline-none bg-transparent py-2.5 px-3" />
+                <Search size={18} style={{ color: '#9ca3af' }} className="shrink-0" />
+                <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search medicine..." style={{ backgroundColor: 'transparent', color: '#111827', outline: 'none', border: 'none' }} className="hero-search-input w-full text-sm placeholder-gray-400 py-2.5 px-3" />
               </div>
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-8 py-2.5 rounded-lg transition-all">Search</button>
+              <button type="submit" style={{ backgroundColor: '#2563eb', color: '#ffffff' }} className="font-semibold text-sm px-8 py-2.5 rounded-lg transition-all hover:opacity-90">Search</button>
             </form>
           </div>
         )}
@@ -154,12 +156,12 @@ const Home = () => {
                 Search any medicine, check interactions, scan prescriptions and detect fake medicines — powered by Groq AI.
               </p>
 
-              <form onSubmit={handleSearch} className="fade-up stagger-4 flex flex-col sm:flex-row items-center gap-2 bg-white/10 sm:bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl p-2 sm:p-1.5 focus-within:bg-white/20 transition-all mb-4 max-w-md mx-auto lg:mx-0">
+              <form onSubmit={handleSearch} className="fade-up stagger-4 flex flex-col sm:flex-row items-center gap-2 rounded-2xl p-2 sm:p-1.5 transition-all mb-4 max-w-md mx-auto lg:mx-0" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center w-full px-2">
-                  <Search size={18} className="text-white/60 shrink-0" />
-                  <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search Panadol, Brufen..." className="w-full text-sm text-white placeholder-white/50 focus:outline-none bg-transparent py-3 px-3" />
+                  <Search size={18} style={{ color: '#9ca3af' }} className="shrink-0" />
+                  <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search Panadol, Brufen..." style={{ backgroundColor: 'transparent', color: '#111827', outline: 'none', border: 'none' }} className="hero-search-input w-full text-sm py-3 px-3" />
                 </div>
-                <button type="submit" className="w-full sm:w-auto bg-white text-blue-700 hover:bg-blue-50 font-bold text-sm px-8 py-3 rounded-xl transition-all shrink-0 shadow-lg">Search</button>
+                <button type="submit" style={{ backgroundColor: '#2563eb', color: '#ffffff' }} className="w-full sm:w-auto font-bold text-sm px-8 py-3 rounded-xl transition-all shrink-0 shadow-lg hover:opacity-90">Search</button>
               </form>
 
               <div className="fade-up stagger-4 flex flex-wrap justify-center lg:justify-start gap-2">
@@ -340,12 +342,15 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+            <div style={{
+                backgroundColor: isDark ? '#2d1515' : '#fff1f2',
+                borderColor: isDark ? '#7f1d1d' : '#fecaca'
+              }} className="border-2 rounded-lg p-6">
               <div className="flex items-start gap-4">
-                <ShieldAlert size={24} className="text-red-600 shrink-0" />
+                <ShieldAlert size={24} className="text-red-500 shrink-0" />
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-2">Warning: Counterfeit Medicines</h3>
-                  <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                  <h3 style={{ color: isDark ? '#fca5a5' : '#111827' }} className="font-bold mb-2">Warning: Counterfeit Medicines</h3>
+                  <p style={{ color: isDark ? '#fca5a5' : '#374151' }} className="text-sm leading-relaxed mb-3">
                     Pakistan faces a serious issue with fake medicines. Always purchase from licensed pharmacies and verify packaging authenticity. Use our Fake Medicine Detector to scan suspicious products.
                   </p>
                   <button 
@@ -367,7 +372,7 @@ const Home = () => {
               <h2 className="text-3xl md:text-5xl font-black text-white mb-6">Ready to Stay Safe?</h2>
               <p className="text-blue-100 mb-10 text-sm md:text-base max-w-xl mx-auto">Join thousands of users making safer healthcare choices with AI. Start searching now.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button onClick={() => navigate("/search")} className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-black text-sm hover:shadow-2xl transition-all">Search Medicine</button>
+                <button onClick={() => navigate("/search")} style={{ backgroundColor: '#ffffff', color: '#1d4ed8' }} className="px-8 py-4 rounded-2xl font-black text-sm hover:shadow-2xl transition-all">Search Medicine</button>
                 {!user && (
                   <button onClick={() => navigate("/register")} className="bg-white/10 border border-white/20 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-white/20 transition-all">Create Free Account</button>
                 )}

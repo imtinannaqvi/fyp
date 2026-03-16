@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { AlertTriangle, Shield, CheckCircle, XCircle, RotateCcw } from "lucide-react";
+import { AlertTriangle, Shield, CheckCircle, XCircle, RotateCcw, Search, Brain, Heart, Pill, Moon, Users, RefreshCw, ShoppingBag, Smartphone, Activity, Stethoscope, Syringe, FlaskConical, Zap, Clock, Bell, TrendingUp, Trophy, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 
 const stats = [
   { value: "78%", label: "Pakistanis self-medicate without consulting a doctor", source: "WHO Pakistan Report" },
@@ -12,21 +13,21 @@ const stats = [
 ];
 
 const risks = [
-  { icon: "🫀", title: "Heart & Blood Pressure", desc: "NSAIDs like Ibuprofen and Aspirin raise blood pressure and increase heart attack risk with unsupervised long-term use." },
-  { icon: "🫁", title: "Kidney Damage", desc: "Regular use of Brufen and Ponstan without guidance slowly damages kidney function, leading to chronic kidney disease." },
-  { icon: "🧫", title: "Liver Toxicity", desc: "Exceeding Paracetamol (Panadol) safe limits causes severe liver damage — a leading cause of liver failure in Pakistan." },
-  { icon: "🦠", title: "Antibiotic Resistance", desc: "Taking Amoxicillin or Ciprofloxacin without a prescription makes bacteria resistant, making future infections untreatable." },
-  { icon: "🧠", title: "Mental Health & Addiction", desc: "Misusing sleeping tablets and sedatives like Alprazolam (Xanax) leads to dependency, memory loss, and withdrawal." },
-  { icon: "🫃", title: "Stomach Ulcers", desc: "Long-term unsupervised pain medicines damage the stomach lining, causing ulcers and dangerous internal bleeding." },
+  { icon: <Heart size={28} className="text-red-500" />,      title: "Heart & Blood Pressure",  desc: "NSAIDs like Ibuprofen and Aspirin raise blood pressure and increase heart attack risk with unsupervised long-term use." },
+  { icon: <Activity size={28} className="text-orange-500" />, title: "Kidney Damage",             desc: "Regular use of Brufen and Ponstan without guidance slowly damages kidney function, leading to chronic kidney disease." },
+  { icon: <FlaskConical size={28} className="text-yellow-500" />, title: "Liver Toxicity",        desc: "Exceeding Paracetamol (Panadol) safe limits causes severe liver damage — a leading cause of liver failure in Pakistan." },
+  { icon: <Zap size={28} className="text-purple-500" />,      title: "Antibiotic Resistance",    desc: "Taking Amoxicillin or Ciprofloxacin without a prescription makes bacteria resistant, making future infections untreatable." },
+  { icon: <Brain size={28} className="text-blue-500" />,      title: "Mental Health & Addiction", desc: "Misusing sleeping tablets and sedatives like Alprazolam (Xanax) leads to dependency, memory loss, and withdrawal." },
+  { icon: <AlertTriangle size={28} className="text-red-400" />, title: "Stomach Ulcers",          desc: "Long-term unsupervised pain medicines damage the stomach lining, causing ulcers and dangerous internal bleeding." },
 ];
 
 const categories = [
-  { name: "Antibiotics",           emoji: "🦠", risk: "Critical",     examples: "Amoxicillin, Ciprofloxacin, Flagyl, Augmentin", desc: "Most misused class of medicine in Pakistan. Never take without a culture test and prescription. Incomplete courses create superbugs." },
-  { name: "Painkillers (NSAIDs)",  emoji: "💊", risk: "High",         examples: "Brufen, Ponstan, Aspirin, Diclofenac",           desc: "Taken daily by millions for pain without supervision. Causes stomach ulcers, kidney damage, and cardiovascular issues over time." },
-  { name: "Paracetamol",           emoji: "🟡", risk: "Moderate",     examples: "Panadol, Calpol, Panadol Extra",                 desc: "Considered 'safe' but overdose is the #1 cause of acute liver failure. Never exceed 4g/day. Dangerous with alcohol." },
-  { name: "Sedatives & Sleeping",  emoji: "😴", risk: "Critical",     examples: "Alprazolam (Xanax), Diazepam, Clonazepam",      desc: "Highly addictive. Freely available in Pakistan despite being controlled substances. Causes severe withdrawal and brain damage." },
-  { name: "Antacids & Gastric",    emoji: "🫃", risk: "Low-Moderate", examples: "Omeprazole, Gaviscon, Pepto-Bismol",             desc: "Overuse masks serious conditions like ulcers or stomach cancer. Long-term PPI use causes magnesium deficiency and bone loss." },
-  { name: "Steroids",              emoji: "💉", risk: "Critical",     examples: "Prednisolone, Dexamethasone, Betnesol",          desc: "Misused for quick relief of pain and swelling. Causes diabetes, weight gain, bone loss, and immune suppression with overuse." },
+  { icon: <Zap size={24} className="text-purple-600" />,        name: "Antibiotics",           risk: "Critical",     examples: "Amoxicillin, Ciprofloxacin, Flagyl, Augmentin", desc: "Most misused class of medicine in Pakistan. Never take without a culture test and prescription. Incomplete courses create superbugs." },
+  { icon: <Pill size={24} className="text-blue-600" />,          name: "Painkillers (NSAIDs)",  risk: "High",         examples: "Brufen, Ponstan, Aspirin, Diclofenac",           desc: "Taken daily by millions for pain without supervision. Causes stomach ulcers, kidney damage, and cardiovascular issues over time." },
+  { icon: <Activity size={24} className="text-yellow-600" />,    name: "Paracetamol",           risk: "Moderate",     examples: "Panadol, Calpol, Panadol Extra",                 desc: "Considered 'safe' but overdose is the #1 cause of acute liver failure. Never exceed 4g/day. Dangerous with alcohol." },
+  { icon: <Moon size={24} className="text-indigo-600" />,        name: "Sedatives & Sleeping",  risk: "Critical",     examples: "Alprazolam (Xanax), Diazepam, Clonazepam",      desc: "Highly addictive. Freely available in Pakistan despite being controlled substances. Causes severe withdrawal and brain damage." },
+  { icon: <FlaskConical size={24} className="text-green-600" />, name: "Antacids & Gastric",    risk: "Low-Moderate", examples: "Omeprazole, Gaviscon, Pepto-Bismol",             desc: "Overuse masks serious conditions like ulcers or stomach cancer. Long-term PPI use causes magnesium deficiency and bone loss." },
+  { icon: <Syringe size={24} className="text-red-600" />,        name: "Steroids",              risk: "Critical",     examples: "Prednisolone, Dexamethasone, Betnesol",          desc: "Misused for quick relief of pain and swelling. Causes diabetes, weight gain, bone loss, and immune suppression with overuse." },
 ];
 
 const riskColor = {
@@ -76,7 +77,7 @@ const quizQuestions = [
 ];
 
 // ── Quiz Component ────────────────────────────────────────────────────────────
-const Quiz = () => {
+const Quiz = ({ isDark = false }) => {
   const [current, setCurrent]   = useState(0);
   const [selected, setSelected] = useState(null);
   const [answers, setAnswers]   = useState([]);
@@ -107,9 +108,11 @@ const Quiz = () => {
   if (finished) {
     const { msg, color } = getScoreMsg();
     return (
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center shadow-sm">
-        <div className="text-6xl mb-4">{score === quizQuestions.length ? "🏆" : score >= 4 ? "👍" : score >= 2 ? "⚠️" : "❌"}</div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Quiz Complete!</h3>
+    <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#334155' : '#e5e7eb' }} className="border rounded-2xl p-8 text-center shadow-sm">
+        <div className="text-6xl mb-4 flex justify-center">
+          {score === quizQuestions.length ? <Trophy size={56} className="text-yellow-500" /> : score >= 4 ? <CheckCircle size={56} className="text-blue-500" /> : score >= 2 ? <AlertTriangle size={56} className="text-orange-500" /> : <XCircle size={56} className="text-red-500" />}
+        </div>
+        <h3 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="text-2xl font-bold mb-2">Quiz Complete!</h3>
         <p className="text-5xl font-extrabold my-4">
           <span className="text-blue-600">{score}</span>
           <span className="text-gray-300 text-2xl">/{quizQuestions.length}</span>
@@ -117,14 +120,14 @@ const Quiz = () => {
         <p className={`font-semibold text-lg mb-6 ${color}`}>{msg}</p>
         <div className="space-y-2 mb-8 text-left">
           {quizQuestions.map((qq, i) => (
-            <div key={i} className={`flex items-start gap-3 p-3 rounded-xl ${answers[i]?.correct ? "bg-blue-50 border border-blue-100" : "bg-gray-50 border border-gray-200"}`}>
+            <div key={i} style={{ backgroundColor: isDark ? (answers[i]?.correct ? '#1e3a5f' : '#1e293b') : (answers[i]?.correct ? '#eff6ff' : '#f9fafb'), borderColor: isDark ? (answers[i]?.correct ? '#1d4ed8' : '#334155') : (answers[i]?.correct ? '#bfdbfe' : '#e5e7eb') }} className={`flex items-start gap-3 p-3 rounded-xl border`}>
               {answers[i]?.correct
                 ? <CheckCircle size={18} className="text-blue-600 shrink-0 mt-0.5" />
                 : <XCircle size={18} className="text-gray-400 shrink-0 mt-0.5" />}
               <div>
-                <p className="text-sm font-medium text-gray-800">{qq.q}</p>
+                <p style={{ color: isDark ? '#e2e8f0' : '#1f2937' }} className="text-sm font-medium">{qq.q}</p>
                 {!answers[i]?.correct && (
-                  <p className="text-xs text-gray-500 mt-1">✅ Correct: <span className="font-semibold text-blue-600">{qq.options[qq.correct]}</span></p>
+                  <p style={{ color: isDark ? '#94a3b8' : '#6b7280' }} className="text-xs mt-1">✅ Correct: <span className="font-semibold text-blue-500">{qq.options[qq.correct]}</span></p>
                 )}
               </div>
             </div>
@@ -139,26 +142,28 @@ const Quiz = () => {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-      <div className="h-2 bg-gray-100">
+    <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#334155' : '#e5e7eb' }} className="border rounded-2xl shadow-sm overflow-hidden">
+      <div style={{ backgroundColor: isDark ? '#334155' : '#f3f4f6' }} className="h-2">
         <div className="h-2 bg-blue-600 transition-all duration-500"
           style={{ width: `${(current / quizQuestions.length) * 100}%` }} />
       </div>
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
-          <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+          <span className="text-sm font-semibold text-blue-500 bg-blue-900/30 px-3 py-1 rounded-full">
             Question {current + 1} of {quizQuestions.length}
           </span>
-          <span className="text-sm text-gray-400">{Math.round((current / quizQuestions.length) * 100)}% complete</span>
+          <span style={{ color: isDark ? '#64748b' : '#9ca3af' }} className="text-sm">{Math.round((current / quizQuestions.length) * 100)}% complete</span>
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-6">{q.q}</h3>
+        <h3 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="text-lg font-bold mb-6">{q.q}</h3>
         <div className="space-y-3 mb-6">
           {q.options.map((opt, i) => {
-            let style = "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 cursor-pointer";
+            let style = isDark
+              ? "border-slate-600 bg-slate-700 hover:border-blue-400 hover:bg-slate-600 cursor-pointer"
+              : "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 cursor-pointer";
             if (selected !== null) {
-              if (i === q.correct)                          style = "border-blue-500 bg-blue-50 cursor-default";
-              else if (i === selected && i !== q.correct)  style = "border-gray-400 bg-gray-100 cursor-default";
-              else                                          style = "border-gray-200 bg-gray-50 opacity-50 cursor-default";
+              if (i === q.correct)                         style = "border-blue-500 bg-blue-900/40 cursor-default";
+              else if (i === selected && i !== q.correct) style = isDark ? "border-slate-500 bg-slate-600 cursor-default" : "border-gray-400 bg-gray-100 cursor-default";
+              else                                         style = isDark ? "border-slate-700 bg-slate-800 opacity-50 cursor-default" : "border-gray-200 bg-gray-50 opacity-50 cursor-default";
             }
             return (
               <div key={i} onClick={() => handleSelect(i)}
@@ -169,21 +174,21 @@ const Quiz = () => {
                     "border-gray-300 text-gray-500"}`}>
                   {String.fromCharCode(65 + i)}
                 </span>
-                <span className="text-sm text-gray-800">{opt}</span>
+                <span style={{ color: isDark ? '#cbd5e1' : '#1f2937' }} className="text-sm">{opt}</span>
               </div>
             );
           })}
         </div>
         {selected !== null && (
-          <div className={`rounded-xl p-4 mb-6 flex gap-3 ${selected === q.correct ? "bg-blue-50 border border-blue-200" : "bg-gray-50 border border-gray-200"}`}>
+          <div style={{ backgroundColor: isDark ? (selected === q.correct ? '#1e3a5f' : '#1e293b') : (selected === q.correct ? '#eff6ff' : '#f9fafb'), borderColor: isDark ? (selected === q.correct ? '#1d4ed8' : '#475569') : (selected === q.correct ? '#bfdbfe' : '#e5e7eb') }} className={`rounded-xl p-4 mb-6 flex gap-3 border`}>
             {selected === q.correct
               ? <CheckCircle size={18} className="text-blue-600 shrink-0 mt-0.5" />
               : <XCircle size={18} className="text-gray-400 shrink-0 mt-0.5" />}
             <div>
-              <p className={`text-sm font-semibold mb-1 ${selected === q.correct ? "text-blue-700" : "text-gray-600"}`}>
+              <p style={{ color: isDark ? (selected === q.correct ? '#93c5fd' : '#94a3b8') : (selected === q.correct ? '#1d4ed8' : '#4b5563') }} className="text-sm font-semibold mb-1">
                 {selected === q.correct ? "Correct!" : "Incorrect!"}
               </p>
-              <p className="text-sm text-gray-600">{q.explanation}</p>
+              <p style={{ color: isDark ? '#94a3b8' : '#4b5563' }} className="text-sm">{q.explanation}</p>
             </div>
           </div>
         )}
@@ -200,6 +205,7 @@ const Quiz = () => {
 export default function SelfMedicationAwareness() {
   const [openFaq, setOpenFaq] = useState(null);
   const navigate = useNavigate();
+  const { isDark } = useTheme();
 
   const faqs = [
     { q: "Why is self-medication so dangerous in Pakistan?", a: "Pakistan has very easy over-the-counter access to prescription medicines, high doctor consultation costs, and deep-rooted cultural habits of sharing medicines. This combination creates one of the world's highest rates of antibiotic resistance and medicine-related organ damage." },
@@ -210,7 +216,7 @@ export default function SelfMedicationAwareness() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: isDark ? '#0f172a' : '#ffffff' }}>
 
       {/* ── Hero ── */}
       <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-20 px-6">
@@ -228,12 +234,13 @@ export default function SelfMedicationAwareness() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button onClick={() => navigate("/search")}
-              className="bg-white text-blue-700 font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">
-              🔍 Check Your Medicine Safely
+              style={{ backgroundColor: '#ffffff', color: '#1d4ed8' }}
+              className="inline-flex items-center gap-2 font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">
+              <Search size={18} /> Check Your Medicine Safely
             </button>
             <button onClick={() => document.getElementById("quiz").scrollIntoView({ behavior: "smooth" })}
-              className="bg-white/20 hover:bg-white/30 text-white font-bold px-8 py-3 rounded-xl border border-white/30 transition-all">
-              🧠 Take Awareness Quiz
+              className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-8 py-3 rounded-xl border border-white/30 transition-all">
+              <Brain size={18} /> Take Awareness Quiz
             </button>
           </div>
         </div>
@@ -259,48 +266,50 @@ export default function SelfMedicationAwareness() {
       {/* ── What is Self Medication ── */}
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">What is Self-Medication?</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <h2 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="text-3xl font-bold mb-3">What is Self-Medication?</h2>
+          <p style={{ color: isDark ? '#94a3b8' : '#4b5563' }} className="max-w-2xl mx-auto">
             Self-medication means treating yourself with medicines without a doctor's diagnosis or prescription —
             including taking leftover medicines, sharing with family, or freely buying prescription drugs from a pharmacy.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { emoji: "💊", text: "Taking antibiotics for every fever or cold" },
-            { emoji: "😴", text: "Using sleeping tablets without prescription" },
-            { emoji: "🤝", text: "Sharing medicines with family members" },
-            { emoji: "🔁", text: "Repeating old prescriptions without re-consultation" },
-            { emoji: "🏪", text: "Buying prescription-only drugs from pharmacy freely" },
-            { emoji: "📱", text: "Following medicine advice from social media or WhatsApp" },
+            { icon: <Pill size={20} className="text-blue-500" />,        text: "Taking antibiotics for every fever or cold" },
+            { icon: <Moon size={20} className="text-indigo-500" />,       text: "Using sleeping tablets without prescription" },
+            { icon: <Users size={20} className="text-green-500" />,       text: "Sharing medicines with family members" },
+            { icon: <RefreshCw size={20} className="text-orange-500" />,  text: "Repeating old prescriptions without re-consultation" },
+            { icon: <ShoppingBag size={20} className="text-red-500" />,   text: "Buying prescription-only drugs from pharmacy freely" },
+            { icon: <Smartphone size={20} className="text-purple-500" />, text: "Following medicine advice from social media or WhatsApp" },
           ].map((item, i) => (
-            <div key={i} className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4">
-              <span className="text-2xl">{item.emoji}</span>
-              <p className="text-sm text-gray-700">{item.text}</p>
+            <div key={i} style={{ backgroundColor: isDark ? '#1e3a5f' : '#eff6ff', borderColor: isDark ? '#1d4ed8' : '#bfdbfe' }} className="flex items-start gap-3 border rounded-xl p-4">
+              <div className="shrink-0 mt-0.5">{item.icon}</div>
+              <p style={{ color: isDark ? '#bfdbfe' : '#374151' }} className="text-sm">{item.text}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── Medicine Category Risks ── */}
-      <div className="bg-gray-50 py-16 px-6">
+      <div style={{ backgroundColor: isDark ? '#111827' : '#f9fafb' }} className="py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">High-Risk Medicine Categories</h2>
-            <p className="text-gray-600">Most commonly misused medicine types in Pakistan</p>
+            <h2 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="text-3xl font-bold mb-3">High-Risk Medicine Categories</h2>
+            <p style={{ color: isDark ? '#94a3b8' : '#4b5563' }}>Most commonly misused medicine types in Pakistan</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {categories.map((cat, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all">
+              <div key={i} style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#334155' : '#e5e7eb' }} className="border rounded-2xl p-5 hover:border-blue-400 transition-all">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-3xl">{cat.emoji}</span>
-                    <h3 className="font-bold text-gray-900">{cat.name}</h3>
+                    <div style={{ backgroundColor: isDark ? '#1e293b' : '#f1f5f9' }} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+                      {cat.icon}
+                    </div>
+                    <h3 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="font-bold">{cat.name}</h3>
                   </div>
                   <span className={`text-xs font-bold px-2 py-1 rounded-full ${riskColor[cat.risk]}`}>{cat.risk}</span>
                 </div>
-                <p className="text-xs text-gray-400 mb-2">Examples: <span className="font-medium text-gray-600">{cat.examples}</span></p>
-                <p className="text-sm text-gray-600 leading-relaxed">{cat.desc}</p>
+                <p style={{ color: isDark ? '#64748b' : '#9ca3af' }} className="text-xs mb-2">Examples: <span style={{ color: isDark ? '#94a3b8' : '#4b5563' }} className="font-medium">{cat.examples}</span></p>
+                <p style={{ color: isDark ? '#94a3b8' : '#4b5563' }} className="text-sm leading-relaxed">{cat.desc}</p>
               </div>
             ))}
           </div>
@@ -310,27 +319,29 @@ export default function SelfMedicationAwareness() {
       {/* ── Long Term Health Risks ── */}
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Long-Term Health Consequences</h2>
-          <p className="text-gray-600">What years of self-medication does to your body</p>
+          <h2 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="text-3xl font-bold mb-3">Long-Term Health Consequences</h2>
+          <p style={{ color: isDark ? '#94a3b8' : '#4b5563' }}>What years of self-medication does to your body</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {risks.map((risk, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all">
-              <span className="text-4xl mb-4 block">{risk.icon}</span>
-              <h3 className="font-bold text-gray-900 mb-2">{risk.title}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{risk.desc}</p>
+            <div key={i} style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#334155' : '#e5e7eb' }} className="rounded-2xl border p-6 hover:border-blue-400 transition-all">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: isDark ? '#1e293b' : '#f1f5f9' }}>
+                {risk.icon}
+              </div>
+              <h3 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="font-bold mb-2">{risk.title}</h3>
+              <p style={{ color: isDark ? '#94a3b8' : '#4b5563' }} className="text-sm leading-relaxed">{risk.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── Do's and Don'ts ── */}
-      <div className="bg-gray-50 py-16 px-6">
+      <div style={{ backgroundColor: isDark ? '#111827' : '#f9fafb' }} className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-10">Do's & Don'ts</h2>
+          <h2 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="text-3xl font-bold text-center mb-10">Do's & Don'ts</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white border-2 border-blue-200 rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-blue-700 mb-4 flex items-center gap-2">
+            <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#1d4ed8' : '#93c5fd' }} className="border-2 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-blue-500 mb-4 flex items-center gap-2">
                 <Shield size={20} /> What You SHOULD Do
               </h3>
               <ul className="space-y-3">
@@ -342,14 +353,14 @@ export default function SelfMedicationAwareness() {
                   "Store medicines away from heat and moisture",
                   "Use Medico Guidance to verify medicine information",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                     <span className="text-blue-500 font-bold mt-0.5">✓</span> {item}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+            <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#475569' : '#e5e7eb' }} className="border-2 rounded-2xl p-6">
+              <h3 style={{ color: isDark ? '#94a3b8' : '#374151' }} className="text-lg font-bold mb-4 flex items-center gap-2">
                 <AlertTriangle size={20} /> What You Should AVOID
               </h3>
               <ul className="space-y-3">
@@ -361,8 +372,8 @@ export default function SelfMedicationAwareness() {
                   "Don't stop medicines suddenly without consulting doctor",
                   "Never follow unverified social media medicine advice",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="text-gray-400 font-bold mt-0.5">✗</span> {item}
+                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
+                    <span style={{ color: isDark ? '#64748b' : '#9ca3af' }} className="font-bold mt-0.5">✗</span> {item}
                   </li>
                 ))}
               </ul>
@@ -374,29 +385,30 @@ export default function SelfMedicationAwareness() {
       {/* ── Interactive Quiz ── */}
       <div id="quiz" className="max-w-3xl mx-auto px-6 py-16">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
-            🧠 Interactive Quiz
+          <div style={{ backgroundColor: isDark ? '#1e3a5f' : '#dbeafe', color: isDark ? '#93c5fd' : '#1d4ed8' }} className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+            <Brain size={16} /> Interactive Quiz
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">How Safe Are You With Medicines?</h2>
-          <p className="text-gray-600">Test your knowledge with {quizQuestions.length} real-world medicine safety questions</p>
+          <h2 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="text-3xl font-bold mb-3">How Safe Are You With Medicines?</h2>
+          <p style={{ color: isDark ? '#94a3b8' : '#4b5563' }}>Test your knowledge with {quizQuestions.length} real-world medicine safety questions</p>
         </div>
-        <Quiz />
+        <Quiz isDark={isDark} />
       </div>
 
       {/* ── FAQ ── */}
-      <div className="bg-gray-50 py-16 px-6">
+      <div style={{ backgroundColor: isDark ? '#111827' : '#f9fafb' }} className="py-16 px-6">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-10">Frequently Asked Questions</h2>
+          <h2 style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="text-3xl font-bold text-center mb-10">Frequently Asked Questions</h2>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <div key={i} style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#334155' : '#e5e7eb' }} className="border rounded-xl overflow-hidden">
                 <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition">
-                  <span className="font-semibold text-gray-900 text-sm">{faq.q}</span>
-                  <span className="text-blue-600 ml-4 font-bold">{openFaq === i ? "▲" : "▼"}</span>
+                  style={{ backgroundColor: 'transparent' }}
+                  className="w-full flex items-center justify-between px-6 py-4 text-left transition">
+                  <span style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="font-semibold text-sm">{faq.q}</span>
+                  <span className="text-blue-500 ml-4 font-bold">{openFaq === i ? "▲" : "▼"}</span>
                 </button>
                 {openFaq === i && (
-                  <div className="px-6 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
+                  <div style={{ color: isDark ? '#94a3b8' : '#4b5563', borderColor: isDark ? '#334155' : '#f3f4f6' }} className="px-6 pb-4 text-sm leading-relaxed border-t pt-3">
                     {faq.a}
                   </div>
                 )}
@@ -414,12 +426,13 @@ export default function SelfMedicationAwareness() {
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <button onClick={() => navigate("/search")}
-            className="bg-white text-blue-700 font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">
-            🔍 Search a Medicine
+            style={{ backgroundColor: '#ffffff', color: '#1d4ed8' }}
+            className="inline-flex items-center gap-2 font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">
+            <Search size={18} /> Search a Medicine
           </button>
           <button onClick={() => navigate("/reminders")}
-            className="bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold px-8 py-3 rounded-xl transition-all">
-            ⏰ Set Medicine Reminder
+            className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold px-8 py-3 rounded-xl transition-all">
+            <Bell size={18} /> Set Medicine Reminder
           </button>
         </div>
       </div>
