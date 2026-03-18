@@ -2,21 +2,41 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 const app = express();
 
-// ── CORS Configuration ────────────────────────────────────────────────────────
-// Added your Vercel frontend URL to allow the login/register requests
+// ── Clean & Robust CORS Configuration ──────────────────────────────────────────
+// This handles both the origin check and the preflight (OPTIONS) automatically.
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://medico-app-eta.vercel.app",
+  "https://medico-ftv4k5n46-imtinans-projects-0205c3f4.vercel.app" // Specific URL from your console error
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://medico-app-eta.vercel.app",
-    /\.vercel\.app$/ // This allows ALL vercel.app subdomains (Permanent Fix)
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list OR matches a Vercel subdomain regex
+    const isAllowed = allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin);
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log("CORS Blocked Origin:", origin); // Helps debugging in Vercel logs
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  credentials: true,
+  optionsSuccessStatus: 200 
 }));
 
+// Middlewares
 app.use(express.json());
 
 // ── Routes ────────────────────────────────────────────────────────────────────
@@ -33,24 +53,19 @@ import reminderRoutes     from "./routes/reminder.routes.js";
 import fakeReportRoutes   from "./routes/fakeReport.routes.js";
 import expiryRoutes       from "./routes/expiry.route.js";
 
-// ── Cron Jobs ─────────────────────────────────────────────────────────────────
-import { startReminderCron } from "./services/reminderCron.js";
-import { startExpiryCron }   from "./services/expiryCron.js";
-
 // ── API Routes ────────────────────────────────────────────────────────────────
-// Note: Your frontend must use /api/auth/login (not just /auth/login)
-app.use("/api/auth",         authRoutes);       // Register, Login, OTP, Reset Password
-app.use("/api/medicine",     medicineRoutes);   // Smart Search, Autocomplete, CRUD
-app.use("/api/user",         userRoutes);       // Profile, Saved Medicines, Search History
-app.use("/api/ai",           aiRoutes);         // MediBot, Dosage, Translate, Explanations
-app.use("/api/ocr",          ocrRoutes);        // Fake Medicine Scanner
-app.use("/api/interaction",  interactionRoutes);// Drug Interaction Checker
-app.use("/api/admin",        adminRoutes);      // Dashboard, Users, Reminders, Analytics
-app.use("/api/prescription", prescriptionRoutes);// Prescription Scanner
-app.use("/api/symptom",      symptomRoutes);    // Symptom Checker
-app.use("/api/reminders",    reminderRoutes);   // WhatsApp Medicine Reminders
-app.use("/api/expiry",       expiryRoutes);     // Medicine Expiry Tracker
-app.use("/api/fake-report",  fakeReportRoutes); // Report Fake Medicine
+app.use("/api/auth",         authRoutes);
+app.use("/api/medicine",     medicineRoutes);
+app.use("/api/user",         userRoutes);
+app.use("/api/ai",           aiRoutes);
+app.use("/api/ocr",          ocrRoutes);
+app.use("/api/interaction",  interactionRoutes);
+app.use("/api/admin",        adminRoutes);
+app.use("/api/prescription", prescriptionRoutes);
+app.use("/api/symptom",      symptomRoutes);
+app.use("/api/reminders",    reminderRoutes);
+app.use("/api/expiry",       expiryRoutes);
+app.use("/api/fake-report",  fakeReportRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => res.json({ message: "Medico Guidance API running ✅" }));
@@ -59,18 +74,13 @@ app.get("/", (req, res) => res.json({ message: "Medico Guidance API running ✅"
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    // For Vercel deployment, we handle the port dynamically
     if (process.env.NODE_ENV !== 'production') {
         const PORT = process.env.PORT || 5000;
         app.listen(PORT, () => {
           console.log(`🚀 Server running on port ${PORT}`);
-          startReminderCron();
-          startExpiryCron();
         });
     }
   })
   .catch((err) => console.error("❌ MongoDB error:", err));
 
-// ── Vercel Export ─────────────────────────────────────────────────────────────
-// This is essential for Vercel to see your Express app!
 export default app;
