@@ -10,8 +10,9 @@ const app = express();
 // Added your Vercel frontend URL to allow the login/register requests
 app.use(cors({
   origin: [
-    "http://localhost:5173", 
-    "https://medico-app-eta.vercel.app"
+    "http://localhost:5173",
+    "https://medico-app-eta.vercel.app",
+    /\.vercel\.app$/ // This allows ALL vercel.app subdomains (Permanent Fix)
   ],
   credentials: true
 }));
