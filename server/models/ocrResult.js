@@ -14,4 +14,7 @@ const ocrResultSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("OCRResult", ocrResultSchema);
+// FIX: Changed "ocrSchema" to "ocrResultSchema" to match the variable name above
+const OCRResult = mongoose.models.OCRResult || mongoose.model("OCRResult", ocrResultSchema);
+
+export default OCRResult;
