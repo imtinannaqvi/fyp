@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import "./app.css";
-import Navbar from "./components/Navbar";
+import './App.css'; // uppercase 'A'import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import MediBot from "./components/MediBot";
 import ProtectedRoute from "./components/ProtectedRoute";
