@@ -17,7 +17,6 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = await User.create({
@@ -25,19 +24,29 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
       otp,
-      otpExpire: Date.now() + 10 * 60 * 1000, // 10 min
+      otpExpire: Date.now() + 10 * 60 * 1000,
     });
 
-    await sendEmail(
-      email,
-      "Verify Your Email - Medico Guidance",
-      `
-      <h2>Email Verification</h2>
-      <p>Your verification code is:</p>
-      <h1>${otp}</h1>
-      <p>This code expires in 10 minutes.</p>
-      `
-    );
+    // ✅ Try sending email but don't crash if it fails
+    try {
+      await sendEmail(
+        email,
+        "Verify Your Email - Medico Guidance",
+        `
+        <h2>Email Verification</h2>
+        <p>Your verification code is:</p>
+        <h1>${otp}</h1>
+        <p>This code expires in 10 minutes.</p>
+        `
+      );
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError.message);
+      // ✅ Delete user if email fails so they can retry
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({
+        message: "Registration failed: could not send verification email. Please try again.",
+      });
+    }
 
     res.status(201).json({
       message: "Registered successfully. OTP sent to email.",
