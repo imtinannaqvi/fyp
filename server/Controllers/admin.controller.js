@@ -1,6 +1,6 @@
 import User from "../models/user.js";
 import Medicine from "../models/Medicine.js";
-import OCRResult from "../models/OCRResult.js"; // Changed to capital O
+import OCRResult from "../models/ocrResult.js";
 import Reminder from "../models/Reminder.js";
 
 export const getTodayReminders = async (req, res) => {
