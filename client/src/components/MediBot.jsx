@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import {
   X, Heart, ArrowRight,
-  Send, Loader, User, RotateCcw, Bot
+  Send, Loader, User, RotateCcw, Bot,
+  Pill, AlertTriangle, Info, CheckCircle
 } from "lucide-react";
-
-const ROBOT_IMG = "https://cdn-icons-png.flaticon.com/512/4711/4711987.png";
 
 const quickSuggestions = [
   { label: "Is Panadol safe daily?",           msg: "Is it safe to take Panadol every day?" },
@@ -39,10 +38,114 @@ const RobotAvatar = ({ size = "sm" }) => {
   );
 };
 
+// ── Medicine Info Card ────────────────────────────────────────────────────────
+const MedicineCard = ({ medicine, onSearch }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="mt-2 bg-white border border-blue-100 rounded-xl overflow-hidden shadow-sm">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-2 flex items-center gap-2">
+        <Pill size={14} className="text-white shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-semibold text-xs truncate">{medicine.name}</p>
+          {medicine.brand && (
+            <p className="text-blue-100 text-[10px] truncate">{medicine.brand}</p>
+          )}
+        </div>
+        {medicine.requiresPrescription && (
+          <span className="shrink-0 text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-medium">
+            Rx
+          </span>
+        )}
+      </div>
+
+      {/* Basic Info */}
+      <div className="px-3 py-2 space-y-1.5">
+        {medicine.generic && (
+          <div className="flex items-start gap-1.5">
+            <Info size={11} className="text-blue-500 mt-0.5 shrink-0" />
+            <p className="text-[10px] text-gray-600">
+              <span className="font-medium text-gray-700">Generic: </span>
+              {medicine.generic}
+            </p>
+          </div>
+        )}
+        {medicine.category && (
+          <div className="flex items-start gap-1.5">
+            <Info size={11} className="text-blue-500 mt-0.5 shrink-0" />
+            <p className="text-[10px] text-gray-600">
+              <span className="font-medium text-gray-700">Category: </span>
+              {medicine.category}
+            </p>
+          </div>
+        )}
+        {medicine.dosage && (
+          <div className="flex items-start gap-1.5">
+            <CheckCircle size={11} className="text-green-500 mt-0.5 shrink-0" />
+            <p className="text-[10px] text-gray-600">
+              <span className="font-medium text-gray-700">Dosage: </span>
+              {medicine.dosage}
+            </p>
+          </div>
+        )}
+
+        {/* AI Explanation */}
+        {medicine.aiExplanation && (
+          <div className="bg-blue-50 rounded-lg px-2 py-1.5 mt-1">
+            <p className="text-[10px] text-blue-800 leading-relaxed">{medicine.aiExplanation}</p>
+          </div>
+        )}
+
+        {/* Expandable Section */}
+        {medicine.sideEffects?.length > 0 && (
+          <>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-[10px] text-blue-600 font-medium hover:underline w-full text-left mt-1"
+            >
+              {expanded ? "▲ Hide details" : "▼ Show side effects & warnings"}
+            </button>
+
+            {expanded && (
+              <div className="space-y-1.5 pt-1">
+                {/* Side Effects */}
+                <div className="flex items-start gap-1.5">
+                  <AlertTriangle size={11} className="text-orange-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-medium text-gray-700">Side Effects:</p>
+                    <p className="text-[10px] text-gray-600">
+                      {Array.isArray(medicine.sideEffects)
+                        ? medicine.sideEffects.join(", ")
+                        : medicine.sideEffects}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="px-3 pb-2">
+        <button
+          onClick={() => onSearch(medicine.name)}
+          className="w-full text-[10px] bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-lg transition flex items-center justify-center gap-1"
+        >
+          <ArrowRight size={11} /> View Full Details
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const MediBot = () => {
   const [open, setOpen]         = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hi! 👋 I'm MediBot. Ask me anything about medicine safety, self-medication risks, or how to use Medico Guidance. [GO:/awareness|Learn about Self-Medication]" }
+    {
+      role: "assistant",
+      content: "Hi! 👋 I'm MediBot. Ask me anything about medicine safety, self-medication risks, or how to use Medico Guidance. [GO:/awareness|Learn about Self-Medication]"
+    }
   ]);
   const [input, setInput]     = useState("");
   const [loading, setLoading] = useState(false);
@@ -69,18 +172,36 @@ const MediBot = () => {
       const { data } = await API.post("/ai/medibot", {
         messages: newMessages.map(m => ({ role: m.role, content: m.content })),
       });
+
       const reply = data.reply || "Sorry, I couldn't get a response. Please try again.";
-      setMessages(prev => [...prev, { role: "assistant", content: reply }]);
+
+      // ✅ Attach medicineFound to the assistant message if returned
+      setMessages(prev => [...prev, {
+        role: "assistant",
+        content: reply,
+        medicineFound: data.medicineFound || null,
+      }]);
     } catch (err) {
       console.error("MediBot error:", err);
-      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
+      setMessages(prev => [...prev, {
+        role: "assistant",
+        content: "Sorry, something went wrong. Please try again.",
+      }]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = () => {
-    setMessages([{ role: "assistant", content: "Hi! 👋 I'm MediBot. Ask me anything about medicine safety, self-medication risks, or how to use Medico Guidance. [GO:/awareness|Learn about Self-Medication]" }]);
+    setMessages([{
+      role: "assistant",
+      content: "Hi! 👋 I'm MediBot. Ask me anything about medicine safety, self-medication risks, or how to use Medico Guidance. [GO:/awareness|Learn about Self-Meditation]"
+    }]);
+  };
+
+  const handleMedicineSearch = (name) => {
+    navigate(`/search?q=${encodeURIComponent(name)}`);
+    setOpen(false);
   };
 
   const MessageBubble = ({ msg }) => {
@@ -95,18 +216,30 @@ const MediBot = () => {
         ) : (
           <div className="mt-0.5"><RobotAvatar size="sm" /></div>
         )}
-        <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
-          isUser ? "bg-blue-600 text-white rounded-tr-sm" : "bg-gray-100 text-gray-800 rounded-tl-sm"
-        }`}>
-          {parts.map((p, i) =>
-            p.type === "text" ? (
-              <span key={i}>{p.content}</span>
-            ) : (
-              <button key={i} onClick={() => { navigate(p.path); setOpen(false); }}
-                className="mt-2 flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg transition w-fit">
-                <ArrowRight size={11} /> {p.label}
-              </button>
-            )
+        <div className="max-w-[80%] flex flex-col gap-1">
+          <div className={`rounded-2xl px-3 py-2 text-xs leading-relaxed ${
+            isUser
+              ? "bg-blue-600 text-white rounded-tr-sm"
+              : "bg-gray-100 text-gray-800 rounded-tl-sm"
+          }`}>
+            {parts.map((p, i) =>
+              p.type === "text" ? (
+                <span key={i}>{p.content}</span>
+              ) : (
+                <button key={i} onClick={() => { navigate(p.path); setOpen(false); }}
+                  className="mt-2 flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg transition w-fit">
+                  <ArrowRight size={11} /> {p.label}
+                </button>
+              )
+            )}
+          </div>
+
+          {/* ✅ Medicine Card shown below assistant message */}
+          {!isUser && msg.medicineFound && (
+            <MedicineCard
+              medicine={msg.medicineFound}
+              onSearch={handleMedicineSearch}
+            />
           )}
         </div>
       </div>
@@ -135,6 +268,7 @@ const MediBot = () => {
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[300px] md:w-[320px] mb-2 flex flex-col"
             style={{ animation: "slideUp 0.2s ease-out", maxHeight: "calc(100vh - 140px)" }}>
 
+            {/* Header */}
             <div className="bg-gray-900 px-4 py-3 flex items-center justify-between rounded-t-2xl shrink-0">
               <div className="flex items-center gap-2.5 text-white">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -147,15 +281,18 @@ const MediBot = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={handleReset} title="Reset chat" className="text-gray-400 hover:text-white transition">
+                <button onClick={handleReset} title="Reset chat"
+                  className="text-gray-400 hover:text-white transition">
                   <RotateCcw size={14} />
                 </button>
-                <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white transition">
+                <button onClick={() => setOpen(false)}
+                  className="text-gray-400 hover:text-white transition">
                   <X size={15} />
                 </button>
               </div>
             </div>
 
+            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-3 space-y-3 medibot-scroll">
               {messages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
               {loading && (
@@ -172,6 +309,7 @@ const MediBot = () => {
               <div ref={bottomRef} />
             </div>
 
+            {/* Quick Suggestions */}
             <div className="px-3 pb-2 flex gap-1.5 overflow-x-auto scrollbar-hide shrink-0">
               {quickSuggestions.map((s, i) => (
                 <button key={i} onClick={() => sendMessage(s.msg)}
@@ -181,6 +319,7 @@ const MediBot = () => {
               ))}
             </div>
 
+            {/* Input */}
             <div className="px-3 pb-3 shrink-0">
               <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus-within:border-blue-400 transition">
                 <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
@@ -190,7 +329,9 @@ const MediBot = () => {
                 />
                 <button onClick={() => sendMessage()} disabled={!input.trim() || loading}
                   className="w-7 h-7 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 rounded-lg flex items-center justify-center transition shrink-0">
-                  {loading ? <Loader size={12} className="text-white animate-spin" /> : <Send size={12} className="text-white" />}
+                  {loading
+                    ? <Loader size={12} className="text-white animate-spin" />
+                    : <Send size={12} className="text-white" />}
                 </button>
               </div>
             </div>
@@ -201,10 +342,10 @@ const MediBot = () => {
           </div>
         )}
 
-        {/* ── Toggle button ── */}
+        {/* Toggle Button */}
         <button onClick={() => setOpen(!open)}
           className="w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 relative"
-          style={{ background: open ? 'linear-gradient(135deg, #000000, #000000)' : 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>
+          style={{ background: open ? '#000000' : 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>
           <Bot size={26} className="text-white" />
           {!open && (
             <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white">
