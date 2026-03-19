@@ -1,5 +1,4 @@
 import axios from "axios";
-import FormData from "form-data";
 import Groq from "groq-sdk";
 import Medicine from "../models/Medicine.js";
 
@@ -11,39 +10,41 @@ export const scanPrescription = async (req, res) => {
       return res.status(400).json({ message: "Please upload a prescription image" });
     }
 
-    // ── Step 1: OCR via OCR.space API ────────────────────────────────────────
-    const formData = new FormData();
-    formData.append("file", req.file.processedBuffer, {
-      filename: req.file.originalname || "image.jpg",
-      contentType: req.file.mimetype || "image/jpeg",
-    });
-    formData.append("language", "eng");
-    formData.append("isOverlayRequired", "false");
-    formData.append("detectOrientation", "true");
-    formData.append("scale", "true");
-    formData.append("OCREngine", "2");
+    // ── Step 1: OCR via OCR.space API (base64 — works on all devices) ────────
+    const base64Image = req.file.processedBuffer.toString("base64");
+    const mimeType    = req.file.mimetype || "image/jpeg";
 
     const ocrResponse = await axios.post(
       "https://api.ocr.space/parse/image",
-      formData,
+      new URLSearchParams({
+        base64Image:        `data:${mimeType};base64,${base64Image}`,
+        language:           "eng",
+        isOverlayRequired:  "false",
+        detectOrientation:  "true",
+        scale:              "true",
+        OCREngine:          "2",
+        isTable:            "false",
+      }),
       {
         headers: {
-          ...formData.getHeaders(),
-          apikey: process.env.OCR_API_KEY,
+          apikey:         process.env.OCR_API_KEY,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
+        timeout: 30000, // 30s timeout for large mobile images
       }
     );
 
     const parsed = ocrResponse.data?.ParsedResults?.[0];
 
     if (!parsed || parsed.FileParseExitCode !== 1) {
+      console.error("OCR failed:", ocrResponse.data);
       return res.status(422).json({
         message: "Could not read prescription. Please upload a clearer image.",
       });
     }
 
     const text       = parsed.ParsedText || "";
-    const confidence = 90; // OCR.space doesn't return confidence score
+    const confidence = 90;
 
     if (!text || text.trim().length < 3) {
       return res.status(422).json({
