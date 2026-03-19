@@ -1,6 +1,5 @@
 import express from "express";
 import multer from "multer";
-import sharp from "sharp";
 import { scanPrescription } from "../Controllers/prescriptionController.js";
 
 const router = express.Router();
@@ -17,18 +16,9 @@ const upload  = multer({
 
 const preprocessImage = async (req, res, next) => {
   if (!req.file) return next();
-  try {
-    req.file.processedBuffer = await sharp(req.file.buffer)
-      .resize({ width: 1500, withoutEnlargement: true })
-      .grayscale()
-      .normalize()
-      .sharpen()
-      .png()
-      .toBuffer();
-    next();
-  } catch (err) {
-    next(err);
-  }
+  // Pass buffer directly — no sharp needed
+  req.file.processedBuffer = req.file.buffer;
+  next();
 };
 
 router.post("/scan", upload.single("image"), preprocessImage, scanPrescription);

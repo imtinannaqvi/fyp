@@ -1,25 +1,14 @@
-import sharp from "sharp";
-
-// Process uploaded images with Sharp
+// Process uploaded images without sharp (Vercel compatible)
 export const processImage = async (req, res, next) => {
   try {
-    if (!req.file) return next(); // No file uploaded, skip
-    console.log("req.file:", req.file);
+    if (!req.file) return next();
 
-    // Validate file type
     if (!req.file.mimetype.startsWith("image/")) {
       return res.status(400).json({ message: "Only image files are allowed" });
     }
 
-    // Resize and convert to JPEG
-    const processedBuffer = await sharp(req.file.buffer)
-      .resize({ width: 1024 }) // Resize width to 1024px, keep aspect ratio
-      .jpeg({ quality: 80 })   // Convert to JPEG with 80% quality
-      .toBuffer();
-
-    // Attach processed buffer to req.file for controllers
-    req.file.processedBuffer = processedBuffer;
-
+    // Pass buffer directly — OCR.space handles raw image buffers fine
+    req.file.processedBuffer = req.file.buffer;
     next();
   } catch (error) {
     console.error("Image processing error:", error.message);
