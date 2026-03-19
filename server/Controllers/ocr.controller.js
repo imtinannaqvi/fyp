@@ -1,6 +1,6 @@
 import axios from "axios";
 import FormData from "form-data";
-import OCRResult from "../models/ocrResult.js";
+import OCRResult from "../models/OCRResult.js";
 import Medicine from "../models/Medicine.js";
 
 export const extractText = async (req, res) => {
