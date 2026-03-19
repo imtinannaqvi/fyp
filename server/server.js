@@ -6,7 +6,7 @@ dotenv.config();
 
 const app = express();
 
-// ── CORS — Manual headers (most reliable on Vercel) ──────────────────────────
+// ── CORS ──────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   const allowedOrigins = [
     "http://localhost:5173",
@@ -25,15 +25,42 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
+  if (req.method === "OPTIONS") return res.sendStatus(200);
   next();
 });
 
-// Middlewares
+// ── Middlewares ───────────────────────────────────────────────────────────────
 app.use(express.json());
+
+// ── MongoDB cached connection ─────────────────────────────────────────────────
+// This is the correct pattern for Vercel serverless — reuses connection across invocations
+let cached = global.mongoose;
+if (!cached) cached = global.mongoose = { conn: null, promise: null };
+
+async function connectDB() {
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGODB_URI, {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10,
+    });
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+// ── Connect before every request ─────────────────────────────────────────────
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("MongoDB connection error:", err.message);
+    res.status(500).json({ message: "Database connection failed" });
+  }
+});
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 import authRoutes         from "./routes/auth.route.js";
@@ -66,22 +93,7 @@ app.use("/api/fake-report",  fakeReportRoutes);
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => res.json({ message: "Medico Guidance API running ✅" }));
 
-// ── DB Connection (Vercel serverless optimized) ───────────────────────────────
-let isConnected = false;
-
-const connectDB = async () => {
-  if (isConnected) return;
-  const db = await mongoose.connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-    bufferCommands: false,
-  });
-  isConnected = db.connections[0].readyState === 1;
-  console.log("✅ MongoDB connected");
-};
-
-connectDB().catch((err) => console.error("❌ MongoDB error:", err));
-
+// ── Local dev server ──────────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
