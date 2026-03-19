@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Bookmark, BookmarkCheck, AlertTriangle,
-  Info, ChevronDown, ChevronUp, Zap, User, Loader,
-  ShieldAlert, CheckCircle, XCircle, Pill
+  Info, ChevronDown, ChevronUp, User, Loader,
+  ShieldAlert, CheckCircle, XCircle, Pill, Zap,
+  FlaskConical, UserX, Baby, Lightbulb, FileWarning,
+  Users, UserCheck
 } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -153,7 +155,7 @@ const MedicineDetail = () => {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="font-bold text-gray-900 text-lg truncate">{medicine.name}</h1>
-            {medicine.generic && <p className="text-xs text-gray-400 truncate">{medicine.generic}</p>}
+            {medicine.generic && <p className="text-xs text-gray-500 truncate">{medicine.generic}</p>}
           </div>
           <button onClick={handleSave}
             className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition ${
@@ -175,8 +177,8 @@ const MedicineDetail = () => {
           <div className="flex flex-col sm:flex-row sm:items-start gap-5">
 
             {/* Icon */}
-            <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center shrink-0 text-3xl">
-              💊
+            <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center shrink-0">
+              <Pill size={32} className="text-blue-500" />
             </div>
 
             {/* Info */}
@@ -187,32 +189,32 @@ const MedicineDetail = () => {
                   ? <Badge color="red">Prescription Required</Badge>
                   : <Badge color="green">OTC Available</Badge>
                 }
-                {medicine.isCommonlyMisused && <Badge color="orange">⚠ Commonly Misused</Badge>}
-                {medicine.isApproved && <Badge color="green">✓ Verified</Badge>}
+                {medicine.isCommonlyMisused && <Badge color="orange"><AlertTriangle size={11} className="mr-1" />Commonly Misused</Badge>}
+                {medicine.isApproved && <Badge color="green"><CheckCircle size={11} className="mr-1" />Verified</Badge>}
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                 {medicine.brand && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-[10px] text-gray-400 mb-0.5">Brand</p>
+                  <div className="bg-gray-100 rounded-xl p-3">
+                    <p className="text-[10px] text-gray-500 mb-0.5">Brand</p>
                     <p className="text-sm font-semibold text-gray-800">{medicine.brand}</p>
                   </div>
                 )}
                 {medicine.generic && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-[10px] text-gray-400 mb-0.5">Generic</p>
+                  <div className="bg-gray-100 rounded-xl p-3">
+                    <p className="text-[10px] text-gray-500 mb-0.5">Generic</p>
                     <p className="text-sm font-semibold text-gray-800 truncate">{medicine.generic}</p>
                   </div>
                 )}
                 {medicine.price > 0 && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-[10px] text-gray-400 mb-0.5">Price</p>
+                  <div className="bg-gray-100 rounded-xl p-3">
+                    <p className="text-[10px] text-gray-500 mb-0.5">Price</p>
                     <p className="text-sm font-semibold text-gray-800">Rs. {medicine.price}</p>
                   </div>
                 )}
                 {medicine.dosage && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-[10px] text-gray-400 mb-0.5">Std. Dosage</p>
+                  <div className="bg-gray-100 rounded-xl p-3">
+                    <p className="text-[10px] text-gray-500 mb-0.5">Std. Dosage</p>
                     <p className="text-sm font-semibold text-gray-800 truncate">{medicine.dosage}</p>
                   </div>
                 )}
@@ -257,10 +259,10 @@ const MedicineDetail = () => {
               </button>
             </>
           ) : (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-              <p className="text-xs font-semibold text-indigo-500 mb-2">💊 Your Personalized Recommendation</p>
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+              <p className="text-xs font-semibold text-indigo-600 mb-2 flex items-center gap-1.5"><Pill size={13} /> Your Personalized Recommendation</p>
               <p className="text-sm text-indigo-800 leading-relaxed">{dosage}</p>
-              <button onClick={() => setDosage(null)} className="text-xs text-indigo-400 hover:text-indigo-600 mt-2 transition">
+              <button onClick={() => setDosage(null)} className="text-xs text-indigo-600 hover:text-indigo-800 mt-2 transition">
                 Hide
               </button>
             </div>
@@ -293,9 +295,9 @@ const MedicineDetail = () => {
                   <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Dosage Guide</p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {medicine.dosageGuide.adult   && <div className="bg-gray-50 rounded-xl p-3"><p className="text-[10px] text-gray-400 mb-1">Adult</p><p className="text-sm text-gray-700 font-medium">{medicine.dosageGuide.adult}</p></div>}
-                      {medicine.dosageGuide.child   && <div className="bg-gray-50 rounded-xl p-3"><p className="text-[10px] text-gray-400 mb-1">Child</p><p className="text-sm text-gray-700 font-medium">{medicine.dosageGuide.child}</p></div>}
-                      {medicine.dosageGuide.elderly && <div className="bg-gray-50 rounded-xl p-3"><p className="text-[10px] text-gray-400 mb-1">Elderly</p><p className="text-sm text-gray-700 font-medium">{medicine.dosageGuide.elderly}</p></div>}
+                      {medicine.dosageGuide.adult   && <div className="bg-gray-100 rounded-xl p-3"><p className="text-[10px] text-gray-500 mb-1">Adult</p><p className="text-sm text-gray-700 font-medium">{medicine.dosageGuide.adult}</p></div>}
+                      {medicine.dosageGuide.child   && <div className="bg-gray-100 rounded-xl p-3"><p className="text-[10px] text-gray-500 mb-1">Child</p><p className="text-sm text-gray-700 font-medium">{medicine.dosageGuide.child}</p></div>}
+                      {medicine.dosageGuide.elderly && <div className="bg-gray-100 rounded-xl p-3"><p className="text-[10px] text-gray-500 mb-1">Elderly</p><p className="text-sm text-gray-700 font-medium">{medicine.dosageGuide.elderly}</p></div>}
                     </div>
                     {medicine.dosageGuide.notes && (
                       <p className="text-xs text-gray-500 italic mt-2 flex items-start gap-1.5">
@@ -338,9 +340,9 @@ const MedicineDetail = () => {
               <div className="space-y-4">
                 {medicine.dosageGuide && (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {medicine.dosageGuide.adult   && <div className="border border-gray-100 rounded-xl p-4"><p className="text-xs text-gray-400 mb-1">👨 Adult</p><p className="text-sm text-gray-800 font-medium">{medicine.dosageGuide.adult}</p></div>}
-                    {medicine.dosageGuide.child   && <div className="border border-gray-100 rounded-xl p-4"><p className="text-xs text-gray-400 mb-1">👶 Child</p><p className="text-sm text-gray-800 font-medium">{medicine.dosageGuide.child}</p></div>}
-                    {medicine.dosageGuide.elderly && <div className="border border-gray-100 rounded-xl p-4"><p className="text-xs text-gray-400 mb-1">👴 Elderly</p><p className="text-sm text-gray-800 font-medium">{medicine.dosageGuide.elderly}</p></div>}
+                    {medicine.dosageGuide.adult   && <div className="border border-gray-200 bg-gray-100 rounded-xl p-4"><p className="text-xs text-gray-500 mb-1 flex items-center gap-1"><User size={11} /> Adult</p><p className="text-sm text-gray-800 font-medium">{medicine.dosageGuide.adult}</p></div>}
+                    {medicine.dosageGuide.child   && <div className="border border-gray-200 bg-gray-100 rounded-xl p-4"><p className="text-xs text-gray-500 mb-1 flex items-center gap-1"><Baby size={11} /> Child</p><p className="text-sm text-gray-800 font-medium">{medicine.dosageGuide.child}</p></div>}
+                    {medicine.dosageGuide.elderly && <div className="border border-gray-200 bg-gray-100 rounded-xl p-4"><p className="text-xs text-gray-500 mb-1 flex items-center gap-1"><Users size={11} /> Elderly</p><p className="text-sm text-gray-800 font-medium">{medicine.dosageGuide.elderly}</p></div>}
                   </div>
                 )}
                 {medicine.dosage && (
@@ -351,7 +353,7 @@ const MedicineDetail = () => {
                 )}
                 {medicine.dosageGuide?.notes && (
                   <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                    <p className="text-xs font-semibold text-amber-600 mb-1">⚠ Important Notes</p>
+                    <p className="text-xs font-semibold text-amber-600 mb-1 flex items-center gap-1.5"><AlertTriangle size={13} /> Important Notes</p>
                     <p className="text-sm text-amber-800">{medicine.dosageGuide.notes}</p>
                   </div>
                 )}
@@ -413,8 +415,9 @@ const MedicineDetail = () => {
                   </div>
                 )}
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mt-2">
-                  <p className="text-xs text-blue-700 leading-relaxed">
-                    💡 For a complete interaction check between multiple medicines, use our{" "}
+                  <p className="text-xs text-blue-700 leading-relaxed flex items-start gap-1.5">
+                    <Lightbulb size={13} className="shrink-0 mt-0.5" />
+                    For a complete interaction check between multiple medicines, use our{" "}
                     <button onClick={() => navigate("/interactions")} className="font-semibold underline">
                       Drug Interaction Checker
                     </button>
@@ -439,8 +442,9 @@ const MedicineDetail = () => {
 
         {/* ── Disclaimer ─────────────────────────────────────────────────── */}
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-center">
-          <p className="text-xs text-amber-700">
-            ⚠️ <strong>Disclaimer:</strong> This information is for educational purposes only. Always consult a qualified doctor before taking any medicine.
+          <p className="text-xs text-amber-700 flex items-center justify-center gap-1.5">
+            <FileWarning size={13} className="shrink-0" />
+            <span><strong>Disclaimer:</strong> This information is for educational purposes only. Always consult a qualified doctor before taking any medicine.</span>
           </p>
         </div>
 

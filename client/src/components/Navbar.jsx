@@ -142,14 +142,19 @@ const Navbar = () => {
                       <div className="px-2">
                         {userMenuItems.map((item) => (
                           <Link key={item.path} to={item.path} onClick={() => setUserDropdown(false)}
-                            className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition">
+                            style={{ color: isDark ? '#cbd5e1' : '#374151' }}
+                            onMouseEnter={e => { e.currentTarget.style.backgroundColor = isDark ? '#334155' : '#eff6ff'; e.currentTarget.style.color = isDark ? '#93c5fd' : '#2563eb'; }}
+                            onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = isDark ? '#cbd5e1' : '#374151'; }}
+                            className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-xl transition">
                             {item.icon} {item.label}
                           </Link>
                         ))}
                       </div>
                       <div style={{ borderColor: isDark ? '#334155' : '#f3f4f6' }} className="border-t mt-1 pt-1 px-2">
                         <button onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition">
+                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = isDark ? '#450a0a' : '#fef2f2'; }}
+                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; }}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-bold text-red-500 rounded-xl transition">
                           <LogOut size={16} /> Sign Out
                         </button>
                       </div>
@@ -223,10 +228,11 @@ const Navbar = () => {
                 <div className="grid grid-cols-2 gap-1">
                   {navLinks.map((link) => (
                     <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)}
+                      style={!isActive(link.path) ? { color: isDark ? '#cbd5e1' : '#374151' } : {}}
+                      onMouseEnter={e => { if (!isActive(link.path)) { e.currentTarget.style.backgroundColor = isDark ? '#1e293b' : '#eff6ff'; e.currentTarget.style.color = isDark ? '#93c5fd' : '#2563eb'; }}}
+                      onMouseLeave={e => { if (!isActive(link.path)) { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = isDark ? '#cbd5e1' : '#374151'; }}}
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                        isActive(link.path)
-                          ? "text-white bg-blue-600"
-                          : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                        isActive(link.path) ? "text-white bg-blue-600" : ""
                       }`}>
                       {link.icon} {link.label}
                     </Link>
@@ -240,10 +246,11 @@ const Navbar = () => {
                 <div className="grid grid-cols-2 gap-1">
                   {secondaryLinks.map((link) => (
                     <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)}
+                      style={!isActive(link.path) ? { color: isDark ? '#cbd5e1' : '#374151', backgroundColor: isDark ? '#1e293b' : '#f9fafb' } : {}}
+                      onMouseEnter={e => { if (!isActive(link.path)) { e.currentTarget.style.backgroundColor = isDark ? '#334155' : '#eff6ff'; e.currentTarget.style.color = isDark ? '#93c5fd' : '#2563eb'; }}}
+                      onMouseLeave={e => { if (!isActive(link.path)) { e.currentTarget.style.backgroundColor = isDark ? '#1e293b' : '#f9fafb'; e.currentTarget.style.color = isDark ? '#cbd5e1' : '#374151'; }}}
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                        isActive(link.path)
-                          ? "text-white bg-blue-600"
-                          : "text-gray-700 hover:text-blue-600 hover:bg-blue-50 bg-gray-50"
+                        isActive(link.path) ? "text-white bg-blue-600" : ""
                       }`}>
                       {link.icon}
                       <span className="truncate">{link.label}</span>
@@ -259,7 +266,10 @@ const Navbar = () => {
                   <div className="grid grid-cols-2 gap-1">
                     {userMenuItems.map((item) => (
                       <Link key={item.path} to={item.path} onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+                        style={{ color: isDark ? '#cbd5e1' : '#374151' }}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = isDark ? '#1e293b' : '#eff6ff'; e.currentTarget.style.color = isDark ? '#93c5fd' : '#2563eb'; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = isDark ? '#cbd5e1' : '#374151'; }}
+                        className="flex items-center gap-2 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all">
                         {item.icon} {item.label}
                       </Link>
                     ))}

@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../api/axios";
 import {
   X, Heart, ArrowRight,
   Send, Loader, User, RotateCcw, Bot,
-  Pill, AlertTriangle, Info, CheckCircle
+  Pill, AlertTriangle, Info, CheckCircle, ShieldAlert, Phone
 } from "lucide-react";
 
 const quickSuggestions = [
@@ -37,6 +37,77 @@ const RobotAvatar = ({ size = "sm" }) => {
     </div>
   );
 };
+
+// ── Overdose Alert Card ───────────────────────────────────────────────────────
+const OverdoseAlertCard = ({ medicine }) => (
+  <div className="mt-2 rounded-2xl overflow-hidden shadow-lg border border-red-200">
+    {/* Header */}
+    <div className="flex items-center gap-2 px-3 py-2.5 bg-gradient-to-r from-red-600 to-red-700">
+      <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+        <ShieldAlert size={13} className="text-white" />
+      </div>
+      <div>
+        <p className="text-white font-bold text-[11px] leading-tight">Overdose Warning</p>
+        <p className="text-red-200 text-[9px]">Stop taking more — seek help now</p>
+      </div>
+    </div>
+
+    <div className="bg-white px-3 py-2 space-y-2">
+      {/* Medicine name */}
+      {medicine?.name && (
+        <div className="flex items-center gap-1.5 pt-0.5">
+          <Pill size={10} className="text-red-500 shrink-0" />
+          <p className="text-[10px] font-semibold text-gray-800">{medicine.name}</p>
+          {medicine.requiresPrescription && (
+            <span className="text-[8px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">Rx</span>
+          )}
+        </div>
+      )}
+
+      {/* Safe dosage */}
+      {medicine?.dosage && (
+        <div className="rounded-xl px-2.5 py-2 bg-green-50 border border-green-200">
+          <p className="text-[9px] font-semibold text-green-700 uppercase tracking-wide mb-0.5">Safe Dosage</p>
+          <p className="text-[10px] text-green-800">{medicine.dosage}</p>
+        </div>
+      )}
+
+      {/* Side effects */}
+      {medicine?.sideEffects?.length > 0 && (
+        <div className="rounded-xl px-2.5 py-2 bg-orange-50 border border-orange-200">
+          <p className="text-[9px] font-semibold text-orange-700 uppercase tracking-wide mb-0.5">Overdose Risks</p>
+          <p className="text-[10px] text-orange-800 leading-relaxed">
+            {(Array.isArray(medicine.sideEffects) ? medicine.sideEffects : [medicine.sideEffects]).slice(0, 4).join(" · ")}
+          </p>
+        </div>
+      )}
+
+      {/* Steps */}
+      <div className="rounded-xl px-2.5 py-2 bg-red-50 border border-red-200">
+        <p className="text-[9px] font-semibold text-red-700 uppercase tracking-wide mb-1">Do This Right Now</p>
+        {[
+          "Do NOT take any more doses",
+          "Drink water and stay calm",
+          "Call a doctor or go to emergency",
+        ].map((step, i) => (
+          <div key={i} className="flex items-start gap-1.5 mb-0.5">
+            <span className="w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+            <p className="text-[10px] text-red-700">{step}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Emergency */}
+      <div className="flex items-center gap-2 rounded-xl px-2.5 py-2 bg-indigo-50 border border-indigo-200">
+        <Phone size={11} className="text-indigo-600 shrink-0" />
+        <div>
+          <p className="text-[9px] text-indigo-600 font-medium">Pakistan Emergency</p>
+          <p className="text-[11px] text-indigo-900 font-bold">115 (Rescue) · 1122</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 // ── Medicine Info Card ────────────────────────────────────────────────────────
 const MedicineCard = ({ medicine, onSearch }) => {
@@ -150,8 +221,12 @@ const MediBot = () => {
   const [input, setInput]     = useState("");
   const [loading, setLoading] = useState(false);
   const navigate  = useNavigate();
+  const location  = useLocation();
   const bottomRef = useRef(null);
   const inputRef  = useRef(null);
+
+  const AUTH_PAGES = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-otp"];
+  if (AUTH_PAGES.includes(location.pathname)) return null;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -175,11 +250,11 @@ const MediBot = () => {
 
       const reply = data.reply || "Sorry, I couldn't get a response. Please try again.";
 
-      // ✅ Attach medicineFound to the assistant message if returned
       setMessages(prev => [...prev, {
         role: "assistant",
         content: reply,
         medicineFound: data.medicineFound || null,
+        overdoseAlert: data.overdoseAlert || false,
       }]);
     } catch (err) {
       console.error("MediBot error:", err);
@@ -234,8 +309,13 @@ const MediBot = () => {
             )}
           </div>
 
-          {/* ✅ Medicine Card shown below assistant message */}
-          {!isUser && msg.medicineFound && (
+          {/* Overdose Alert Card — shown first if overdose detected */}
+          {!isUser && msg.overdoseAlert && (
+            <OverdoseAlertCard medicine={msg.medicineFound} />
+          )}
+
+          {/* Medicine Card shown below assistant message */}
+          {!isUser && msg.medicineFound && !msg.overdoseAlert && (
             <MedicineCard
               medicine={msg.medicineFound}
               onSearch={handleMedicineSearch}

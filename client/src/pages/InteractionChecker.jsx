@@ -3,9 +3,10 @@ import API from "../api/axios";
 import toast from "react-hot-toast";
 import {
   Zap, Plus, X, Loader, ShieldCheck,
-  AlertTriangle, AlertOctagon, Info, ChevronDown, ChevronUp
+  AlertTriangle, AlertOctagon, Info, ChevronDown, ChevronUp, Lightbulb
 } from "lucide-react";
 import MediBot from "../components/MediBot";
+import { useTheme } from "../context/ThemeContext";
 
 const SEVERITY = {
   none:     { label: "No Interaction",  color: "text-green-700",  bg: "bg-green-50",   border: "border-green-200",  dot: "bg-green-500"  },
@@ -22,7 +23,7 @@ const OVERALL = {
 
 const COMMON = ["Panadol", "Aspirin", "Brufen", "Amoxicillin", "Flagyl", "Omeprazole", "Warfarin", "Metformin"];
 
-const InteractionCard = ({ interaction }) => {
+const InteractionCard = ({ interaction, isDark }) => {
   const [open, setOpen] = useState(false);
   const sev = SEVERITY[interaction.severity] || SEVERITY.none;
 
@@ -64,8 +65,6 @@ const InteractionCard = ({ interaction }) => {
                 </div>
                 <p className="text-sm text-gray-800 leading-relaxed">{interaction.mechanism}</p>
               </div>
-
-              {/* ── FIX 1: Recommendation field ── */}
               {interaction.recommendation && (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-lg md:col-span-2">
                   <div className="flex items-center gap-2 mb-2">
@@ -93,6 +92,7 @@ const InteractionChecker = () => {
   const [medicines, setMedicines] = useState([]);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -222,15 +222,14 @@ const InteractionChecker = () => {
                 <h3 className="font-semibold text-gray-900 mb-4 text-lg">Interaction Details</h3>
                 <div className="space-y-3">
                   {result.interactions.map((inter, i) => (
-                      <InteractionCard key={i} interaction={inter} />
+                      <InteractionCard key={i} interaction={inter} isDark={isDark} />
                   ))}
                 </div>
              </div>
 
-             {/* ── FIX 2: General Tips ── */}
              {result.generalTips?.length > 0 && (
                <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6">
-                 <h3 className="font-semibold text-gray-900 mb-3 text-lg">💡 General Tips</h3>
+                 <h3 className="font-semibold text-gray-900 mb-3 text-lg flex items-center gap-2"><Lightbulb size={18} className="text-blue-500" /> General Tips</h3>
                  <ul className="space-y-2">
                    {result.generalTips.map((tip, i) => (
                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">

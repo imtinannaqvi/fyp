@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { Search, AlertTriangle, Loader, Inbox, Database } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MedicineCard from "../components/MedicineCard";
+import ExternalMedicineCard from "../components/ExternalMedicineCard";
 import MediBot from "../components/MediBot";
 import { useTheme } from "../context/ThemeContext";
 
@@ -267,13 +268,9 @@ const SmartSearch = () => {
 
               <div className="space-y-6">
                 {results.medicines.map((med, i) => (
-                  <MedicineCard
-                    key={med._id || `med-${i}`}
-                    medicine={med}
-                    source={results.source}
-                    savedIds={savedIds}
-                    onSaveToggle={handleSaveToggle}
-                  />
+                  results.source === "database"
+                    ? <MedicineCard key={med._id || `med-${i}`} medicine={med} source={results.source} savedIds={savedIds} onSaveToggle={handleSaveToggle} />
+                    : <ExternalMedicineCard key={med._id || `med-${i}`} medicine={med} source={results.source} />
                 ))}
               </div>
             </div>
