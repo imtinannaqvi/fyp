@@ -1,4 +1,5 @@
-import Tesseract from "tesseract.js";
+import axios from "axios";
+import FormData from "form-data";
 import OCRResult from "../models/ocrResult.js";
 import Medicine from "../models/Medicine.js";
 
@@ -8,28 +9,59 @@ export const extractText = async (req, res) => {
       return res.status(400).json({ message: "Image not uploaded or processed" });
     }
 
-    // ── Step 1: Run OCR ──────────────────────────────────────────────────────
-    const { data: { text, confidence } } = await Tesseract.recognize(
-      req.file.processedBuffer,
-      "eng"
+    // ── Step 1: Run OCR via OCR.space API ────────────────────────────────────
+    const formData = new FormData();
+    formData.append("file", req.file.processedBuffer, {
+      filename: req.file.originalname || "image.jpg",
+      contentType: req.file.mimetype || "image/jpeg",
+    });
+    formData.append("language", "eng");
+    formData.append("isOverlayRequired", "false");
+    formData.append("detectOrientation", "true");
+    formData.append("scale", "true");
+    formData.append("OCREngine", "2"); // Engine 2 is more accurate
+
+    const ocrResponse = await axios.post(
+      "https://api.ocr.space/parse/image",
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(),
+          apikey: process.env.OCR_API_KEY,
+        },
+      }
     );
 
+    const parsed = ocrResponse.data?.ParsedResults?.[0];
+
+    if (!parsed || parsed.FileParseExitCode !== 1) {
+      return res.status(422).json({
+        message: "Could not extract text from image. Try a clearer image.",
+      });
+    }
+
+    const text = parsed.ParsedText || "";
+    const confidence = 90; // OCR.space doesn't return confidence, use default
+
     if (!text || text.trim().length < 3) {
-      return res.status(422).json({ message: "Could not extract text from image. Try a clearer image." });
+      return res.status(422).json({
+        message: "Could not extract text from image. Try a clearer image.",
+      });
     }
 
     // ── Step 2: Clean extracted text ─────────────────────────────────────────
-    const cleanText = text.toLowerCase()
-      .replace(/[^a-z0-9\s]/g, " ")  // remove special chars
-      .replace(/\s+/g, " ")           // normalize spaces
+    const cleanText = text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
       .trim();
 
-    // Extract meaningful words (length > 2)
-    const words = cleanText.split(" ").filter(w => w.length > 2);
+    const words = cleanText.split(" ").filter((w) => w.length > 2);
 
     // ── Step 3: Match against approved medicines in DB ───────────────────────
-    const approvedMedicines = await Medicine.find({ isApproved: true })
-      .select("name brand generic");
+    const approvedMedicines = await Medicine.find({ isApproved: true }).select(
+      "name brand generic"
+    );
 
     let isFake = true;
     let matchedWith = null;
@@ -41,24 +73,25 @@ export const extractText = async (req, res) => {
       const medBrand   = med.brand.toLowerCase().trim();
       const medGeneric = (med.generic || "").toLowerCase().trim();
 
-      // ✅ Check 1: Direct word match — any OCR word matches medicine name
-      const directMatch = words.some(word =>
-        medName.includes(word) ||
-        word.includes(medName) ||
-        medBrand.includes(word) ||
-        word.includes(medBrand) ||
-        (medGeneric && medGeneric.includes(word))
+      // ✅ Check 1: Direct word match
+      const directMatch = words.some(
+        (word) =>
+          medName.includes(word) ||
+          word.includes(medName) ||
+          medBrand.includes(word) ||
+          word.includes(medBrand) ||
+          (medGeneric && medGeneric.includes(word))
       );
 
       if (directMatch) {
         isFake          = false;
-        matchedWith     = `${med.name} (${med.brand})`
+        matchedWith     = `${med.name} (${med.brand})`;
         medicineName    = med.name;
         similarityScore = 1.0;
-        break; // found a match, stop searching
+        break;
       }
 
-      // ✅ Check 2: Partial text contains medicine name
+      // ✅ Check 2: Partial text match
       const partialMatch =
         cleanText.includes(medName) ||
         cleanText.includes(medBrand) ||

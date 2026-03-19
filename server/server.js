@@ -1,44 +1,38 @@
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
 
-// ── Clean & Robust CORS Configuration ──────────────────────────────────────────
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://medico-app-eta.vercel.app",
-  "https://medico-ftv4k5n46-imtinans-projects-0205c3f4.vercel.app",
-  "https://fyp-ed6c.vercel.app"  // ✅ Added your live frontend URL
-];
+// ── CORS — Manual headers (most reliable on Vercel) ──────────────────────────
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://fyp-ed6c.vercel.app",
+    "https://medico-app-eta.vercel.app",
+    "https://medico-ftv4k5n46-imtinans-projects-0205c3f4.vercel.app"
+  ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    
-    // Check if origin is in allowed list OR matches any Vercel subdomain
-    const isAllowed = allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin);
-    
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.log("CORS Blocked Origin:", origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
+  const origin = req.headers.origin;
 
-// ✅ Handle preflight requests for ALL routes explicitly
-// ✅ Use this instead
-app.options('/{*path}', cors());
+  if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  // ✅ Respond to preflight immediately
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
 // Middlewares
 app.use(express.json());
 
@@ -77,11 +71,9 @@ app.get("/", (req, res) => res.json({ message: "Medico Guidance API running ✅"
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       const PORT = process.env.PORT || 5000;
-      app.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT}`);
-      });
+      app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
     }
   })
   .catch((err) => console.error("❌ MongoDB error:", err));
