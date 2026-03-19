@@ -128,7 +128,7 @@ const Home = () => {
       <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
 
         {showSticky && !isMenuOpen && (
-          <div className="fixed top-20 left-0 right-0 z-[60] bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg px-4 py-4 animate-slideDown">
+          <div className="fixed top-16 lg:top-[calc(5rem+2.625rem)] left-0 right-0 z-[60] bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg px-4 py-3 animate-slideDown">
             <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex items-center gap-2 rounded-xl p-1.5 shadow-lg" style={{ backgroundColor: '#ffffff' }}>
               <div className="flex items-center flex-1 px-3">
                 <Search size={18} style={{ color: '#9ca3af' }} className="shrink-0" />

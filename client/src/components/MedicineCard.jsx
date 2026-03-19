@@ -7,10 +7,12 @@ import {
 } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import toast from "react-hot-toast";
 
 const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
   const [expanded, setExpanded]           = useState(false);
+  const [descExpanded, setDescExpanded]   = useState(false);
   const [dosage, setDosage]               = useState(null);
   const [loadingDosage, setLoadingDosage] = useState(false);
 
@@ -20,6 +22,7 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
   const [translating, setTranslating]     = useState(false);
 
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const navigate  = useNavigate();
   const isSaved   = savedIds.includes(medicine._id);
 
@@ -90,6 +93,9 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
     }
   };
 
+  const isExternalSource = source === "OpenFDA" || source === "AI Generated";
+  const DESC_LIMIT = 200;
+
   const sourceBadge = {
     database:      { label: "Verified",  icon: <CheckCircle size={12} />,  color: "bg-blue-600 text-white" },
     OpenFDA:       { label: "FDA Data",  icon: <ShieldAlert size={12} />,  color: "bg-blue-700 text-white" },
@@ -119,10 +125,24 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-300 shadow-sm hover:shadow-md transition-shadow" dir={isUrdu ? "rtl" : "ltr"}>
+    <div className="bg-white border border-gray-300 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden" dir={isUrdu ? "rtl" : "ltr"}>
+
+      {/* ── External Source Banner ──────────────────────────────────────────── */}
+      {isExternalSource && (
+        <div className={`px-5 py-2.5 flex items-center gap-2 text-xs font-semibold ${
+          source === "OpenFDA"
+            ? "bg-blue-700 text-white"
+            : "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+        }`}>
+          <Info size={13} />
+          {source === "OpenFDA"
+            ? "Data sourced from U.S. FDA OpenFDA database — not in local DB"
+            : "AI-generated information — not verified in local database"}
+        </div>
+      )}
 
       {/* ── Medicine Header ─────────────────────────────────────────────────── */}
-      <div className="border-b border-gray-300 bg-gray-50 px-6 py-4">
+      <div className="border-b border-gray-300 bg-gray-100 px-6 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
@@ -169,49 +189,54 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
 
       <div className="p-6">
 
-        {/* ── Key Information Table ───────────────────────────────────────────── */}
-        <table className="w-full mb-6 border border-gray-300">
-          <tbody>
-            {data.dosage && (
-              <tr className="border-b border-gray-300">
-                <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700 w-1/3">
-                  {isUrdu ? "معیاری خوراک" : "Standard Dosage"}
-                </td>
-                <td className={`px-4 py-3 text-sm text-gray-900 ${isUrdu ? "text-right" : ""}`}>{data.dosage}</td>
-              </tr>
-            )}
-            {medicine.requiresPrescription !== undefined && (
-              <tr className="border-b border-gray-300">
-                <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">
-                  {isUrdu ? "نسخے کی ضرورت" : "Prescription Status"}
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  <span className={`font-semibold flex items-center gap-1 ${medicine.requiresPrescription ? "text-blue-700" : "text-blue-600"} ${isUrdu ? "flex-row-reverse justify-end" : ""}`}>
-                    {medicine.requiresPrescription
-                      ? <><AlertTriangle size={14} /> {isUrdu ? "نسخہ ضروری ہے" : "Prescription Required"}</>
-                      : <><CheckCircle size={14} /> {isUrdu ? "بغیر نسخے کے دستیاب" : "Over-the-Counter"}</>}
-                  </span>
-                </td>
-              </tr>
-            )}
-            {medicine.price > 0 && (
-              <tr className="border-b border-gray-300">
-                <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">
-                  {isUrdu ? "قیمت" : "Price"}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-900 font-semibold">Rs. {medicine.price}</td>
-              </tr>
-            )}
-            {medicine.category && (
-              <tr>
-                <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">
-                  {isUrdu ? "دوا کی قسم" : "Drug Class"}
-                </td>
-                <td className={`px-4 py-3 text-sm text-gray-900 capitalize ${isUrdu ? "text-right" : ""}`}>{medicine.category}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        {/* ── Key Info Cards ─────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          {data.dosage && (
+            <div style={isDark ? {background:'#1e3a5f',border:'1px solid #2563eb'} : {background:'#eff6ff',border:'1px solid #bfdbfe'}} className="rounded-xl p-3.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Pill size={13} className="text-blue-500" />
+                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">{isUrdu ? "معیاری خوراک" : "Dosage"}</p>
+              </div>
+              <p style={isDark?{color:'#e2e8f0'}:{color:'#1e3a5f'}} className="text-sm font-semibold leading-snug">{data.dosage}</p>
+            </div>
+          )}
+          {medicine.requiresPrescription !== undefined && (
+            <div style={isDark
+              ? (medicine.requiresPrescription ? {background:'#3b0a0a',border:'1px solid #dc2626'} : {background:'#052e16',border:'1px solid #16a34a'})
+              : (medicine.requiresPrescription ? {background:'#fef2f2',border:'1px solid #fca5a5'} : {background:'#f0fdf4',border:'1px solid #86efac'})
+            } className="rounded-xl p-3.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                {medicine.requiresPrescription
+                  ? <AlertTriangle size={13} className="text-red-500" />
+                  : <CheckCircle size={13} className="text-green-500" />}
+                <p className={`text-[10px] font-bold uppercase tracking-wide ${medicine.requiresPrescription ? 'text-red-500' : 'text-green-500'}`}>
+                  {isUrdu ? "نسخہ" : "Rx Status"}
+                </p>
+              </div>
+              <p style={isDark?{color:'#e2e8f0'}:{color: medicine.requiresPrescription?'#7f1d1d':'#14532d'}} className="text-sm font-semibold leading-snug">
+                {medicine.requiresPrescription ? (isUrdu ? "نسخہ ضروری" : "Prescription") : (isUrdu ? "بغیر نسخہ" : "Over-the-Counter")}
+              </p>
+            </div>
+          )}
+          {medicine.price > 0 && (
+            <div style={isDark ? {background:'#2e1065',border:'1px solid #7c3aed'} : {background:'#faf5ff',border:'1px solid #d8b4fe'}} className="rounded-xl p-3.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Info size={13} className="text-purple-500" />
+                <p className="text-[10px] font-bold text-purple-500 uppercase tracking-wide">{isUrdu ? "قیمت" : "Price"}</p>
+              </div>
+              <p style={isDark?{color:'#e2e8f0'}:{color:'#3b0764'}} className="text-sm font-semibold">Rs. {medicine.price}</p>
+            </div>
+          )}
+          {medicine.category && (
+            <div style={isDark ? {background:'#451a03',border:'1px solid #d97706'} : {background:'#fffbeb',border:'1px solid #fcd34d'}} className="rounded-xl p-3.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <ShieldAlert size={13} className="text-amber-500" />
+                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-wide">{isUrdu ? "دوا کی قسم" : "Drug Class"}</p>
+              </div>
+              <p style={isDark?{color:'#e2e8f0'}:{color:'#451a03'}} className="text-sm font-semibold capitalize leading-snug">{medicine.category}</p>
+            </div>
+          )}
+        </div>
 
         {/* ── Description ────────────────────────────────────────────────────── */}
         {data.description && (
@@ -219,20 +244,42 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
             <h3 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">
               {isUrdu ? "تفصیل" : "Description"}
             </h3>
-            <p className={`text-sm text-gray-700 leading-relaxed ${isUrdu ? "text-right leading-loose" : ""}`}>{data.description}</p>
+            <p className={`text-sm text-gray-700 leading-relaxed ${isUrdu ? "text-right leading-loose" : ""}` }>
+              {descExpanded || data.description.length <= DESC_LIMIT
+                ? data.description
+                : `${data.description.slice(0, DESC_LIMIT)}...`}
+            </p>
+            {data.description.length > DESC_LIMIT && (
+              <button
+                onClick={() => setDescExpanded(!descExpanded)}
+                className="text-xs text-blue-600 hover:text-blue-800 font-semibold mt-1 transition"
+              >
+                {descExpanded ? "Show less ▲" : "Read more ▼"}
+              </button>
+            )}
           </div>
         )}
 
         {/* ── AI Explanation ──────────────────────────────────────────────────── */}
         {data.aiExplanation && (
-          <div className="mb-6 bg-blue-50 border-l-4 border-blue-600 p-4">
+          <div className="mb-6 bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-xl">
             <div className={`flex items-center gap-2 mb-2 ${isUrdu ? "flex-row-reverse" : ""}`}>
               <Info size={16} className="text-blue-600" />
               <h3 className="text-sm font-bold text-blue-900 uppercase">
                 {isUrdu ? "AI سے معلومات" : "AI-Generated Information"}
               </h3>
             </div>
-            <p className={`text-sm text-gray-800 leading-relaxed ${isUrdu ? "text-right leading-loose" : ""}`}>{data.aiExplanation}</p>
+            <p className={`text-sm text-gray-800 leading-relaxed ${isUrdu ? "text-right leading-loose" : ""}`}>
+              {descExpanded || data.aiExplanation.length <= DESC_LIMIT
+                ? data.aiExplanation
+                : `${data.aiExplanation.slice(0, DESC_LIMIT)}...`}
+            </p>
+            {data.aiExplanation.length > DESC_LIMIT && (
+              <button onClick={() => setDescExpanded(!descExpanded)}
+                className="text-xs text-blue-600 hover:text-blue-800 font-semibold mt-1.5 transition">
+                {descExpanded ? "Show less ▲" : "Read more ▼"}
+              </button>
+            )}
           </div>
         )}
 
@@ -247,6 +294,16 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
                   : "WARNING: This medicine is commonly misused. Use only as directed by a healthcare professional."}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* ── External Source Notice ─────────────────────────────────────────── */}
+        {isExternalSource && (
+          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+            <AlertTriangle size={15} className="text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 leading-relaxed">
+              <strong>Note:</strong> This medicine is not in our local database. Data is from {source === "OpenFDA" ? "the U.S. FDA OpenFDA database" : "AI"}. Always verify with a licensed pharmacist or doctor.
+            </p>
           </div>
         )}
 
@@ -277,35 +334,37 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
         {/* ── Dosage Guide ────────────────────────────────────────────────────── */}
         {data.dosageGuide && Object.values(data.dosageGuide).some(v => v) && (
           <div className="mb-6">
-            <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wide">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wide flex items-center gap-2">
+              <Pill size={14} className="text-blue-600" />
               {isUrdu ? "خوراک کی ہدایات" : "Dosage Guidelines"}
             </h3>
-            <table className="w-full border border-gray-300">
-              <tbody>
-                {data.dosageGuide.adult && (
-                  <tr className="border-b border-gray-300">
-                    <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700 w-1/4">{isUrdu ? "بالغ" : "Adults"}</td>
-                    <td className={`px-4 py-3 text-sm text-gray-900 ${isUrdu ? "text-right" : ""}`}>{data.dosageGuide.adult}</td>
-                  </tr>
-                )}
-                {data.dosageGuide.child && (
-                  <tr className="border-b border-gray-300">
-                    <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">{isUrdu ? "بچے" : "Children"}</td>
-                    <td className={`px-4 py-3 text-sm text-gray-900 ${isUrdu ? "text-right" : ""}`}>{data.dosageGuide.child}</td>
-                  </tr>
-                )}
-                {data.dosageGuide.elderly && (
-                  <tr>
-                    <td className="bg-gray-100 px-4 py-3 font-semibold text-sm text-gray-700">{isUrdu ? "بزرگ" : "Elderly"}</td>
-                    <td className={`px-4 py-3 text-sm text-gray-900 ${isUrdu ? "text-right" : ""}`}>{data.dosageGuide.elderly}</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {data.dosageGuide.adult && (
+                <div style={isDark?{background:'#1e3a5f',border:'1px solid #2563eb'}:{background:'#eff6ff',border:'1px solid #bfdbfe'}} className="rounded-xl p-4">
+                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide mb-1.5">{isUrdu ? "بالغ" : "Adults"}</p>
+                  <p style={isDark?{color:'#e2e8f0'}:{color:'#1e3a5f'}} className="text-sm font-medium leading-snug">{data.dosageGuide.adult}</p>
+                </div>
+              )}
+              {data.dosageGuide.child && (
+                <div style={isDark?{background:'#052e16',border:'1px solid #16a34a'}:{background:'#f0fdf4',border:'1px solid #86efac'}} className="rounded-xl p-4">
+                  <p className="text-[10px] font-bold text-green-500 uppercase tracking-wide mb-1.5">{isUrdu ? "بچے" : "Children"}</p>
+                  <p style={isDark?{color:'#e2e8f0'}:{color:'#14532d'}} className="text-sm font-medium leading-snug">{data.dosageGuide.child}</p>
+                </div>
+              )}
+              {data.dosageGuide.elderly && (
+                <div style={isDark?{background:'#2e1065',border:'1px solid #7c3aed'}:{background:'#faf5ff',border:'1px solid #d8b4fe'}} className="rounded-xl p-4">
+                  <p className="text-[10px] font-bold text-purple-500 uppercase tracking-wide mb-1.5">{isUrdu ? "بزرگ" : "Elderly"}</p>
+                  <p style={isDark?{color:'#e2e8f0'}:{color:'#3b0764'}} className="text-sm font-medium leading-snug">{data.dosageGuide.elderly}</p>
+                </div>
+              )}
+            </div>
             {data.dosageGuide.notes && (
-              <p className={`text-xs text-gray-600 mt-2 italic bg-blue-50 p-3 border-l-4 border-blue-400 ${isUrdu ? "text-right" : ""}`}>
-                <strong>{isUrdu ? "نوٹ:" : "Note:"}</strong> {data.dosageGuide.notes}
-              </p>
+              <div className="mt-3 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-3 flex items-start gap-2">
+                <Info size={13} className="text-amber-600 shrink-0 mt-0.5" />
+                <p className={`text-xs text-amber-800 leading-relaxed ${isUrdu ? "text-right" : ""}`}>
+                  <strong>{isUrdu ? "نوٹ:" : "Note:"}</strong> {data.dosageGuide.notes}
+                </p>
+              </div>
             )}
           </div>
         )}
@@ -434,9 +493,13 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
       </div>
 
       {/* ── Clinical Details (expandable) ───────────────────────────────────── */}
-      <div className="border-t-2 border-gray-300 bg-gray-50">
-        <button onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-between px-6 py-4 text-sm font-bold text-gray-900 hover:bg-gray-100 transition uppercase tracking-wide">
+      <div className="border-t-2 border-gray-300 bg-gray-100">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = isDark ? '#334155' : '#e2e8f0'; }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; }}
+          style={{ color: isDark ? '#e2e8f0' : '#111827' }}
+          className="w-full flex items-center justify-between px-6 py-4 text-sm font-bold transition uppercase tracking-wide">
           <span>{isUrdu ? "طبی معلومات" : "Clinical Information"}</span>
           {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </button>

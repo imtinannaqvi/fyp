@@ -53,6 +53,16 @@ Give a specific dosage recommendation for this patient. Include any warnings bas
   }
 };
 
+// ── Helper: Detect overdose/multiple-tablet intent ─────────────────────────
+const detectOverdoseIntent = (message) => {
+  const lower = message.toLowerCase();
+  // matches: "took 2 tabs", "took 3 tablets", "ate 5 pills", "took many tabs", "took too many", "overdose"
+  return /took\s+(\d+|many|too many|several|multiple|a lot of)\s*(tab|tablet|pill|capsule|cap|mg|dose)/i.test(lower) ||
+    /ate\s+(\d+|many|too many|several|multiple)\s*(tab|tablet|pill|capsule|cap)/i.test(lower) ||
+    /overdose|over dose|over-dose/i.test(lower) ||
+    /(\d+|many|too many)\s*(tab|tablet|pill|capsule)s?\s*(of|at once|together)/i.test(lower);
+};
+
 // ── Helper: Detect medicine name from user message ────────────────────────────
 const extractMedicineFromMessage = async (userMessage) => {
   try {
@@ -210,6 +220,20 @@ export const medibotChat = async (req, res) => {
     const matchedMedicine = await extractMedicineFromMessage(lastUserMessage);
     const medicineContext = matchedMedicine ? buildMedicineContext(matchedMedicine) : "";
 
+    const isOverdose = detectOverdoseIntent(lastUserMessage);
+
+    const overdoseInstruction = isOverdose ? `
+⚠️ OVERDOSE / MULTIPLE DOSE ALERT DETECTED:
+The user has mentioned taking multiple tablets or a potentially dangerous dose.
+You MUST:
+1. Immediately warn them this is DANGEROUS and they should NOT do this.
+2. Tell them the safe/standard dosage of the medicine if known.
+3. List the serious risks and overdose symptoms for this medicine.
+4. Strongly advise them to contact a doctor or go to emergency NOW if they already took too many.
+5. Tell them NOT to take more doses.
+Be urgent, caring, and clear. This is a safety emergency response.
+` : "";
+
     const systemPrompt = `You are MediBot, an AI medicine safety assistant for Medico Guidance — a Pakistani health web app.
 Your job is to:
 1. Answer questions about self-medication risks and medicine safety
@@ -228,13 +252,14 @@ Available app pages you can refer users to:
 - /awareness → Self-medication awareness page
 
 Rules:
-- Keep responses SHORT (2–4 sentences max)
+- Keep responses SHORT (3–5 sentences max)
 - Use simple language suitable for Pakistani users
 - When relevant, suggest an app page in this exact format: [GO:/path|Button Label]
 - Never diagnose. Always recommend consulting a doctor for serious concerns.
 - Be friendly and caring in tone
 - If medicine database info is provided below, USE IT to give accurate details about that specific medicine
 
+${overdoseInstruction}
 ${medicineContext ? `\n${medicineContext}\nUse the above medicine data to answer accurately.` : ""}`;
 
     const response = await groq.chat.completions.create({
@@ -243,7 +268,7 @@ ${medicineContext ? `\n${medicineContext}\nUse the above medicine data to answer
         { role: "system", content: systemPrompt },
         ...messages,
       ],
-      max_tokens: 300,
+      max_tokens: 400,
       temperature: 0.5,
     });
 
@@ -253,6 +278,7 @@ ${medicineContext ? `\n${medicineContext}\nUse the above medicine data to answer
     // ── Return reply + matched medicine details if found ──────────────────────
     res.json({
       reply,
+      overdoseAlert: isOverdose,
       ...(matchedMedicine && {
         medicineFound: {
           id:                  matchedMedicine._id,
@@ -262,6 +288,7 @@ ${medicineContext ? `\n${medicineContext}\nUse the above medicine data to answer
           category:            matchedMedicine.category,
           dosage:              matchedMedicine.dosage,
           sideEffects:         matchedMedicine.sideEffects,
+          contraindications:   matchedMedicine.contraindications,
           requiresPrescription: matchedMedicine.requiresPrescription,
           aiExplanation:       matchedMedicine.aiExplanation,
         }
