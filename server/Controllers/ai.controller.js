@@ -10,7 +10,7 @@ const generateMedicineExplanation = async (medicine) => {
       model: "llama-3.3-70b-versatile",
       messages: [{
         role: "user",
-        content: `Explain the medicine "${medicine.name}" (${medicine.generic || ""}) in simple words that a non-medical person in Pakistan can understand. 
+        content: `Explain the medicine "${medicine.name}" (${medicine.generic || ""}) in simple words that a non-medical person in Pakistan can understand.
 Include: what it is used for, how it works, key warnings. Keep it to 3-4 sentences. No JSON, just plain text.`
       }],
       max_tokens: 300,
@@ -53,8 +53,50 @@ Give a specific dosage recommendation for this patient. Include any warnings bas
   }
 };
 
+// ── Helper: Detect medicine name from user message ────────────────────────────
+const extractMedicineFromMessage = async (userMessage) => {
+  try {
+    const medicines = await Medicine.find({ isApproved: true })
+      .select("name brand generic");
+
+    const msgLower = userMessage.toLowerCase();
+
+    // Check if any medicine name/brand/generic matches the message
+    for (const med of medicines) {
+      if (
+        msgLower.includes(med.name.toLowerCase()) ||
+        (med.brand && msgLower.includes(med.brand.toLowerCase())) ||
+        (med.generic && msgLower.includes(med.generic.toLowerCase()))
+      ) {
+        return med;
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error("Medicine extract error:", err.message);
+    return null;
+  }
+};
+
+// ── Helper: Build medicine context string ─────────────────────────────────────
+const buildMedicineContext = (medicine) => {
+  return `
+MEDICINE FOUND IN DATABASE:
+- Name: ${medicine.name}
+- Brand: ${medicine.brand || "N/A"}
+- Generic: ${medicine.generic || "N/A"}
+- Category: ${medicine.category || "N/A"}
+- Description: ${medicine.description || "N/A"}
+- Dosage: ${medicine.dosage || "N/A"}
+- Side Effects: ${Array.isArray(medicine.sideEffects) ? medicine.sideEffects.join(", ") : medicine.sideEffects || "N/A"}
+- Contraindications: ${Array.isArray(medicine.contraindications) ? medicine.contraindications.join(", ") : medicine.contraindications || "N/A"}
+- Food Interactions: ${Array.isArray(medicine.foodInteractions) ? medicine.foodInteractions.join(", ") : medicine.foodInteractions || "N/A"}
+- Requires Prescription: ${medicine.requiresPrescription ? "Yes" : "No"}
+- AI Explanation: ${medicine.aiExplanation || "N/A"}
+`;
+};
+
 // ── Generate & Save AI Explanation (Admin) ────────────────────────────────────
-// POST /api/ai/explain/:medicineId
 export const generateExplanation = async (req, res) => {
   try {
     const medicine = await Medicine.findById(req.params.medicineId);
@@ -77,7 +119,6 @@ export const generateExplanation = async (req, res) => {
 };
 
 // ── Get Personalized Dosage ───────────────────────────────────────────────────
-// GET /api/ai/dosage/:medicineId
 export const getPersonalizedDosage = async (req, res) => {
   try {
     const medicine = await Medicine.findById(req.params.medicineId);
@@ -115,7 +156,6 @@ export const getPersonalizedDosage = async (req, res) => {
 };
 
 // ── Bulk generate explanations (Admin) ───────────────────────────────────────
-// POST /api/ai/explain-all
 export const generateAllExplanations = async (req, res) => {
   try {
     const medicines = await Medicine.find({
@@ -165,17 +205,18 @@ export const medibotChat = async (req, res) => {
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content: `You are MediBot, an AI medicine safety assistant for Medico Guidance — a Pakistani health web app.
+    // ── Detect medicine in latest user message ────────────────────────────────
+    const lastUserMessage = [...messages].reverse().find(m => m.role === "user")?.content || "";
+    const matchedMedicine = await extractMedicineFromMessage(lastUserMessage);
+    const medicineContext = matchedMedicine ? buildMedicineContext(matchedMedicine) : "";
+
+    const systemPrompt = `You are MediBot, an AI medicine safety assistant for Medico Guidance — a Pakistani health web app.
 Your job is to:
 1. Answer questions about self-medication risks and medicine safety
 2. Explain dangers of specific medicines when misused (e.g. Panadol overdose, antibiotic resistance)
 3. Guide users to the right feature of the app when relevant
 4. Answer general medicine safety questions in simple, clear English
+5. When a medicine is mentioned, use the provided database info to give accurate, specific details
 
 Available app pages you can refer users to:
 - /search → Search any medicine for info, dosage, side effects
@@ -191,18 +232,42 @@ Rules:
 - Use simple language suitable for Pakistani users
 - When relevant, suggest an app page in this exact format: [GO:/path|Button Label]
 - Never diagnose. Always recommend consulting a doctor for serious concerns.
-- Be friendly and caring in tone`,
-        },
+- Be friendly and caring in tone
+- If medicine database info is provided below, USE IT to give accurate details about that specific medicine
+
+${medicineContext ? `\n${medicineContext}\nUse the above medicine data to answer accurately.` : ""}`;
+
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: systemPrompt },
         ...messages,
       ],
-      max_tokens: 200,
+      max_tokens: 300,
       temperature: 0.5,
     });
 
     const reply = response.choices?.[0]?.message?.content?.trim();
     if (!reply) return res.status(500).json({ message: "No response from AI" });
 
-    res.json({ reply });
+    // ── Return reply + matched medicine details if found ──────────────────────
+    res.json({
+      reply,
+      ...(matchedMedicine && {
+        medicineFound: {
+          id:                  matchedMedicine._id,
+          name:                matchedMedicine.name,
+          brand:               matchedMedicine.brand,
+          generic:             matchedMedicine.generic,
+          category:            matchedMedicine.category,
+          dosage:              matchedMedicine.dosage,
+          sideEffects:         matchedMedicine.sideEffects,
+          requiresPrescription: matchedMedicine.requiresPrescription,
+          aiExplanation:       matchedMedicine.aiExplanation,
+        }
+      }),
+    });
+
   } catch (err) {
     console.error("MediBot error:", err.message);
     res.status(500).json({ message: err.message });
