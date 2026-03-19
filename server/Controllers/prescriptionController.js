@@ -1,4 +1,5 @@
-import Tesseract from "tesseract.js";
+import axios from "axios";
+import FormData from "form-data";
 import Groq from "groq-sdk";
 import Medicine from "../models/Medicine.js";
 
@@ -10,11 +11,39 @@ export const scanPrescription = async (req, res) => {
       return res.status(400).json({ message: "Please upload a prescription image" });
     }
 
-    // ── Step 1: OCR ──────────────────────────────────────────────────────────
-    const { data: { text, confidence } } = await Tesseract.recognize(
-      req.file.processedBuffer,
-      "eng"
+    // ── Step 1: OCR via OCR.space API ────────────────────────────────────────
+    const formData = new FormData();
+    formData.append("file", req.file.processedBuffer, {
+      filename: req.file.originalname || "image.jpg",
+      contentType: req.file.mimetype || "image/jpeg",
+    });
+    formData.append("language", "eng");
+    formData.append("isOverlayRequired", "false");
+    formData.append("detectOrientation", "true");
+    formData.append("scale", "true");
+    formData.append("OCREngine", "2");
+
+    const ocrResponse = await axios.post(
+      "https://api.ocr.space/parse/image",
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(),
+          apikey: process.env.OCR_API_KEY,
+        },
+      }
     );
+
+    const parsed = ocrResponse.data?.ParsedResults?.[0];
+
+    if (!parsed || parsed.FileParseExitCode !== 1) {
+      return res.status(422).json({
+        message: "Could not read prescription. Please upload a clearer image.",
+      });
+    }
+
+    const text       = parsed.ParsedText || "";
+    const confidence = 90; // OCR.space doesn't return confidence score
 
     if (!text || text.trim().length < 3) {
       return res.status(422).json({
@@ -99,7 +128,7 @@ Extract only medicine names. Ignore dosage numbers, clinic names, addresses.`
       })
     );
 
-    // ── Step 4: Check interactions using Groq AI ──────────────────────────────
+    // ── Step 4: Check interactions using Groq AI ─────────────────────────────
     let interactionResult = { hasInteractions: false, total: 0, details: [] };
 
     if (extracted.medicineNames.length >= 2) {
