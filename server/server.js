@@ -8,11 +8,11 @@ dotenv.config();
 const app = express();
 
 // ── Clean & Robust CORS Configuration ──────────────────────────────────────────
-// This handles both the origin check and the preflight (OPTIONS) automatically.
 const allowedOrigins = [
   "http://localhost:5173",
   "https://medico-app-eta.vercel.app",
-  "https://medico-ftv4k5n46-imtinans-projects-0205c3f4.vercel.app" // Specific URL from your console error
+  "https://medico-ftv4k5n46-imtinans-projects-0205c3f4.vercel.app",
+  "https://fyp-ed6c.vercel.app"  // ✅ Added your live frontend URL
 ];
 
 app.use(cors({
@@ -20,22 +20,25 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     
-    // Check if origin is in allowed list OR matches a Vercel subdomain regex
+    // Check if origin is in allowed list OR matches any Vercel subdomain
     const isAllowed = allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin);
     
     if (isAllowed) {
       callback(null, true);
     } else {
-      console.log("CORS Blocked Origin:", origin); // Helps debugging in Vercel logs
+      console.log("CORS Blocked Origin:", origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   credentials: true,
-  optionsSuccessStatus: 200 
+  optionsSuccessStatus: 200
 }));
 
+// ✅ Handle preflight requests for ALL routes explicitly
+// ✅ Use this instead
+app.options('/{*path}', cors());
 // Middlewares
 app.use(express.json());
 
@@ -75,10 +78,10 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
     if (process.env.NODE_ENV !== 'production') {
-        const PORT = process.env.PORT || 5000;
-        app.listen(PORT, () => {
-          console.log(`🚀 Server running on port ${PORT}`);
-        });
+      const PORT = process.env.PORT || 5000;
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+      });
     }
   })
   .catch((err) => console.error("❌ MongoDB error:", err));
