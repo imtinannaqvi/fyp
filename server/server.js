@@ -25,7 +25,6 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  // ✅ Respond to preflight immediately
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
@@ -67,15 +66,25 @@ app.use("/api/fake-report",  fakeReportRoutes);
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => res.json({ message: "Medico Guidance API running ✅" }));
 
-// ── DB + Server ───────────────────────────────────────────────────────────────
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("✅ MongoDB connected");
-    if (process.env.NODE_ENV !== "production") {
-      const PORT = process.env.PORT || 5000;
-      app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-    }
-  })
-  .catch((err) => console.error("❌ MongoDB error:", err));
+// ── DB Connection (Vercel serverless optimized) ───────────────────────────────
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) return;
+  const db = await mongoose.connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    bufferCommands: false,
+  });
+  isConnected = db.connections[0].readyState === 1;
+  console.log("✅ MongoDB connected");
+};
+
+connectDB().catch((err) => console.error("❌ MongoDB error:", err));
+
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}
 
 export default app;
