@@ -175,22 +175,32 @@ const SmartSearch = () => {
 
                   {/* Dropdown */}
                   {showDropdown && suggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
+                    <div style={{
+                      background: isDark ? '#1e293b' : '#ffffff',
+                      border: isDark ? '1px solid #334155' : '1px solid #d1d5db',
+                      borderRadius: '12px',
+                      boxShadow: isDark ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 25px rgba(0,0,0,0.1)'
+                    }} className="absolute top-full left-0 right-0 mt-1 max-h-64 overflow-y-auto z-50">
                       {suggestions.map((suggestion, i) => (
                         <div
                           key={suggestion._id || i}
                           onClick={() => handleSuggestionClick(suggestion)}
-                          className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                          style={{
+                            borderBottom: i < suggestions.length - 1 ? (isDark ? '1px solid #334155' : '1px solid #f1f5f9') : 'none'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = isDark ? '#334155' : '#eff6ff'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                          className="px-4 py-3 cursor-pointer transition-colors"
                         >
-                          <div className="font-medium text-gray-900 text-sm">
+                          <div style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="font-medium text-sm">
                             {/* ✅ Highlight matching prefix */}
-                            <span className="text-blue-600 font-semibold">
+                            <span style={{ color: '#3b82f6', fontWeight: '600' }}>
                               {suggestion.name.slice(0, query.length)}
                             </span>
                             {suggestion.name.slice(query.length)}
                           </div>
                           {(suggestion.brand || suggestion.generic) && (
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div style={{ color: isDark ? '#94a3b8' : '#64748b' }} className="text-xs mt-1">
                               {suggestion.brand && <span>Brand: {suggestion.brand}</span>}
                               {suggestion.brand && suggestion.generic && <span className="mx-1">•</span>}
                               {suggestion.generic && <span>Generic: {suggestion.generic}</span>}
