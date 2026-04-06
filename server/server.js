@@ -5,11 +5,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;   // ✅ DEFINE PORT HERE
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   const allowedOrigins = [
     "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
     "https://fyp-ed6c.vercel.app",
     "https://medico-app-eta.vercel.app",
     "https://medico-ftv4k5n46-imtinans-projects-0205c3f4.vercel.app"
@@ -33,12 +36,12 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // ── MongoDB cached connection ─────────────────────────────────────────────────
-// This is the correct pattern for Vercel serverless — reuses connection across invocations
 let cached = global.mongoose;
 if (!cached) cached = global.mongoose = { conn: null, promise: null };
 
 async function connectDB() {
   if (cached.conn) return cached.conn;
+
   if (!cached.promise) {
     cached.promise = mongoose.connect(process.env.MONGODB_URI, {
       bufferCommands: false,
@@ -47,20 +50,24 @@ async function connectDB() {
       maxPoolSize: 10,
     });
   }
+
   cached.conn = await cached.promise;
   return cached.conn;
 }
 
-// ── Connect before every request ─────────────────────────────────────────────
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    console.error("MongoDB connection error:", err.message);
-    res.status(500).json({ message: "Database connection failed" });
-  }
-});
+// ✅ CONNECT DATABASE AND START SERVER
+connectDB()
+  .then(() => {
+    console.log("✅ MongoDB Connected");
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+
+  })
+  .catch((err) => {
+    console.error("❌ Failed to connect to MongoDB:", err.message);
+  });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 import authRoutes         from "./routes/auth.route.js";
@@ -77,26 +84,20 @@ import fakeReportRoutes   from "./routes/fakeReport.routes.js";
 import expiryRoutes       from "./routes/expiry.route.js";
 
 // ── API Routes ────────────────────────────────────────────────────────────────
-app.use("/api/auth",         authRoutes);
-app.use("/api/medicine",     medicineRoutes);
-app.use("/api/user",         userRoutes);
-app.use("/api/ai",           aiRoutes);
-app.use("/api/ocr",          ocrRoutes);
-app.use("/api/interaction",  interactionRoutes);
-app.use("/api/admin",        adminRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/medicine", medicineRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/ocr", ocrRoutes);
+app.use("/api/interaction", interactionRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/prescription", prescriptionRoutes);
-app.use("/api/symptom",      symptomRoutes);
-app.use("/api/reminders",    reminderRoutes);
-app.use("/api/expiry",       expiryRoutes);
-app.use("/api/fake-report",  fakeReportRoutes);
+app.use("/api/symptom", symptomRoutes);
+app.use("/api/reminders", reminderRoutes);
+app.use("/api/expiry", expiryRoutes);
+app.use("/api/fake-report", fakeReportRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => res.json({ message: "Medico Guidance API running ✅" }));
-
-// ── Local dev server ──────────────────────────────────────────────────────────
-if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-}
 
 export default app;
