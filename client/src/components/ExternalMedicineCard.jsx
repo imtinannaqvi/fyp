@@ -55,9 +55,9 @@ const ExternalMedicineCard = ({ medicine, source }) => {
   // tag factory
   const tagStyle = (accent) => {
     const map = {
-      orange: isDark ? { bg:"#431407", border:"#c2410c", text:"#fdba74" } : { bg:"#fff7ed", border:"#fed7aa", text:"#c2410c" },
+      orange: isDark ? { bg:"#1e3a5f", border:"#2563eb", text:"#93c5fd" } : { bg:"#eff6ff", border:"#bfdbfe", text:"#2563eb" },
       red:    isDark ? { bg:"#3b0a0a", border:"#dc2626", text:"#fca5a5" } : { bg:"#fef2f2", border:"#fca5a5", text:"#dc2626" },
-      purple: isDark ? { bg:"#2e1065", border:"#7c3aed", text:"#c4b5fd" } : { bg:"#faf5ff", border:"#d8b4fe", text:"#7c3aed" },
+      purple: isDark ? { bg:"#1e3a5f", border:"#2563eb", text:"#93c5fd" } : { bg:"#eff6ff", border:"#bfdbfe", text:"#2563eb" },
       blue:   isDark ? { bg:"#1e3a5f", border:"#2563eb", text:"#93c5fd" } : { bg:"#eff6ff", border:"#bfdbfe", text:"#2563eb" },
       green:  isDark ? { bg:"#052e16", border:"#16a34a", text:"#86efac" } : { bg:"#f0fdf4", border:"#86efac", text:"#16a34a" },
     };
@@ -106,7 +106,7 @@ const ExternalMedicineCard = ({ medicine, source }) => {
     <div style={{ ...card, borderRadius: "16px", overflow: "hidden", boxShadow: isDark ? "0 4px 24px rgba(0,0,0,0.4)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
 
       {/* ── Source strip ──────────────────────────────────────────────────────── */}
-      <div style={{ background: isOpenFDA ? "linear-gradient(90deg,#1d4ed8,#2563eb)" : "linear-gradient(90deg,#7c3aed,#2563eb)" }}
+      <div style={{ background: "linear-gradient(90deg,#1d4ed8,#2563eb)" }}
         className="px-5 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2 text-white">
           {isOpenFDA ? <ShieldAlert size={13} /> : <Zap size={13} />}

@@ -29,7 +29,7 @@ const Row = ({ label, val1, val2, type = "text" }) => {
       : <span className="flex items-center gap-1 text-green-600 text-sm font-semibold"><CheckCircle size={14} /> No</span>;
 
     if (type === "prescription") return val
-      ? <span className="flex items-center gap-1 text-orange-600 text-sm font-semibold"><Shield size={14} /> Required</span>
+      ? <span className="flex items-center gap-1 text-blue-600 text-sm font-semibold"><Shield size={14} /> Required</span>
       : <span className="flex items-center gap-1 text-green-600 text-sm font-semibold"><CheckCircle size={14} /> OTC</span>;
 
     if (Array.isArray(val)) return (
@@ -126,16 +126,16 @@ const MedicineSearchBox = ({ label, medicine, onSelect, onClear, color }) => {
 
   if (medicine) {
     return (
-      <div className={`flex-1 border-2 ${color === "blue" ? "border-blue-200 bg-blue-50" : "border-purple-200 bg-purple-50"} rounded-xl p-4`}>
+      <div className={`flex-1 border-2 border-blue-200 bg-blue-50 rounded-xl p-4`}>
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className={`font-bold text-lg ${color === "blue" ? "text-blue-900" : "text-purple-900"}`}>{medicine.name}</p>
+            <p className={`font-bold text-lg text-blue-900`}>{medicine.name}</p>
             {medicine.brand && <p className="text-sm text-gray-500">{medicine.brand}</p>}
             {medicine.generic && <p className="text-xs text-gray-400">Generic: {medicine.generic}</p>}
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${
               medicine._source === "database" ? "bg-blue-100 text-blue-700" :
               medicine._source === "OpenFDA" ? "bg-green-100 text-green-700" :
-              "bg-orange-100 text-orange-700"
+              "bg-blue-100 text-blue-700"
             }`}>
               {medicine._source === "database" ? "✓ Verified" : medicine._source === "OpenFDA" ? "FDA Data" : "AI Generated"}
             </span>
@@ -152,7 +152,7 @@ const MedicineSearchBox = ({ label, medicine, onSelect, onClear, color }) => {
     <div className="flex-1">
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{label}</p>
       <div className="relative">
-        <div className={`flex items-center gap-2 border-2 ${color === "blue" ? "border-blue-300 focus-within:border-blue-500" : "border-purple-300 focus-within:border-purple-500"} rounded-xl px-4 py-3 bg-white transition`}>
+        <div className={`flex items-center gap-2 border-2 border-blue-300 focus-within:border-blue-500 rounded-xl px-4 py-3 bg-white transition`}>
           <Search size={16} className="text-gray-400 shrink-0" />
           <input
             type="text"
@@ -228,9 +228,9 @@ const Compare = () => {
                 <p className="font-bold text-lg">{med1.name}</p>
                 {med1.brand && <p className="text-blue-200 text-sm">{med1.brand}</p>}
               </div>
-              <div className="bg-purple-600 text-white rounded-xl p-4 text-center">
+              <div className="bg-blue-700 text-white rounded-xl p-4 text-center">
                 <p className="font-bold text-lg">{med2.name}</p>
-                {med2.brand && <p className="text-purple-200 text-sm">{med2.brand}</p>}
+                {med2.brand && <p className="text-blue-200 text-sm">{med2.brand}</p>}
               </div>
             </div>
 
