@@ -137,11 +137,11 @@ const SmartSearch = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50" style={{ backgroundColor: isDark ? '#0f172a' : '#f9fafb' }}>
         {/* Search Header */}
         <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderBottom: isDark ? '1px solid #334155' : '1px solid #e5e7eb' }} className="sticky top-0 md:top-16 z-10 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 py-6">
-            <h1 className="text-xl font-semibold text-gray-900 mb-4">Medicine Information Search</h1>
+            <h1 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Medicine Information Search</h1>
             <form onSubmit={handleSearch} className="relative">
               <div className="flex gap-3">
                 <div ref={dropdownRef} className="flex-1 relative">
@@ -193,7 +193,6 @@ const SmartSearch = () => {
                           className="px-4 py-3 cursor-pointer transition-colors"
                         >
                           <div style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="font-medium text-sm">
-                            {/* ✅ Highlight matching prefix */}
                             <span style={{ color: '#3b82f6', fontWeight: '600' }}>
                               {suggestion.name.slice(0, query.length)}
                             </span>
@@ -227,30 +226,30 @@ const SmartSearch = () => {
         <div className="max-w-6xl mx-auto px-6 py-8">
           {/* Loading */}
           {loading && (
-            <div className="flex flex-col items-center justify-center py-20 bg-white border border-gray-200">
+            <div className={`flex flex-col items-center justify-center py-20 border rounded-lg ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'}`}>
               <Loader size={40} className="text-blue-600 animate-spin mb-4" />
-              <p className="text-gray-600 text-sm">Searching database...</p>
+              <p className={`${isDark ? 'text-slate-400' : 'text-gray-600'} text-sm`}>Searching database...</p>
             </div>
           )}
 
           {/* Empty State */}
           {!loading && !results && !searchParams.get("q") && (
-            <div className="bg-white border border-gray-200 p-12">
+            <div className={`border p-12 rounded-lg ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'}`}>
               <div className="max-w-3xl mx-auto text-center">
                 <Database size={48} className="mx-auto text-blue-600 mb-4" />
-                <h2 className="text-2xl font-semibold text-gray-900 mb-3">Medicine Database</h2>
-                <p className="text-gray-600 mb-8 leading-relaxed">
+                <h2 className={`text-2xl font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>Medicine Database</h2>
+                <p className={`${isDark ? 'text-slate-400' : 'text-gray-600'} mb-8 leading-relaxed`}>
                   Search for prescription and over-the-counter medications to view dosage information,
                   side effects, warnings, and drug interactions.
                 </p>
-                <div className="border-t border-gray-200 pt-6">
+                <div className={`border-t pt-6 ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Search</p>
                   <div className="flex flex-wrap justify-center gap-3">
                     {["Panadol", "Aspirin", "Brufen", "Flagyl"].map((s) => (
                       <button
                         key={s}
                         onClick={() => setSearchParams({ q: s })}
-                        className="bg-white border border-gray-300 hover:border-blue-600 hover:text-blue-600 text-gray-700 text-sm font-medium px-5 py-2 transition"
+                        className={`border rounded px-5 py-2 text-sm font-medium transition ${isDark ? 'bg-slate-900 border-slate-700 text-slate-300 hover:border-blue-500' : 'bg-white border-gray-300 hover:border-blue-600 hover:text-blue-600 text-gray-700'}`}
                       >
                         {s}
                       </button>
@@ -261,26 +260,34 @@ const SmartSearch = () => {
             </div>
           )}
 
-          {/* Results */}
+          {/* Unified Results Section */}
           {!loading && results && results.medicines?.length > 0 && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between bg-white border border-gray-200 px-6 py-4">
-                <p className="text-sm text-gray-700">
-                  <span className="font-semibold text-gray-900">{results.medicines.length}</span>{" "}
+              <div className={`flex items-center justify-between border px-6 py-4 rounded-lg ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'}`}>
+                <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                  <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{results.medicines.length}</span>{" "}
                   {results.medicines.length === 1 ? "result" : "results"} found
                 </p>
-                {results.source === "AI Generated" && (
+                {results.source !== "database" && (
                   <span className="flex items-center gap-2 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1">
-                    <AlertTriangle size={14} /> AI-Generated
+                    <AlertTriangle size={14} /> AI-Generated Information
                   </span>
                 )}
               </div>
 
               <div className="space-y-6">
+                {/* ✅ UPDATED: Always use MedicineCard for a consistent UI. 
+                  If the medicine is not in the DB (source !== database), 
+                  MedicineCard will still render its details in the standard format.
+                */}
                 {results.medicines.map((med, i) => (
-                  results.source === "database"
-                    ? <MedicineCard key={med._id || `med-${i}`} medicine={med} source={results.source} savedIds={savedIds} onSaveToggle={handleSaveToggle} />
-                    : <ExternalMedicineCard key={med._id || `med-${i}`} medicine={med} source={results.source} />
+                  <MedicineCard 
+                    key={med._id || `med-${i}`} 
+                    medicine={med} 
+                    source={results.source} 
+                    savedIds={savedIds} 
+                    onSaveToggle={handleSaveToggle} 
+                  />
                 ))}
               </div>
             </div>
@@ -288,10 +295,10 @@ const SmartSearch = () => {
 
           {/* No Results */}
           {!loading && results && results.medicines?.length === 0 && (
-            <div className="bg-white border border-gray-200 p-12 text-center">
+            <div className={`border p-12 text-center rounded-lg ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'}`}>
               <Inbox size={48} className="mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Results Found</h3>
-              <p className="text-gray-600">
+              <h3 className={`text-lg font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>No Results Found</h3>
+              <p className={`${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
                 No matches for "{query}". Please check the spelling or try a generic name.
               </p>
             </div>
