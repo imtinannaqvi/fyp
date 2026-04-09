@@ -132,7 +132,7 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
         <div className={`px-5 py-2.5 flex items-center gap-2 text-xs font-semibold ${
           source === "OpenFDA"
             ? "bg-blue-700 text-white"
-            : "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+            : "bg-blue-600 text-white"
         }`}>
           <Info size={13} />
           {source === "OpenFDA"
@@ -219,21 +219,21 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
             </div>
           )}
           {medicine.price > 0 && (
-            <div style={isDark ? {background:'#2e1065',border:'1px solid #7c3aed'} : {background:'#faf5ff',border:'1px solid #d8b4fe'}} className="rounded-xl p-3.5">
+            <div style={isDark ? {background:'#1e3a5f',border:'1px solid #2563eb'} : {background:'#eff6ff',border:'1px solid #bfdbfe'}} className="rounded-xl p-3.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <Info size={13} className="text-purple-500" />
-                <p className="text-[10px] font-bold text-purple-500 uppercase tracking-wide">{isUrdu ? "قیمت" : "Price"}</p>
+                <Info size={13} className="text-blue-500" />
+                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">{isUrdu ? "قیمت" : "Price"}</p>
               </div>
-              <p style={isDark?{color:'#e2e8f0'}:{color:'#3b0764'}} className="text-sm font-semibold">Rs. {medicine.price}</p>
+              <p style={isDark?{color:'#e2e8f0'}:{color:'#1e3a5f'}} className="text-sm font-semibold">Rs. {medicine.price}</p>
             </div>
           )}
           {medicine.category && (
-            <div style={isDark ? {background:'#451a03',border:'1px solid #d97706'} : {background:'#fffbeb',border:'1px solid #fcd34d'}} className="rounded-xl p-3.5">
+            <div style={isDark ? {background:'#1e3a5f',border:'1px solid #2563eb'} : {background:'#eff6ff',border:'1px solid #bfdbfe'}} className="rounded-xl p-3.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <ShieldAlert size={13} className="text-amber-500" />
-                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-wide">{isUrdu ? "دوا کی قسم" : "Drug Class"}</p>
+                <ShieldAlert size={13} className="text-blue-500" />
+                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">{isUrdu ? "دوا کی قسم" : "Drug Class"}</p>
               </div>
-              <p style={isDark?{color:'#e2e8f0'}:{color:'#451a03'}} className="text-sm font-semibold capitalize leading-snug">{medicine.category}</p>
+              <p style={isDark?{color:'#e2e8f0'}:{color:'#1e3a5f'}} className="text-sm font-semibold capitalize leading-snug">{medicine.category}</p>
             </div>
           )}
         </div>
@@ -312,18 +312,18 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
           <div className="mb-6">
             {!dosage ? (
               <button onClick={handleGetDosage} disabled={loadingDosage}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-3 px-4 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 px-4 transition disabled:opacity-50 flex items-center justify-center gap-2">
                 {loadingDosage
                   ? <><Clock size={16} className="animate-spin" /> {isUrdu ? "خوراک حساب ہو رہی ہے..." : "Calculating Personalized Dosage..."}</>
                   : <><Pill size={16} /> {isUrdu ? "ذاتی خوراک کی سفارش حاصل کریں" : "Get Personalized Dosage Recommendation"}</>}
               </button>
             ) : (
-              <div className="bg-indigo-50 border-l-4 border-indigo-600 p-4">
-                <h3 className={`text-sm font-bold text-indigo-900 mb-2 uppercase ${isUrdu ? "text-right" : ""}`}>
+              <div className="bg-blue-50 border-l-4 border-blue-600 p-4">
+                <h3 className={`text-sm font-bold text-blue-900 mb-2 uppercase ${isUrdu ? "text-right" : ""}`}>
                   {isUrdu ? "آپ کی ذاتی خوراک" : "Your Personalized Dosage"}
                 </h3>
                 <p className={`text-sm text-gray-800 leading-relaxed mb-3 ${isUrdu ? "text-right leading-loose" : ""}`}>{dosage}</p>
-                <button onClick={() => setDosage(null)} className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline">
+                <button onClick={() => setDosage(null)} className="text-xs text-blue-600 hover:text-blue-800 font-semibold underline">
                   {isUrdu ? "چھپائیں" : "Hide Recommendation"}
                 </button>
               </div>
@@ -352,16 +352,16 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
                 </div>
               )}
               {data.dosageGuide.elderly && (
-                <div style={isDark?{background:'#2e1065',border:'1px solid #7c3aed'}:{background:'#faf5ff',border:'1px solid #d8b4fe'}} className="rounded-xl p-4">
-                  <p className="text-[10px] font-bold text-purple-500 uppercase tracking-wide mb-1.5">{isUrdu ? "بزرگ" : "Elderly"}</p>
-                  <p style={isDark?{color:'#e2e8f0'}:{color:'#3b0764'}} className="text-sm font-medium leading-snug">{data.dosageGuide.elderly}</p>
+                <div style={isDark?{background:'#1e3a5f',border:'1px solid #2563eb'}:{background:'#eff6ff',border:'1px solid #bfdbfe'}} className="rounded-xl p-4">
+                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide mb-1.5">{isUrdu ? "بزرگ" : "Elderly"}</p>
+                  <p style={isDark?{color:'#e2e8f0'}:{color:'#1e3a5f'}} className="text-sm font-medium leading-snug">{data.dosageGuide.elderly}</p>
                 </div>
               )}
             </div>
             {data.dosageGuide.notes && (
-              <div className="mt-3 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-3 flex items-start gap-2">
-                <Info size={13} className="text-amber-600 shrink-0 mt-0.5" />
-                <p className={`text-xs text-amber-800 leading-relaxed ${isUrdu ? "text-right" : ""}`}>
+              <div className="mt-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-xl p-3 flex items-start gap-2">
+                <Info size={13} className="text-blue-600 shrink-0 mt-0.5" />
+                <p className={`text-xs text-blue-800 leading-relaxed ${isUrdu ? "text-right" : ""}`}>
                   <strong>{isUrdu ? "نوٹ:" : "Note:"}</strong> {data.dosageGuide.notes}
                 </p>
               </div>
@@ -393,18 +393,18 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
 
         {/* ── Food & Drink to Avoid ────────────────────────────────────────────── */}
         {data.foodInteractions?.length > 0 && (
-          <div className="mb-6 border-2 border-orange-200 rounded-lg overflow-hidden">
-            <div className={`bg-orange-500 px-5 py-3 flex items-center gap-2 ${isUrdu ? "flex-row-reverse" : ""}`}>
+          <div className="mb-6 border-2 border-blue-200 rounded-lg overflow-hidden">
+            <div className={`bg-blue-500 px-5 py-3 flex items-center gap-2 ${isUrdu ? "flex-row-reverse" : ""}`}>
               <Utensils size={18} className="text-white" />
               <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                 {isUrdu ? "کھانے پینے سے پرہیز" : "Food & Drink to Avoid"}
               </h3>
             </div>
-            <div className="bg-orange-50 p-5">
+            <div className="bg-blue-50 p-5">
               <ul className="space-y-2">
                 {data.foodInteractions.map((item, i) => (
-                  <li key={i} className={`flex items-start gap-3 text-sm text-orange-900 ${isUrdu ? "flex-row-reverse text-right" : ""}`}>
-                    <XCircle size={15} className="text-orange-500 shrink-0 mt-0.5" />
+                  <li key={i} className={`flex items-start gap-3 text-sm text-blue-900 ${isUrdu ? "flex-row-reverse text-right" : ""}`}>
+                    <XCircle size={15} className="text-blue-500 shrink-0 mt-0.5" />
                     <span className={isUrdu ? "leading-loose" : ""}>{item}</span>
                   </li>
                 ))}
@@ -458,30 +458,30 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
 
         {/* ── Pregnancy & Breastfeeding ────────────────────────────────────────── */}
         {(data.pregnancyWarning || data.breastfeedingWarning) && (
-          <div className="mb-6 border-2 border-pink-200 rounded-lg overflow-hidden">
-            <div className={`bg-pink-600 px-5 py-3 flex items-center gap-2 ${isUrdu ? "flex-row-reverse" : ""}`}>
+          <div className="mb-6 border-2 border-blue-200 rounded-lg overflow-hidden">
+            <div className={`bg-blue-600 px-5 py-3 flex items-center gap-2 ${isUrdu ? "flex-row-reverse" : ""}`}>
               <Baby size={18} className="text-white" />
               <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                 {isUrdu ? "حمل اور دودھ پلانا" : "Pregnancy & Breastfeeding"}
               </h3>
             </div>
-            <div className="bg-pink-50 p-5 space-y-4">
+            <div className="bg-blue-50 p-5 space-y-4">
               {data.pregnancyWarning && (
                 <div>
-                  <p className={`text-xs font-bold text-pink-700 uppercase mb-1 flex items-center gap-1 ${isUrdu ? "flex-row-reverse" : ""}`}>
+                  <p className={`text-xs font-bold text-blue-700 uppercase mb-1 flex items-center gap-1 ${isUrdu ? "flex-row-reverse" : ""}`}>
                     <Baby size={12} /> {isUrdu ? "حمل" : "Pregnancy"}
                   </p>
-                  <p className={`text-sm text-pink-900 leading-relaxed pl-3 border-l-2 border-pink-300 ${isUrdu ? "text-right pr-3 pl-0 border-r-2 border-l-0 leading-loose" : ""}`}>
+                  <p className={`text-sm text-blue-900 leading-relaxed pl-3 border-l-2 border-blue-300 ${isUrdu ? "text-right pr-3 pl-0 border-r-2 border-l-0 leading-loose" : ""}`}>
                     {data.pregnancyWarning}
                   </p>
                 </div>
               )}
               {data.breastfeedingWarning && (
                 <div>
-                  <p className={`text-xs font-bold text-pink-700 uppercase mb-1 flex items-center gap-1 ${isUrdu ? "flex-row-reverse" : ""}`}>
+                  <p className={`text-xs font-bold text-blue-700 uppercase mb-1 flex items-center gap-1 ${isUrdu ? "flex-row-reverse" : ""}`}>
                     <Baby size={12} /> {isUrdu ? "دودھ پلانا" : "Breastfeeding"}
                   </p>
-                  <p className={`text-sm text-pink-900 leading-relaxed pl-3 border-l-2 border-pink-300 ${isUrdu ? "text-right pr-3 pl-0 border-r-2 border-l-0 leading-loose" : ""}`}>
+                  <p className={`text-sm text-blue-900 leading-relaxed pl-3 border-l-2 border-blue-300 ${isUrdu ? "text-right pr-3 pl-0 border-r-2 border-l-0 leading-loose" : ""}`}>
                     {data.breastfeedingWarning}
                   </p>
                 </div>
