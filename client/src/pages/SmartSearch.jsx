@@ -22,7 +22,7 @@ const SmartSearch = () => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const dropdownRef = useRef(null);
-  const debounceRef = useRef(null); // ✅ debounce timer ref
+  const debounceRef = useRef(null);
 
   const doSearch = useCallback(async (searchQuery) => {
     const term = searchQuery?.trim();
@@ -37,7 +37,9 @@ const SmartSearch = () => {
       const { data } = await API.get(`/medicine/smart-search?q=${encodeURIComponent(term)}`);
       setResults(data);
 
-      if (user) {
+      // ✅ Only log search history if user is logged in with a valid token
+      const token = localStorage.getItem("token");
+      if (user && token) {
         API.post("/user/search-history", { query: term }).catch(() => {});
       }
     } catch (err) {
@@ -94,7 +96,7 @@ const SmartSearch = () => {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) return;
 
-    clearTimeout(debounceRef.current); // cancel any pending suggestion fetch
+    clearTimeout(debounceRef.current);
     setShowDropdown(false);
 
     if (trimmedQuery === searchParams.get("q")) {
@@ -104,7 +106,6 @@ const SmartSearch = () => {
     }
   };
 
-  // ✅ Debounced input handler — waits 400ms after user stops typing
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQuery(value);
@@ -156,7 +157,6 @@ const SmartSearch = () => {
                       style={{ backgroundColor: 'transparent', color: isDark ? '#f1f5f9' : '#111827', outline: 'none', border: 'none' }}
                       className="hero-search-input flex-1 text-sm placeholder:text-gray-400"
                     />
-                    {/* ✅ Clear button */}
                     {query && (
                       <button
                         type="button"
@@ -276,17 +276,13 @@ const SmartSearch = () => {
               </div>
 
               <div className="space-y-6">
-                {/* ✅ UPDATED: Always use MedicineCard for a consistent UI. 
-                  If the medicine is not in the DB (source !== database), 
-                  MedicineCard will still render its details in the standard format.
-                */}
                 {results.medicines.map((med, i) => (
-                  <MedicineCard 
-                    key={med._id || `med-${i}`} 
-                    medicine={med} 
-                    source={results.source} 
-                    savedIds={savedIds} 
-                    onSaveToggle={handleSaveToggle} 
+                  <MedicineCard
+                    key={med._id || `med-${i}`}
+                    medicine={med}
+                    source={results.source}
+                    savedIds={savedIds}
+                    onSaveToggle={handleSaveToggle}
                   />
                 ))}
               </div>
