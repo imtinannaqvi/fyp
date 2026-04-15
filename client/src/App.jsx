@@ -45,6 +45,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminMedicines from "./pages/admin/Medicines";
 import AddMedicine from "./pages/admin/AddMedicine";
 import OcrHistory from "./pages/admin/OcrHistory";
+import FakeReports from "./pages/admin/FakeReports";
 
 function App() {
   return (
@@ -97,6 +98,7 @@ function App() {
           <Route path="/admin/medicines" element={<AdminRoute><AdminMedicines /></AdminRoute>} />
           <Route path="/admin/add-medicine" element={<AdminRoute><AddMedicine /></AdminRoute>} />
           <Route path="/admin/ocr-history" element={<AdminRoute><OcrHistory /></AdminRoute>} />
+          <Route path="/admin/fake-reports" element={<AdminRoute><FakeReports /></AdminRoute>} />
           <Route path="/admin/search-analytics" element={<SearchAnalytics />} />
           {/* Fallback for 404 */}
           <Route path="*" element={<div className="flex items-center justify-center h-full py-20 font-bold text-gray-400">Page Not Found</div>} />
