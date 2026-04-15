@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
-import { Pill, Users, ScanLine,BarChart2, Plus, Loader, Search, Trash2, Bell, Phone, Clock, CheckCircle, PauseCircle } from "lucide-react";
+import { Pill, Users, ScanLine,BarChart2,AlertTriangle , Plus, Loader, Search, Trash2, Bell, Phone, Clock, CheckCircle, PauseCircle } from "lucide-react";
 
 const Dashboard = () => {
   const [stats, setStats]               = useState(null);
