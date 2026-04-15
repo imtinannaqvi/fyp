@@ -142,9 +142,10 @@ const Dashboard = () => {
           <h2 className="font-semibold text-gray-800 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { label: "Add Medicine",   icon: <Plus size={16} />,    link: "/admin/add-medicine", color: "bg-blue-600 hover:bg-blue-700" },
-              { label: "View Medicines", icon: <Pill size={16} />,    link: "/admin/medicines",    color: "bg-indigo-600 hover:bg-indigo-700" },
-              { label: "OCR History",   icon: <ScanLine size={16} />, link: "/admin/ocr-history",  color: "bg-purple-600 hover:bg-purple-700" },
+              { label: "Add Medicine",   icon: <Plus size={16} />,          link: "/admin/add-medicine",    color: "bg-blue-600 hover:bg-blue-700" },
+              { label: "View Medicines", icon: <Pill size={16} />,          link: "/admin/medicines",        color: "bg-indigo-600 hover:bg-indigo-700" },
+              { label: "OCR History",   icon: <ScanLine size={16} />,       link: "/admin/ocr-history",     color: "bg-purple-600 hover:bg-purple-700" },
+              { label: "Fake Reports",  icon: <AlertTriangle size={16} />,  link: "/admin/fake-reports",    color: "bg-red-600 hover:bg-red-700" },
             ].map((action, i) => (
               <button key={i} onClick={() => navigate(action.link)}
                 className={`${action.color} text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 text-sm`}>
