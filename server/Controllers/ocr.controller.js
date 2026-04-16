@@ -2,6 +2,48 @@ import axios from "axios";
 import FormData from "form-data";
 import OCRResult from "../models/OCRResult.js";
 import Medicine from "../models/Medicine.js";
+import Groq from "groq-sdk";
+
+// ── Parse raw OCR text with AI when medicine not in DB ───────────────────────
+const parseOcrWithAI = async (rawText) => {
+  try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{
+        role: "user",
+        content: `You are a medicine label parser. Extract information from this OCR text scanned from a medicine box/packaging.
+
+OCR Text:
+"""${rawText}"""
+
+Extract and return ONLY a valid JSON object with these fields (use null if not found):
+{
+  "medicineName": "the brand/product name of the medicine",
+  "genericName": "generic/chemical name",
+  "company": "manufacturer or company name",
+  "strength": "dosage strength e.g. 500mg, 250mg/5ml",
+  "usedFor": "what this medicine is used for (1-2 sentences)",
+  "dosage": "dosage instructions if visible",
+  "warnings": "any warnings visible on the box",
+  "expiry": "expiry date if visible",
+  "batchNo": "batch number if visible"
+}
+
+Return ONLY the JSON. No explanation, no markdown, no extra text.`
+      }],
+      max_tokens: 400,
+      temperature: 0.1,
+    });
+    const content = response.choices[0]?.message?.content?.trim();
+    // Strip markdown code blocks if present
+    const cleaned = content.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+    return JSON.parse(cleaned);
+  } catch (err) {
+    console.error("AI OCR parse error:", err.message);
+    return null;
+  }
+};
 
 export const extractText = async (req, res) => {
   try {
@@ -118,15 +160,35 @@ export const extractText = async (req, res) => {
       scannedBy:       req.user?._id || null,
     });
 
-    // ── Step 5: Respond ──────────────────────────────────────────────────────
+    // ── Step 5: Fetch full medicine details if matched ───────────────────────
+    let medicineDetails = null;
+    if (!isFake && medicineName) {
+      medicineDetails = await Medicine.findOne({
+        $or: [
+          { name:    { $regex: medicineName, $options: "i" } },
+          { brand:   { $regex: medicineName, $options: "i" } },
+          { generic: { $regex: medicineName, $options: "i" } },
+        ]
+      }).select("-createdBy -ocrData -__v");
+    }
+
+    // ── Step 6: If not in DB, parse label info with AI ──────────────────────
+    let parsedLabelInfo = null;
+    if (isFake) {
+      parsedLabelInfo = await parseOcrWithAI(text);
+    }
+
+    // ── Step 7: Respond ──────────────────────────────────────────────────────
     res.json({
       id:              result._id,
       extractedText:   text,
-      medicineName,
+      medicineName:    medicineName || parsedLabelInfo?.medicineName || null,
       confidence:      Math.round(confidence),
       isFake,
       matchedWith,
       similarityScore: parseFloat(similarityScore.toFixed(2)),
+      medicineDetails,
+      parsedLabelInfo,
       message: isFake
         ? "⚠️ Warning: This medicine could not be verified. It may be fake or unregistered."
         : `✅ Medicine verified: matches "${matchedWith}" in our database.`,
