@@ -137,7 +137,7 @@ const MedicineSearchBox = ({ label, medicine, onSelect, onClear, color }) => {
               medicine._source === "OpenFDA" ? "bg-green-100 text-green-700" :
               "bg-blue-100 text-blue-700"
             }`}>
-              {medicine._source === "database" ? "✓ Verified" : medicine._source === "OpenFDA" ? "FDA Data" : "AI Generated"}
+              {medicine._source === "database" ? "Verified" : medicine._source === "OpenFDA" ? "FDA Data" : "AI Generated"}
             </span>
           </div>
           <button onClick={onClear} className="p-1.5 hover:bg-white rounded-lg transition shrink-0">

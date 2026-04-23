@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, Shield, CheckCircle, XCircle, RotateCcw, Search, Brain, Heart, Pill, Moon, Users, RefreshCw, ShoppingBag, Smartphone, Activity, Stethoscope, Syringe, FlaskConical, Zap, Clock, Bell, TrendingUp, Trophy, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertTriangle, Shield, CheckCircle, XCircle, RotateCcw, Search, Brain, Heart, Pill, Moon, Users, RefreshCw, ShoppingBag, Smartphone, Activity, Stethoscope, Syringe, FlaskConical, Zap, Clock, Bell, TrendingUp, Trophy, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 
@@ -99,10 +99,10 @@ const Quiz = ({ isDark = false }) => {
   const score = answers.filter(a => a.correct).length;
 
   const getScoreMsg = () => {
-    if (score === quizQuestions.length) return { msg: "Perfect Score! 🎉 You are very well informed about medicine safety.", color: "text-blue-600" };
-    if (score >= 4) return { msg: "Good Knowledge! 👍 A little more awareness will keep you fully safe.", color: "text-blue-500" };
-    if (score >= 2) return { msg: "Needs Improvement ⚠️ Please read the awareness sections above carefully.", color: "text-gray-600" };
-    return { msg: "High Risk ❌ You may be unknowingly harming your health. Please read this page carefully.", color: "text-gray-700" };
+    if (score === quizQuestions.length) return { msg: "Perfect Score! You are very well informed about medicine safety.", color: "text-blue-600" };
+    if (score >= 4) return { msg: "Good Knowledge! A little more awareness will keep you fully safe.", color: "text-blue-500" };
+    if (score >= 2) return { msg: "Needs Improvement. Please read the awareness sections above carefully.", color: "text-gray-600" };
+    return { msg: "High Risk. You may be unknowingly harming your health. Please read this page carefully.", color: "text-gray-700" };
   };
 
   if (finished) {
@@ -127,7 +127,7 @@ const Quiz = ({ isDark = false }) => {
               <div>
                 <p style={{ color: isDark ? '#e2e8f0' : '#1f2937' }} className="text-sm font-medium">{qq.q}</p>
                 {!answers[i]?.correct && (
-                  <p style={{ color: isDark ? '#94a3b8' : '#6b7280' }} className="text-xs mt-1">✅ Correct: <span className="font-semibold text-blue-500">{qq.options[qq.correct]}</span></p>
+                  <p style={{ color: isDark ? '#94a3b8' : '#6b7280' }} className="text-xs mt-1"><span className="inline-flex items-center gap-1"><CheckCircle size={11} className="text-blue-500" /> Correct:</span> <span className="font-semibold text-blue-500">{qq.options[qq.correct]}</span></p>
                 )}
               </div>
             </div>
@@ -194,7 +194,7 @@ const Quiz = ({ isDark = false }) => {
         )}
         <button onClick={handleNext} disabled={selected === null}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition">
-          {current + 1 === quizQuestions.length ? "See Results" : "Next Question →"}
+          {current + 1 === quizQuestions.length ? "See Results" : <span className="flex items-center justify-center gap-1">Next Question <ArrowRight size={14} /></span>}
         </button>
       </div>
     </div>
@@ -354,7 +354,7 @@ export default function SelfMedicationAwareness() {
                   "Use Medico Guidance to verify medicine information",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
-                    <span className="text-blue-500 font-bold mt-0.5">✓</span> {item}
+                  <span className="text-blue-500 font-bold mt-0.5"><CheckCircle size={13} /></span> {item}
                   </li>
                 ))}
               </ul>
@@ -373,7 +373,7 @@ export default function SelfMedicationAwareness() {
                   "Never follow unverified social media medicine advice",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
-                    <span style={{ color: isDark ? '#64748b' : '#9ca3af' }} className="font-bold mt-0.5">✗</span> {item}
+                  <span style={{ color: isDark ? '#64748b' : '#9ca3af' }} className="font-bold mt-0.5"><XCircle size={13} /></span> {item}
                   </li>
                 ))}
               </ul>
@@ -405,7 +405,7 @@ export default function SelfMedicationAwareness() {
                   style={{ backgroundColor: 'transparent' }}
                   className="w-full flex items-center justify-between px-6 py-4 text-left transition">
                   <span style={{ color: isDark ? '#f1f5f9' : '#111827' }} className="font-semibold text-sm">{faq.q}</span>
-                  <span className="text-blue-500 ml-4 font-bold">{openFaq === i ? "▲" : "▼"}</span>
+                  {openFaq === i ? <ChevronUp size={14} className="text-blue-500" /> : <ChevronDown size={14} className="text-blue-500" />}
                 </button>
                 {openFaq === i && (
                   <div style={{ color: isDark ? '#94a3b8' : '#4b5563', borderColor: isDark ? '#334155' : '#f3f4f6' }} className="px-6 pb-4 text-sm leading-relaxed border-t pt-3">

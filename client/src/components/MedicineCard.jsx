@@ -238,29 +238,7 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
           )}
         </div>
 
-        {/* ── Description ────────────────────────────────────────────────────── */}
-        {data.description && (
-          <div className="mb-6">
-            <h3 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">
-              {isUrdu ? "تفصیل" : "Description"}
-            </h3>
-            <p className={`text-sm text-gray-700 leading-relaxed ${isUrdu ? "text-right leading-loose" : ""}` }>
-              {descExpanded || data.description.length <= DESC_LIMIT
-                ? data.description
-                : `${data.description.slice(0, DESC_LIMIT)}...`}
-            </p>
-            {data.description.length > DESC_LIMIT && (
-              <button
-                onClick={() => setDescExpanded(!descExpanded)}
-                className="text-xs text-blue-600 hover:text-blue-800 font-semibold mt-1 transition"
-              >
-                {descExpanded ? "Show less ▲" : "Read more ▼"}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* ── AI Explanation ──────────────────────────────────────────────────── */}
+        {/* ── AI-Generated Information ─────────────────────────────────────── */}
         {data.aiExplanation && (
           <div className="mb-6 bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-xl">
             <div className={`flex items-center gap-2 mb-2 ${isUrdu ? "flex-row-reverse" : ""}`}>
@@ -276,8 +254,8 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
             </p>
             {data.aiExplanation.length > DESC_LIMIT && (
               <button onClick={() => setDescExpanded(!descExpanded)}
-                className="text-xs text-blue-600 hover:text-blue-800 font-semibold mt-1.5 transition">
-                {descExpanded ? "Show less ▲" : "Read more ▼"}
+                className="text-xs text-blue-600 hover:text-blue-800 font-semibold mt-1.5 transition flex items-center gap-1">
+                {descExpanded ? <><ChevronUp size={12} /> Show less</> : <><ChevronDown size={12} /> Read more</>}
               </button>
             )}
           </div>
