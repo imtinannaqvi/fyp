@@ -223,7 +223,7 @@ const MedicineCard = ({ medicine, onSearch }) => {
           <>
             <button onClick={() => setExpanded(!expanded)}
               className="text-[10px] text-blue-600 font-medium hover:underline w-full text-left mt-1">
-              {expanded ? "▲ Hide details" : "▼ Show side effects & warnings"}
+              {expanded ? <><ChevronUp size={12} className="inline" /> Hide details</> : <><ChevronDown size={12} className="inline" /> Show side effects & warnings</>}
             </button>
             {expanded && (
               <div className="flex items-start gap-1.5 pt-1">
@@ -253,7 +253,7 @@ const MediBot = () => {
   const [open, setOpen]         = useState(false);
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: "Hi! 👋 I'm MediBot. Ask me anything about medicine safety, self-medication risks, or how to use Medico Guidance. [GO:/awareness|Learn about Self-Medication]"
+    content: "Hi! I'm MediBot. Ask me anything about medicine safety, self-medication risks, or how to use Medico Guidance. [GO:/awareness|Learn about Self-Medication]"
   }]);
   const [input, setInput]     = useState("");
   const [loading, setLoading] = useState(false);
@@ -295,7 +295,7 @@ const MediBot = () => {
 
   const handleReset = () => setMessages([{
     role: "assistant",
-    content: "Hi! 👋 I'm MediBot. Ask me anything about medicine safety, self-medication risks, or how to use Medico Guidance. [GO:/awareness|Learn about Self-Medication]"
+    content: "Hi! I'm MediBot. Ask me anything about medicine safety, self-medication risks, or how to use Medico Guidance. [GO:/awareness|Learn about Self-Medication]"
   }]);
 
   const handleMedicineSearch = (name) => { navigate(`/search?q=${encodeURIComponent(name)}`); setOpen(false); };
