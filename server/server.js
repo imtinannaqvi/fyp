@@ -79,8 +79,16 @@ async function connectDB() {
 }
 
 connectDB()
-  .then(() => {
+  .then(async () => {
     console.log("✅ MongoDB Connected");
+    // Reset enrichment flag so all medicines get re-enriched with full AI data on next search
+    try {
+      const { modifiedCount } = await (await import("./models/Medicine.js")).default.updateMany(
+        { $or: [{ isEnriched: true }, { isEnriched: { $exists: false } }] },
+        { $set: { isEnriched: false } }
+      );
+      if (modifiedCount > 0) console.log(`🔄 Reset enrichment for ${modifiedCount} medicines`);
+    } catch (e) { console.error("Enrichment reset error:", e.message); }
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
   .catch((err) => {

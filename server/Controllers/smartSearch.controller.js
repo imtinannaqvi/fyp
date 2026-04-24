@@ -2,163 +2,131 @@ import axios from "axios";
 import Medicine from "../models/Medicine.js";
 import Groq from "groq-sdk";
 
-// ── Helper: Fetch from OpenFDA API ────────────────────────────────────────────
-const fetchFromOpenFDA = async (medicineName) => {
-  try {
-    const response = await axios.get(
-      `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${medicineName}"&limit=1`
-    );
-    const drug = response.data?.results?.[0];
-    if (!drug) return null;
-
-    return {
-      name:               drug.openfda?.brand_name?.[0]        || medicineName,
-      generic:            drug.openfda?.generic_name?.[0]      || null,
-      brand:              drug.openfda?.manufacturer_name?.[0] || "Unknown",
-      description:        drug.description?.[0]                || null,
-      dosage:             drug.dosage_and_administration?.[0]  || null,
-      sideEffects:        drug.adverse_reactions?.[0] ? [drug.adverse_reactions[0].substring(0, 300)] : [],
-      contraindications:  drug.contraindications?.[0] ? [drug.contraindications[0].substring(0, 300)] : [],
-      warnings:           drug.warnings?.[0] ? [drug.warnings[0].substring(0, 300)] : [],
-      requiresPrescription: true,
-      source: "OpenFDA",
-    };
-  } catch (error) {
-    return null;
-  }
-};
-
-// ── Helper: Generate full medicine info using Groq AI ─────────────────────────
-const fetchFromGroqAI = async (medicineName) => {
+// ── AI: Generate complete medicine data ───────────────────────────────────────
+const getFullAIData = async (medicineName, context = "") => {
   try {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{
+        role: "user",
+        content: `You are a senior clinical pharmacist. Provide COMPLETE, ACCURATE, DETAILED medical information about "${medicineName}".
+${context ? `Additional context from label/FDA data:\n"""\n${context.slice(0, 800)}\n"""` : ""}
 
-    const prompt = `You are a medical information assistant. Provide detailed information about the medicine "${medicineName}".
-Respond ONLY in valid JSON format with exactly these fields, no extra text:
-
+Respond ONLY in valid JSON, no markdown, no extra text:
 {
-  "name": "medicine brand name",
-  "generic": "generic/chemical name",
-  "brand": "common brand name",
-  "category": "medicine category (e.g. painkiller, antibiotic)",
-  "description": "what this medicine is used for (2-3 sentences)",
-  "dosage": "standard dosage",
+  "name": "brand name",
+  "generic": "generic/INN name",
+  "brand": "brand name",
+  "category": "pharmacological category",
+  "description": "clear 3-4 sentence explanation of what this medicine treats and how it works",
+  "dosage": "standard dosage e.g. 625mg twice daily",
   "dosageGuide": {
-    "adult": "adult dosage",
-    "child": "child dosage",
-    "elderly": "elderly dosage",
-    "notes": "important notes"
+    "adult": "adult dosage with frequency",
+    "child": "pediatric dosage or age restriction",
+    "elderly": "elderly dose adjustment",
+    "notes": "take with food/water, timing notes"
   },
-  "sideEffects": ["side effect 1", "side effect 2", "side effect 3"],
-  "longTermEffects": ["long term effect 1", "long term effect 2"],
-  "contraindications": ["who should not take 1", "who should not take 2"],
-  "foodInteractions": ["food to avoid 1", "food to avoid 2"],
-  "drugInteractions": ["drug interaction 1", "drug interaction 2"],
-  "warnings": ["warning 1", "warning 2"],
-  "whoShouldNotTake": ["pregnant women", "patients with kidney disease"],
-  "foodTiming": "Take after meals to reduce stomach irritation",
-  "pregnancyWarning": "Safety information during pregnancy",
-  "breastfeedingWarning": "Safety information during breastfeeding",
+  "sideEffects": ["effect 1", "effect 2", "effect 3", "effect 4", "effect 5"],
+  "longTermEffects": ["effect 1", "effect 2", "effect 3"],
+  "warnings": ["warning 1", "warning 2", "warning 3", "warning 4"],
+  "contraindications": ["contraindication 1", "contraindication 2", "contraindication 3"],
+  "drugInteractions": ["drug 1", "drug 2", "drug 3", "drug 4"],
+  "foodInteractions": ["food 1", "food 2"],
+  "whoShouldNotTake": ["group 1", "group 2", "group 3"],
+  "foodTiming": "when and how to take with food",
+  "pregnancyWarning": "pregnancy safety — category and reason",
+  "breastfeedingWarning": "breastfeeding safety information",
   "requiresPrescription": true,
   "isCommonlyMisused": false,
   "safeAlternatives": ["alternative 1", "alternative 2"],
-  "aiExplanation": "simple explanation a non-medical person can understand (3-4 sentences)"
-}`;
-
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 1200,
-      temperature: 0.3,
+  "aiExplanation": "simple 3-4 sentence explanation for a non-medical Pakistani person"
+}`
+      }],
+      max_tokens: 1500,
+      temperature: 0.2,
     });
-
     const content = response.choices[0]?.message?.content?.trim();
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-
-    const data = JSON.parse(jsonMatch[0]);
-    data.source = "AI Generated";
-    return data;
-
-  } catch (error) {
-    console.error("Groq Smart Search Error:", error.message);
-    return null;
-  }
-};
-
-// ── Helper: Enrich existing DB medicine with missing fields via Groq ──────────
-const enrichMedicineFromGroq = async (medicine) => {
-  try {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const prompt = `You are a medical information assistant. Enrich the following medicine data for "${medicine.name}".
-Only fill in the missing/empty fields listed below. Respond ONLY in valid JSON, no extra text.
-
-Return ONLY this JSON structure:
-{
-  "whoShouldNotTake": ["group 1 who should avoid", "group 2 who should avoid"],
-  "foodTiming": "When and how to take with food (e.g. Take after meals)",
-  "pregnancyWarning": "Is this medicine safe during pregnancy? Explain briefly.",
-  "breastfeedingWarning": "Is this medicine safe during breastfeeding? Explain briefly.",
-  "foodInteractions": ["food/drink to avoid 1", "food/drink to avoid 2"],
-  "sideEffects": ["common side effect 1", "common side effect 2", "common side effect 3"],
-  "longTermEffects": ["long term effect 1", "long term effect 2"],
-  "dosageGuide": {
-    "adult": "adult dosage",
-    "child": "child dosage",
-    "elderly": "elderly dosage",
-    "notes": "take with food or any important note"
-  },
-  "aiExplanation": "Simple 2-3 sentence explanation for a non-medical Pakistani person"
-}
-
-Medicine context:
-- Name: ${medicine.name}
-- Generic: ${medicine.generic || "unknown"}
-- Category: ${medicine.category || "unknown"}
-- Description: ${medicine.description || "not provided"}`;
-
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 800,
-      temperature: 0.3,
-    });
-
-    const content = response.choices[0]?.message?.content?.trim();
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-
-    return JSON.parse(jsonMatch[0]);
+    const match = content.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]);
   } catch (err) {
-    console.error("Enrich error:", err.message);
+    console.error("AI error:", err.message);
     return null;
   }
 };
 
-// ── Check if medicine needs enrichment ───────────────────────────────────────
-const needsEnrichment = (medicine) => {
-  return (
-    !medicine.isEnriched &&
-    (
-      !medicine.whoShouldNotTake?.length ||
-      !medicine.pregnancyWarning ||
-      !medicine.breastfeedingWarning ||
-      !medicine.foodTiming ||
-      !medicine.aiExplanation ||
-      !medicine.sideEffects?.length ||
-      !medicine.foodInteractions?.length
-    )
-  );
+// ── OpenFDA raw fetch ─────────────────────────────────────────────────────────
+const fetchFromOpenFDA = async (medicineName) => {
+  try {
+    const res = await axios.get(
+      `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${medicineName}"&limit=1`,
+      { timeout: 8000 }
+    );
+    const drug = res.data?.results?.[0];
+    if (!drug) return null;
+    // Return raw context for AI to clean up
+    return {
+      name:    drug.openfda?.brand_name?.[0]        || medicineName,
+      generic: drug.openfda?.generic_name?.[0]      || null,
+      brand:   drug.openfda?.manufacturer_name?.[0] || null,
+      rawContext: [
+        drug.description?.[0] || "",
+        drug.dosage_and_administration?.[0] || "",
+        drug.adverse_reactions?.[0] || "",
+        drug.warnings?.[0] || "",
+        drug.contraindications?.[0] || "",
+      ].join(" ").slice(0, 800),
+    };
+  } catch { return null; }
 };
 
-// ── Main Smart Search Controller ──────────────────────────────────────────────
+// ── Check if medicine needs AI enrichment ────────────────────────────────────
+const isIncomplete = (med) => (
+  !med.sideEffects?.length       ||
+  !med.warnings?.length          ||
+  !med.contraindications?.length ||
+  !med.drugInteractions?.length  ||
+  !med.aiExplanation             ||
+  !med.dosageGuide?.adult        ||
+  !med.pregnancyWarning          ||
+  !med.description               ||
+  !med.category                  ||
+  !med.foodInteractions?.length  ||
+  !med.whoShouldNotTake?.length  ||
+  !med.longTermEffects?.length
+);
+
+// ── Merge AI data into medicine object (only fill missing fields) ─────────────
+const mergeAI = (base, ai) => {
+  const u = {};
+  if (!base.description              || base.description.length < 30) u.description          = ai.description;
+  if (!base.category                 ) u.category             = ai.category;
+  if (!base.dosage                   ) u.dosage               = ai.dosage;
+  if (!base.dosageGuide?.adult       ) u.dosageGuide          = ai.dosageGuide;
+  if (!base.sideEffects?.length      ) u.sideEffects          = ai.sideEffects;
+  if (!base.longTermEffects?.length  ) u.longTermEffects      = ai.longTermEffects;
+  if (!base.warnings?.length         ) u.warnings             = ai.warnings;
+  if (!base.contraindications?.length) u.contraindications    = ai.contraindications;
+  if (!base.drugInteractions?.length ) u.drugInteractions     = ai.drugInteractions;
+  if (!base.foodInteractions?.length ) u.foodInteractions     = ai.foodInteractions;
+  if (!base.whoShouldNotTake?.length ) u.whoShouldNotTake     = ai.whoShouldNotTake;
+  if (!base.foodTiming               ) u.foodTiming           = ai.foodTiming;
+  if (!base.pregnancyWarning         ) u.pregnancyWarning     = ai.pregnancyWarning;
+  if (!base.breastfeedingWarning     ) u.breastfeedingWarning = ai.breastfeedingWarning;
+  if (!base.aiExplanation            ) u.aiExplanation        = ai.aiExplanation;
+  if (!base.safeAlternatives?.length ) u.safeAlternatives     = ai.safeAlternatives;
+  if (base.requiresPrescription == null) u.requiresPrescription = ai.requiresPrescription;
+  return u;
+};
+
+// ── Main Smart Search ─────────────────────────────────────────────────────────
 export const smartSearch = async (req, res) => {
   try {
     const { q } = req.query;
     if (!q) return res.status(400).json({ message: "Search query is required" });
 
-    // ── Step 1: Check DB first ───────────────────────────────────────────────
+    // ── Step 1: Check local DB ────────────────────────────────────────────────
     const dbMedicines = await Medicine.find({
       $or: [
         { name:    { $regex: q, $options: "i" } },
@@ -168,80 +136,50 @@ export const smartSearch = async (req, res) => {
     }).limit(5);
 
     if (dbMedicines.length > 0) {
-      // ── Auto-enrich medicines missing key fields ──────────────────────────
-      const enrichedMedicines = await Promise.all(
+      const enriched = await Promise.all(
         dbMedicines.map(async (med) => {
-          if (needsEnrichment(med)) {
-            console.log(`[Enrich] Enriching ${med.name}...`);
-            const enriched = await enrichMedicineFromGroq(med);
-            if (enriched) {
-              // Only update fields that are actually missing
-              const updates = { isEnriched: true };
-              if (!med.whoShouldNotTake?.length && enriched.whoShouldNotTake?.length)
-                updates.whoShouldNotTake = enriched.whoShouldNotTake;
-              if (!med.pregnancyWarning && enriched.pregnancyWarning)
-                updates.pregnancyWarning = enriched.pregnancyWarning;
-              if (!med.breastfeedingWarning && enriched.breastfeedingWarning)
-                updates.breastfeedingWarning = enriched.breastfeedingWarning;
-              if (!med.foodTiming && enriched.foodTiming)
-                updates.foodTiming = enriched.foodTiming;
-              if (!med.aiExplanation && enriched.aiExplanation)
-                updates.aiExplanation = enriched.aiExplanation;
-              if (!med.sideEffects?.length && enriched.sideEffects?.length)
-                updates.sideEffects = enriched.sideEffects;
-              if (!med.foodInteractions?.length && enriched.foodInteractions?.length)
-                updates.foodInteractions = enriched.foodInteractions;
-              if (!med.longTermEffects?.length && enriched.longTermEffects?.length)
-                updates.longTermEffects = enriched.longTermEffects;
-              if (enriched.dosageGuide && !med.dosageGuide?.adult)
-                updates.dosageGuide = enriched.dosageGuide;
-
-              // Save to DB so next search is instant
+          const obj = med.toObject();
+          if (isIncomplete(med)) {
+            console.log(`[AI Enrich] ${med.name}`);
+            const ai = await getFullAIData(med.name, obj.description || "");
+            if (ai) {
+              const updates = { isEnriched: true, ...mergeAI(obj, ai) };
               await Medicine.findByIdAndUpdate(med._id, updates);
-
-              // Return merged medicine to user immediately
-              return { ...med.toObject(), ...updates };
+              return { ...obj, ...updates };
             }
           }
-          return med.toObject();
+          return obj;
         })
       );
-
-      return res.json({
-        source:    "database",
-        fromDB:    true,
-        total:     enrichedMedicines.length,
-        medicines: enrichedMedicines,
-      });
+      return res.json({ source: "database", fromDB: true, total: enriched.length, medicines: enriched });
     }
 
-    // ── Step 2: Try OpenFDA API ──────────────────────────────────────────────
-    const fdaData = await fetchFromOpenFDA(q);
-    if (fdaData) {
-      return res.json({
-        source:    "OpenFDA",
-        fromDB:    false,
-        total:     1,
-        medicines: [fdaData],
-        note: "This medicine was not found in our database. Data fetched from OpenFDA.",
-      });
+    // ── Step 2: Try OpenFDA — then clean with AI ──────────────────────────────
+    const fda = await fetchFromOpenFDA(q);
+    if (fda) {
+      console.log(`[AI Clean] Cleaning OpenFDA data for ${q}`);
+      const ai = await getFullAIData(fda.name || q, fda.rawContext || "");
+      if (ai) {
+        const result = {
+          ...ai,
+          name:    fda.name    || ai.name,
+          generic: fda.generic || ai.generic,
+          brand:   fda.brand   || ai.brand,
+          source:  "OpenFDA",
+        };
+        return res.json({ source: "OpenFDA", fromDB: false, total: 1, medicines: [result] });
+      }
     }
 
-    // ── Step 3: Fallback to Groq AI ──────────────────────────────────────────
-    const aiData = await fetchFromGroqAI(q);
-    if (aiData) {
-      return res.json({
-        source:    "AI Generated",
-        fromDB:    false,
-        total:     1,
-        medicines: [aiData],
-        note: "⚠️ AI-generated information — consult a doctor before use.",
-      });
+    // ── Step 3: Pure AI generation ────────────────────────────────────────────
+    console.log(`[AI Generate] ${q}`);
+    const ai = await getFullAIData(q);
+    if (ai) {
+      ai.source = "AI Generated";
+      return res.json({ source: "AI Generated", fromDB: false, total: 1, medicines: [ai] });
     }
 
-    res.status(404).json({
-      message: `No information found for "${q}". Please check the medicine name and try again.`,
-    });
+    res.status(404).json({ message: `No information found for "${q}". Please check the spelling and try again.` });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
