@@ -4,231 +4,265 @@ import OCRResult from "../models/OCRResult.js";
 import Medicine from "../models/Medicine.js";
 import Groq from "groq-sdk";
 
-// ── AI: Full medicine analysis from OCR text ──────────────────────────────────
-const analyzeWithAI = async (rawText) => {
+const groq = () => new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+// ── Run OCR with a specific engine ───────────────────────────────────────────
+const runOCR = async (buffer, filename, mimetype, engine) => {
   try {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const response = await groq.chat.completions.create({
+    const fd = new FormData();
+    fd.append("file", buffer, { filename: filename || "image.jpg", contentType: mimetype || "image/jpeg" });
+    fd.append("language", "eng");
+    fd.append("isOverlayRequired", "false");
+    fd.append("detectOrientation", "true");
+    fd.append("scale", "true");
+    fd.append("OCREngine", String(engine));
+    const res = await axios.post("https://api.ocr.space/parse/image", fd, {
+      headers: { ...fd.getHeaders(), apikey: process.env.OCR_API_KEY },
+      timeout: 30000,
+    });
+    const parsed = res.data?.ParsedResults?.[0];
+    if (parsed?.FileParseExitCode === 1) return parsed.ParsedText?.trim() || "";
+    return "";
+  } catch { return ""; }
+};
+
+// ── Dedicated medicine name extractor (focused, low temperature) ─────────────
+const extractMedicineName = async (ocrText) => {
+  try {
+    const response = await groq().chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{
         role: "user",
-        content: `You are a senior clinical pharmacist and medicine expert. A medicine label/packaging has been scanned via OCR. 
+        content: `You are a medicine name identification expert. Analyze this OCR text from a medicine box/strip/bottle and identify the EXACT medicine name printed on it.
 
-OCR Text extracted from the image:
-"""${rawText}"""
+OCR Text:
+"""${ocrText}"""
 
-Your task:
-1. Identify the medicine from the OCR text
-2. Use your medical knowledge to provide COMPLETE and ACCURATE information about this medicine
-3. If OCR text is unclear or partial, use whatever clues are available (partial name, strength, company) to identify the medicine
+Rules:
+- The medicine name is usually the LARGEST or FIRST prominent text on the packaging
+- It could be a brand name (e.g. Panadol, Augmentin, Brufen, Flagyl, Amoxil, Disprin)
+- Or a generic name (e.g. Paracetamol, Amoxicillin, Ibuprofen, Metronidazole)
+- Ignore: company names, batch numbers, expiry dates, addresses, registration numbers, "Tablets", "Capsules", "Syrup"
+- Correct OCR errors using pharmaceutical knowledge: "PANADO" → "Panadol", "AUGMEN" → "Augmentin", "BRUFE" → "Brufen"
+- If you see a strength like "500mg" or "250mg/5ml", extract it separately
 
-Return ONLY a valid JSON object with ALL these fields (never return null for medical fields — use your knowledge):
+Return ONLY valid JSON:
 {
-  "medicineName": "brand/product name",
-  "genericName": "generic/chemical/INN name",
-  "company": "manufacturer name from label or known manufacturer",
-  "strength": "dosage strength e.g. 500mg, 250mg/5ml, 10mg/tablet",
-  "drugClass": "pharmacological class e.g. Antibiotic, NSAID, Antihypertensive",
-  "usedFor": "clear explanation of what this medicine treats (2-3 sentences)",
-  "howItWorks": "mechanism of action in simple words (1-2 sentences)",
+  "brandName": "the medicine brand/product name",
+  "genericName": "generic/chemical name if visible or known",
+  "strength": "dosage strength if visible e.g. 500mg",
+  "confidence": "high/medium/low"
+}`
+      }],
+      max_tokens: 150,
+      temperature: 0.05,
+    });
+    const content = response.choices[0]?.message?.content?.trim()
+      .replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+    return JSON.parse(content);
+  } catch { return null; }
+};
+
+// ── Full AI medicine analysis using identified name ───────────────────────────
+const analyzeWithAI = async (medicineName, genericName, strength, rawText) => {
+  try {
+    const response = await groq().chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{
+        role: "user",
+        content: `You are a senior clinical pharmacist. Provide COMPLETE and ACCURATE medical information about this medicine.
+
+Medicine: "${medicineName}"
+Generic: "${genericName || "unknown"}"
+Strength: "${strength || "unknown"}"
+OCR context: """${rawText.slice(0, 400)}"""
+
+Return ONLY valid JSON:
+{
+  "medicineName": "${medicineName}",
+  "genericName": "correct INN/generic name",
+  "company": "known manufacturer",
+  "strength": "${strength || "from knowledge"}",
+  "drugClass": "pharmacological class",
+  "usedFor": "what this medicine treats (2-3 sentences)",
+  "howItWorks": "mechanism of action in simple words",
   "dosage": {
     "adult": "standard adult dose",
-    "child": "pediatric dose or 'Not recommended for children under X years'",
-    "elderly": "elderly dose adjustment if any",
-    "frequency": "how many times per day",
-    "duration": "typical course duration",
-    "instructions": "take with food/water, before/after meals etc"
+    "child": "pediatric dose",
+    "elderly": "elderly adjustment",
+    "frequency": "times per day",
+    "duration": "typical course",
+    "instructions": "with food/water instructions"
   },
   "sideEffects": {
-    "common": ["list", "of", "common", "side effects"],
-    "serious": ["list", "of", "serious", "side effects"],
-    "rare": ["list", "of", "rare", "side effects"]
+    "common": ["effect1", "effect2", "effect3"],
+    "serious": ["effect1", "effect2"],
+    "rare": ["effect1", "effect2"]
   },
-  "warnings": ["important warning 1", "important warning 2", "important warning 3"],
-  "contraindications": ["who should NOT take this", "condition 2", "condition 3"],
-  "drugInteractions": ["interacts with drug 1", "interacts with drug 2"],
-  "foodInteractions": ["avoid with food/drink 1", "avoid with food/drink 2"],
-  "pregnancyCategory": "Safe/Caution/Avoid/Consult doctor — with brief reason",
-  "breastfeeding": "Safe/Caution/Avoid — with brief reason",
-  "storage": "how to store this medicine",
-  "overdoseInfo": "what happens in overdose and what to do",
+  "warnings": ["warning1", "warning2", "warning3"],
+  "contraindications": ["contraindication1", "contraindication2"],
+  "drugInteractions": ["drug1", "drug2"],
+  "foodInteractions": ["food1", "food2"],
+  "pregnancyCategory": "Safe/Caution/Avoid — brief reason",
+  "breastfeeding": "Safe/Caution/Avoid — brief reason",
+  "storage": "storage instructions",
+  "overdoseInfo": "overdose symptoms and what to do",
   "requiresPrescription": true or false,
-  "expiry": "expiry date from label if visible, else null",
-  "batchNo": "batch number from label if visible, else null",
-  "confidenceNote": "brief note on how confident you are based on OCR quality"
+  "expiry": null,
+  "batchNo": null,
+  "confidenceNote": "Identified as ${medicineName} from OCR scan"
 }
 
-IMPORTANT: Use your medical knowledge to fill ALL fields accurately. Do not leave medical fields empty. Return ONLY valid JSON, no markdown, no explanation.`
+Return ONLY valid JSON, no markdown, no explanation.`
       }],
       max_tokens: 1500,
       temperature: 0.1,
     });
-
-    const content = response.choices[0]?.message?.content?.trim();
-    const cleaned = content
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
-    return JSON.parse(cleaned);
+    const content = response.choices[0]?.message?.content?.trim()
+      .replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+    return JSON.parse(content);
   } catch (err) {
     console.error("AI analysis error:", err.message);
     return null;
   }
 };
 
-// ── AI fallback: identify medicine from minimal/unclear text ─────────────────
+// ── Last resort: identify from garbled/minimal text ───────────────────────────
 const identifyFromMinimalText = async (rawText) => {
   try {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const response = await groq.chat.completions.create({
+    const response = await groq().chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{
         role: "user",
-        content: `The following is very unclear or partial OCR text from a medicine packaging. Even if it's mostly garbled, try to identify what medicine this might be based on any readable fragments, numbers, or patterns.
+        content: `This is garbled OCR text from a medicine packaging. Identify the medicine name from any readable fragments, partial words, or numbers.
 
 OCR Text: """${rawText}"""
 
-Return ONLY a JSON object:
-{
-  "possibleMedicine": "your best guess at the medicine name",
-  "confidence": "low/medium/high",
-  "reasoning": "why you think this is the medicine"
-}
-
-If you truly cannot identify anything, return: {"possibleMedicine": null, "confidence": "none", "reasoning": "insufficient data"}`
+Use pharmaceutical knowledge to guess even from partial text.
+Return ONLY JSON: {"possibleMedicine": "name or null", "confidence": "low/medium/high"}`
       }],
-      max_tokens: 200,
+      max_tokens: 100,
       temperature: 0.2,
     });
-    const content = response.choices[0]?.message?.content?.trim();
-    const cleaned = content.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
-    return JSON.parse(cleaned);
-  } catch {
-    return null;
-  }
+    const content = response.choices[0]?.message?.content?.trim()
+      .replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+    return JSON.parse(content);
+  } catch { return null; }
 };
 
+// ── Main OCR handler ──────────────────────────────────────────────────────────
 export const extractText = async (req, res) => {
   try {
     if (!req.file || !req.file.processedBuffer) {
       return res.status(400).json({ message: "Image not uploaded or processed" });
     }
 
-    // ── Step 1: Run OCR via OCR.space ─────────────────────────────────────────
-    let rawText = "";
-    let ocrFailed = false;
+    const buffer   = req.file.processedBuffer;
+    const filename = req.file.originalname;
+    const mimetype = req.file.mimetype;
 
-    try {
-      const formData = new FormData();
-      formData.append("file", req.file.processedBuffer, {
-        filename: req.file.originalname || "image.jpg",
-        contentType: req.file.mimetype || "image/jpeg",
-      });
-      formData.append("language", "eng");
-      formData.append("isOverlayRequired", "false");
-      formData.append("detectOrientation", "true");
-      formData.append("scale", "true");
-      formData.append("isTable", "true");
-      formData.append("OCREngine", "2");
+    // ── Step 1: Run OCR with both engines in parallel ─────────────────────────
+    const [text2, text1] = await Promise.all([
+      runOCR(buffer, filename, mimetype, 2),
+      runOCR(buffer, filename, mimetype, 1),
+    ]);
 
-      const ocrResponse = await axios.post(
-        "https://api.ocr.space/parse/image",
-        formData,
-        {
-          headers: { ...formData.getHeaders(), apikey: process.env.OCR_API_KEY },
-          timeout: 30000,
-        }
-      );
+    // Use the richer result, combine both for context
+    const rawText      = text2.length >= text1.length ? text2 : text1;
+    const combinedText = [text2, text1].filter(Boolean).join("\n").trim();
+    const ocrFailed    = !rawText || rawText.trim().length < 3;
 
-      const parsed = ocrResponse.data?.ParsedResults?.[0];
-      if (parsed?.FileParseExitCode === 1 && parsed?.ParsedText?.trim().length > 2) {
-        rawText = parsed.ParsedText;
-      } else {
-        ocrFailed = true;
-      }
-    } catch (ocrErr) {
-      console.error("OCR.space error:", ocrErr.message);
-      ocrFailed = true;
+    // ── Step 2: Dedicated medicine name extraction ────────────────────────────
+    let nameResult        = null;
+    let finalMedicineName = null;
+    let finalGenericName  = null;
+    let finalStrength     = null;
+
+    if (!ocrFailed) {
+      nameResult        = await extractMedicineName(combinedText);
+      finalMedicineName = nameResult?.brandName   || null;
+      finalGenericName  = nameResult?.genericName  || null;
+      finalStrength     = nameResult?.strength     || null;
     }
 
-    // ── Step 2: If OCR got nothing, try AI identification from minimal text ───
-    if (ocrFailed || rawText.trim().length < 5) {
-      const minimal = await identifyFromMinimalText(rawText || "unclear image");
+    // ── Step 3: Fallback if name not found ────────────────────────────────────
+    if (!finalMedicineName) {
+      const minimal = await identifyFromMinimalText(combinedText || "unclear image");
       if (!minimal?.possibleMedicine) {
         return res.status(422).json({
-          message: "Could not read this image. Please try a clearer, well-lit photo of the medicine label.",
+          message: "Could not identify any medicine in this image. Please try a clearer, well-lit photo of the medicine label.",
         });
       }
-      // Use the guessed name as rawText for AI analysis
-      rawText = `Medicine name (guessed): ${minimal.possibleMedicine}. Original OCR: ${rawText}`;
+      finalMedicineName = minimal.possibleMedicine;
     }
 
-    // ── Step 3: AI full analysis — always runs ────────────────────────────────
-    const aiData = await analyzeWithAI(rawText);
+    // ── Step 4: Full AI analysis using the identified name ────────────────────
+    const aiData = await analyzeWithAI(finalMedicineName, finalGenericName, finalStrength, combinedText);
 
     if (!aiData) {
       return res.status(422).json({
-        message: "Could not analyze this medicine image. Please try a clearer photo.",
+        message: "Could not analyze this medicine. Please try a clearer photo.",
       });
     }
 
-    // ── Step 4: Check DB match ────────────────────────────────────────────────
-    const medicineName = aiData.medicineName || aiData.genericName || null;
-    let isFake = true;
-    let matchedWith = null;
+    // ── Step 5: Check DB match ────────────────────────────────────────────────
+    const medicineName = aiData.medicineName || finalMedicineName;
+    let isFake          = true;
+    let matchedWith     = null;
     let medicineDetails = null;
 
     if (medicineName) {
       const cleanName = medicineName.toLowerCase().trim();
-      const words = cleanName.split(" ").filter(w => w.length > 2);
+      const words     = cleanName.split(" ").filter(w => w.length > 2);
+      const approved  = await Medicine.find({ isApproved: true }).select("name brand generic");
 
-      const approvedMedicines = await Medicine.find({ isApproved: true }).select("name brand generic");
-
-      for (const med of approvedMedicines) {
-        const medName    = med.name.toLowerCase().trim();
-        const medBrand   = med.brand.toLowerCase().trim();
-        const medGeneric = (med.generic || "").toLowerCase().trim();
+      for (const med of approved) {
+        const mName    = med.name.toLowerCase().trim();
+        const mBrand   = med.brand.toLowerCase().trim();
+        const mGeneric = (med.generic || "").toLowerCase().trim();
 
         const match =
-          words.some(w => medName.includes(w) || w.includes(medName) || medBrand.includes(w) || w.includes(medBrand)) ||
-          cleanName.includes(medName) || cleanName.includes(medBrand) ||
-          (medGeneric && (cleanName.includes(medGeneric) || words.some(w => medGeneric.includes(w))));
+          words.some(w => mName.includes(w) || w.includes(mName) || mBrand.includes(w) || w.includes(mBrand)) ||
+          cleanName.includes(mName) || cleanName.includes(mBrand) ||
+          (mGeneric && (cleanName.includes(mGeneric) || words.some(w => mGeneric.includes(w))));
 
         if (match) {
-          isFake      = false;
-          matchedWith = `${med.name} (${med.brand})`;
+          isFake          = false;
+          matchedWith     = `${med.name} (${med.brand})`;
           medicineDetails = await Medicine.findById(med._id).select("-createdBy -ocrData -__v");
           break;
         }
       }
     }
 
-    // ── Step 5: Save result ───────────────────────────────────────────────────
+    // ── Step 6: Save result ───────────────────────────────────────────────────
+    const confidence = nameResult?.confidence === "high" ? 95
+                     : nameResult?.confidence === "medium" ? 80 : 65;
+
     await OCRResult.create({
       imagePath:       req.file.path || null,
-      rawText,
+      rawText:         combinedText,
       medicineName,
-      confidence:      90,
+      confidence,
       isFake,
       matchedWith,
       similarityScore: isFake ? 0 : 1,
       scannedBy:       req.user?._id || null,
     });
 
-    // ── Step 6: Respond ───────────────────────────────────────────────────────
+    // ── Step 7: Respond ───────────────────────────────────────────────────────
     res.json({
-      extractedText:   rawText,
+      extractedText:   combinedText,
       medicineName,
-      confidence:      90,
+      confidence,
       isFake,
       matchedWith,
       medicineDetails,
-      aiData,           // full rich AI analysis — always present
+      aiData,
       ocrFailed,
       message: isFake
-        ? "⚠️ Not found in local database — AI analysis provided below"
-        : `✅ Matched in database: ${matchedWith}`,
+        ? `Not found in local database — AI analysis for ${medicineName}`
+        : `Matched in database: ${matchedWith}`,
     });
 
   } catch (error) {

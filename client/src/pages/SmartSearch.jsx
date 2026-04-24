@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import { Search, AlertTriangle, Loader, Inbox, Database } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MedicineCard from "../components/MedicineCard";
-import ExternalMedicineCard from "../components/ExternalMedicineCard";
 import MediBot from "../components/MediBot";
 import { useTheme } from "../context/ThemeContext";
 
