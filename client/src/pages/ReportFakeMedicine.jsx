@@ -1,52 +1,36 @@
 import { useState } from "react";
-import { AlertTriangle, Upload, CheckCircle, Camera, FileText, MapPin, Loader } from "lucide-react";
+import { AlertTriangle, Upload, CheckCircle, Camera, FileText, MapPin, Loader, ShieldAlert, X } from "lucide-react";
 import toast from "react-hot-toast";
 import API from "../api/axios";
+import MediBot from "../components/MediBot";
 
 const ReportFakeMedicine = () => {
   const [formData, setFormData] = useState({
-    medicineName: "",
-    batchNumber: "",
-    manufacturer: "",
-    purchaseLocation: "",
-    city: "",
-    suspicionReason: "",
-    reporterName: "",
-    reporterPhone: "",
-    reporterEmail: ""
+    medicineName: "", batchNumber: "", manufacturer: "",
+    purchaseLocation: "", city: "", suspicionReason: "",
+    reporterName: "", reporterPhone: "", reporterEmail: ""
   });
-  const [images, setImages] = useState([]);
+  const [images, setImages]     = useState([]);
   const [submitted, setSubmitted] = useState(false);
-  const [reportId, setReportId] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [reportId, setReportId]   = useState("");
+  const [loading, setLoading]     = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length + images.length > 3) {
-      toast.error("Maximum 3 images allowed");
-      return;
-    }
+    if (files.length + images.length > 3) { toast.error("Maximum 3 images allowed"); return; }
     setImages([...images, ...files]);
   };
 
-  const removeImage = (index) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
+  const removeImage = (index) => setImages(images.filter((_, i) => i !== index));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!formData.medicineName || !formData.purchaseLocation || !formData.city || !formData.suspicionReason || !formData.reporterPhone) {
-      toast.error("Please fill all required fields");
-      return;
+      toast.error("Please fill all required fields"); return;
     }
-
     setLoading(true);
-
     try {
       const { data } = await API.post("/fake-report/submit", formData);
       setReportId(data.reportId);
@@ -61,37 +45,20 @@ const ReportFakeMedicine = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-gray-50 flex items-center justify-center px-6">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-gray-200 p-8 text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={40} className="text-green-600" />
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center px-6">
+        <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-8 text-center">
+          <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={40} className="text-blue-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Report Submitted Successfully!</h2>
-          <p className="text-gray-600 mb-2">
-            Thank you for reporting. Your report ID is:
-          </p>
-          <p className="text-2xl font-bold text-blue-600 mb-6">{reportId}</p>
-          <p className="text-sm text-gray-600 mb-6">
-            Authorities will investigate and contact you if needed. You can track your report status from your profile.
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Report Submitted!</h2>
+          <p className="text-gray-600 dark:text-slate-400 mb-2 text-sm">Your report ID:</p>
+          <p className="text-2xl font-black text-blue-600 mb-6">{reportId}</p>
+          <p className="text-sm text-gray-600 dark:text-slate-400 mb-6 leading-relaxed">
+            Authorities will investigate and contact you if needed. Thank you for helping protect Pakistan's healthcare.
           </p>
           <button
-            onClick={() => {
-              setSubmitted(false);
-              setFormData({
-                medicineName: "",
-                batchNumber: "",
-                manufacturer: "",
-                purchaseLocation: "",
-                city: "",
-                suspicionReason: "",
-                reporterName: "",
-                reporterPhone: "",
-                reporterEmail: ""
-              });
-              setImages([]);
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl transition-all"
-          >
+            onClick={() => { setSubmitted(false); setFormData({ medicineName:"",batchNumber:"",manufacturer:"",purchaseLocation:"",city:"",suspicionReason:"",reporterName:"",reporterPhone:"",reporterEmail:"" }); setImages([]); }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition">
             Submit Another Report
           </button>
         </div>
@@ -99,179 +66,123 @@ const ReportFakeMedicine = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        
-        {/* Header */}
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-md">
-              <AlertTriangle size={24} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900">Report Fake Medicine</h1>
-          </div>
-          <p className="text-gray-600">Help protect others by reporting suspicious or counterfeit medicines</p>
-        </div>
+  const inputClass = "w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm";
+  const labelClass = "block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2";
+  const sectionClass = "bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 rounded-2xl p-6 mb-5";
 
-        {/* Alert Box */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 mb-10">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
-              <AlertTriangle size={24} className="text-white" />
+  return (
+    <>
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+              <AlertTriangle size={24} />
             </div>
             <div>
-              <h3 className="font-bold text-blue-900 mb-2 text-lg">Why Report Fake Medicines?</h3>
-              <p className="text-sm text-blue-800">
-                Counterfeit medicines can be dangerous or ineffective. Your report helps authorities take action and protect public health in Pakistan.
-              </p>
+              <h1 className="text-2xl font-black">Report Fake Medicine</h1>
+              <p className="text-blue-200 text-sm">Help protect others by reporting suspicious medicines</p>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+
+        {/* Info Banner */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-2xl p-5 mb-6 flex gap-4">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+            <ShieldAlert size={20} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-bold text-blue-900 dark:text-blue-300 mb-1">Why Report Fake Medicines?</h3>
+            <p className="text-sm text-blue-800 dark:text-blue-400">
+              Counterfeit medicines can be dangerous or ineffective. Your report helps DRAP take action and protect public health in Pakistan.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+
           {/* Medicine Information */}
-          <div className="p-8 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FileText size={18} className="text-blue-600" />
+          <div className={sectionClass}>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                <FileText size={16} className="text-blue-600" />
               </div>
               Medicine Information
             </h2>
-            
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Medicine Name <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="medicineName"
-                  required
-                  value={formData.medicineName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Panadol, Brufen"
-                />
+                <label className={labelClass}>Medicine Name <span className="text-red-500">*</span></label>
+                <input type="text" name="medicineName" required value={formData.medicineName}
+                  onChange={handleChange} placeholder="e.g., Panadol, Brufen" className={inputClass} />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Batch Number</label>
-                  <input
-                    type="text"
-                    name="batchNumber"
-                    value={formData.batchNumber}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="If available"
-                  />
+                  <label className={labelClass}>Batch Number</label>
+                  <input type="text" name="batchNumber" value={formData.batchNumber}
+                    onChange={handleChange} placeholder="If visible on packaging" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Manufacturer</label>
-                  <input
-                    type="text"
-                    name="manufacturer"
-                    value={formData.manufacturer}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Company name"
-                  />
+                  <label className={labelClass}>Manufacturer</label>
+                  <input type="text" name="manufacturer" value={formData.manufacturer}
+                    onChange={handleChange} placeholder="Company name on packaging" className={inputClass} />
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Reason for Suspicion <span className="text-red-600">*</span>
-                </label>
-                <textarea
-                  name="suspicionReason"
-                  required
-                  value={formData.suspicionReason}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  placeholder="Describe why you suspect this medicine is fake (e.g., unusual packaging, no effect, different color)"
-                />
+                <label className={labelClass}>Reason for Suspicion <span className="text-red-500">*</span></label>
+                <textarea name="suspicionReason" required value={formData.suspicionReason}
+                  onChange={handleChange} rows={4} className={`${inputClass} resize-none`}
+                  placeholder="Describe why you suspect this medicine is fake (e.g., unusual packaging, no effect, different color, spelling errors)" />
               </div>
             </div>
           </div>
 
           {/* Purchase Location */}
-          <div className="p-8 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <MapPin size={18} className="text-blue-600" />
+          <div className={sectionClass}>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                <MapPin size={16} className="text-blue-600" />
               </div>
               Purchase Location
             </h2>
-            
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Pharmacy/Store Name & Address <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="purchaseLocation"
-                  required
-                  value={formData.purchaseLocation}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Where did you purchase this medicine?"
-                />
+                <label className={labelClass}>Pharmacy/Store Name & Address <span className="text-red-500">*</span></label>
+                <input type="text" name="purchaseLocation" required value={formData.purchaseLocation}
+                  onChange={handleChange} placeholder="Where did you purchase this medicine?" className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  City <span className="text-red-600">*</span>
-                </label>
-                <select
-                  name="city"
-                  required
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
+                <label className={labelClass}>City <span className="text-red-500">*</span></label>
+                <select name="city" required value={formData.city} onChange={handleChange}
+                  className={`${inputClass} bg-white dark:bg-slate-700`}>
                   <option value="">Select City</option>
-                  <option value="Lahore">Lahore</option>
-                  <option value="Karachi">Karachi</option>
-                  <option value="Islamabad">Islamabad</option>
-                  <option value="Rawalpindi">Rawalpindi</option>
-                  <option value="Peshawar">Peshawar</option>
-                  <option value="Multan">Multan</option>
-                  <option value="Faisalabad">Faisalabad</option>
-                  <option value="Other">Other</option>
+                  {["Lahore","Karachi","Islamabad","Rawalpindi","Peshawar","Multan","Faisalabad","Quetta","Sialkot","Gujranwala","Other"].map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
                 </select>
               </div>
             </div>
           </div>
 
           {/* Upload Images */}
-          <div className="p-8 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Camera size={18} className="text-blue-600" />
+          <div className={sectionClass}>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                <Camera size={16} className="text-blue-600" />
               </div>
-              Upload Images (Optional)
+              Upload Images <span className="text-xs font-normal text-gray-400 ml-1">(Optional, max 3)</span>
             </h2>
-            
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
-              <Upload size={32} className="text-gray-400 mx-auto mb-3" />
-              <p className="text-sm text-gray-600 mb-3">Upload photos of the medicine, packaging, or receipt (Max 3 images)</p>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-                className="hidden"
-                id="image-upload"
-              />
-              <label
-                htmlFor="image-upload"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg cursor-pointer transition-all"
-              >
+
+            <div className="border-2 border-dashed border-blue-200 dark:border-slate-600 rounded-xl p-6 text-center hover:border-blue-400 transition">
+              <Upload size={28} className="text-blue-400 mx-auto mb-3" />
+              <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">Upload photos of the medicine, packaging or receipt</p>
+              <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" id="image-upload" />
+              <label htmlFor="image-upload"
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-xl cursor-pointer transition text-sm">
                 Choose Images
               </label>
             </div>
@@ -280,17 +191,10 @@ const ReportFakeMedicine = () => {
               <div className="mt-4 grid grid-cols-3 gap-3">
                 {images.map((img, index) => (
                   <div key={index} className="relative">
-                    <img
-                      src={URL.createObjectURL(img)}
-                      alt={`Upload ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700"
-                    >
-                      ×
+                    <img src={URL.createObjectURL(img)} alt={`Upload ${index + 1}`} className="w-full h-24 object-cover rounded-xl border-2 border-gray-200 dark:border-slate-600" />
+                    <button type="button" onClick={() => removeImage(index)}
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700 transition shadow">
+                      <X size={12} />
                     </button>
                   </div>
                 ))}
@@ -299,78 +203,44 @@ const ReportFakeMedicine = () => {
           </div>
 
           {/* Reporter Information */}
-          <div className="p-8 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Your Contact Information</h2>
-            
+          <div className={sectionClass}>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5">Your Contact Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
-                <input
-                  type="text"
-                  name="reporterName"
-                  value={formData.reporterName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Your name (optional)"
-                />
+                <label className={labelClass}>Name <span className="text-gray-400 font-normal text-xs">(Optional)</span></label>
+                <input type="text" name="reporterName" value={formData.reporterName}
+                  onChange={handleChange} placeholder="Your name" className={inputClass} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Phone Number <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    name="reporterPhone"
-                    required
-                    value={formData.reporterPhone}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="03XX-XXXXXXX"
-                  />
+                  <label className={labelClass}>Phone Number <span className="text-red-500">*</span></label>
+                  <input type="tel" name="reporterPhone" required value={formData.reporterPhone}
+                    onChange={handleChange} placeholder="03XX-XXXXXXX" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                  <input
-                    type="email"
-                    name="reporterEmail"
-                    value={formData.reporterEmail}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="your@email.com (optional)"
-                  />
+                  <label className={labelClass}>Email <span className="text-gray-400 font-normal text-xs">(Optional)</span></label>
+                  <input type="email" name="reporterEmail" value={formData.reporterEmail}
+                    onChange={handleChange} placeholder="your@email.com" className={inputClass} />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="p-8 bg-gray-50">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader size={20} className="animate-spin" />
-                  Submitting Report...
-                </>
-              ) : (
-                <>
-                  <AlertTriangle size={20} />
-                  Submit Report
-                </>
-              )}
-            </button>
-
-            <p className="text-xs text-gray-500 text-center mt-4">
-              Your information will be kept confidential and used only for investigation purposes.
-            </p>
-          </div>
+          {/* Submit */}
+          <button type="submit" disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-blue-900/30 transition flex items-center justify-center gap-2">
+            {loading
+              ? <><Loader size={20} className="animate-spin" /> Submitting Report...</>
+              : <><AlertTriangle size={20} /> Submit Report</>}
+          </button>
+          <p className="text-xs text-gray-400 dark:text-slate-600 text-center">
+            Your information will be kept confidential and used only for investigation purposes.
+          </p>
         </form>
       </div>
     </div>
+    <MediBot />
+    </>
   );
 };
 

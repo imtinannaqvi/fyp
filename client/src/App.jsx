@@ -10,6 +10,7 @@ import { MenuProvider } from "./context/MenuContext";
 import SelfMedicationAwareness from "./pages/SelfMedicationAwareness";
 import Compare from "./pages/Compare";
 import SearchAnalytics from "./pages/admin/SearchAnalytics";
+import FakeMedicineDetector from "./pages/FakeMedicineDetector";
 
 // Public Pages
 import Home from "./pages/Home";
@@ -46,6 +47,9 @@ import AdminMedicines from "./pages/admin/Medicines";
 import AddMedicine from "./pages/admin/AddMedicine";
 import OcrHistory from "./pages/admin/OcrHistory";
 import FakeReports from "./pages/admin/FakeReports";
+import AdminLayout from "./layouts/AdminLayout";
+import AdminSettings from "./pages/admin/AdminSettings";
+
 
 function App() {
   return (
@@ -65,6 +69,7 @@ function App() {
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/fake-detector" element={<FakeMedicineDetector />} />
 
           {/* --- PROTECTED ROUTES (Registration Required) --- */}
           
@@ -94,12 +99,17 @@ function App() {
           <Route path="/reminders" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
 
           {/* --- ADMIN ROUTES --- */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin/medicines" element={<AdminRoute><AdminMedicines /></AdminRoute>} />
-          <Route path="/admin/add-medicine" element={<AdminRoute><AddMedicine /></AdminRoute>} />
-          <Route path="/admin/ocr-history" element={<AdminRoute><OcrHistory /></AdminRoute>} />
-          <Route path="/admin/fake-reports" element={<AdminRoute><FakeReports /></AdminRoute>} />
-          <Route path="/admin/search-analytics" element={<SearchAnalytics />} />
+          <Route path="/admin" element={<AdminLayout />}>
+  <Route index element={<AdminDashboard />} />
+  {/* <Route path="users" element={<AdminUsers />} /> */}
+  <Route path="medicines" element={<AdminMedicines />} />
+  <Route path="add-medicine" element={<AddMedicine />} />
+  <Route path="ocr-history" element={<OcrHistory />} />
+  <Route path="fake-reports" element={<FakeReports />} />
+  <Route path="search-analytics" element={<SearchAnalytics />} />
+  <Route path="settings" element={<AdminSettings />} />
+</Route>
+
           {/* Fallback for 404 */}
           <Route path="*" element={<div className="flex items-center justify-center h-full py-20 font-bold text-gray-400">Page Not Found</div>} />
           </Routes>
