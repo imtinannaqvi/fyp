@@ -81,8 +81,8 @@ const FakeMedicineModal = ({ onClose, onNavigate }) => {
         onClick={(e) => e.stopPropagation()}
         style={{ animation: "modalPop 0.3s ease-out forwards" }}
       >
-        {/* Red header */}
-        <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 relative">
+        {/* Blue header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 relative">
           <div className="absolute inset-0 opacity-10"
             style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
           <button onClick={onClose}
@@ -95,7 +95,7 @@ const FakeMedicineModal = ({ onClose, onNavigate }) => {
             </div>
             <div>
               <h2 className="text-xl font-black text-white">Fake Medicine Detector</h2>
-              <p className="text-red-200 text-xs mt-0.5">AI-powered counterfeit detection for Pakistan</p>
+              <p className="text-blue-200 text-xs mt-0.5">AI-powered counterfeit detection for Pakistan</p>
             </div>
           </div>
         </div>
@@ -113,7 +113,7 @@ const FakeMedicineModal = ({ onClose, onNavigate }) => {
           <div className="space-y-3 mb-6">
             {steps.map((s, i) => (
               <div key={i} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
-                <div className="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center shrink-0 text-red-600">
+                <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 text-blue-600">
                   {s.icon}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -128,13 +128,13 @@ const FakeMedicineModal = ({ onClose, onNavigate }) => {
           <div className="space-y-3">
             <button
               onClick={() => { onClose(); onNavigate("/fake-detector"); }}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-2xl transition flex items-center justify-center gap-3 shadow-lg shadow-red-100">
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition flex items-center justify-center gap-3 shadow-lg shadow-blue-100">
               <ShieldAlert size={20} /> Detect Fake Medicine Now
             </button>
             <button
               onClick={() => { onClose(); onNavigate("/report-fake"); }}
               className="w-full bg-white hover:bg-gray-50 text-gray-800 font-bold py-4 rounded-2xl border-2 border-gray-200 transition flex items-center justify-center gap-3">
-              <AlertTriangle size={20} className="text-red-500" /> Report Fake Medicine
+              <AlertTriangle size={20} className="text-amber-500" /> Report Fake Medicine
             </button>
           </div>
 
@@ -254,23 +254,19 @@ const Home = () => {
             {/* Right: Feature Quick-Launch Grid */}
             <div className="hidden lg:grid grid-cols-2 gap-4">
               {[
-                { icon: <Search size={20} />,      label: "Smart Search",  link: "/search",   modal: false },
-                { icon: <Stethoscope size={20} />, label: "Symptoms",      link: "/symptoms", modal: false },
+                { icon: <Search size={20} />,      label: "Smart Search",  link: "/search",       modal: false },
+                { icon: <Stethoscope size={20} />, label: "Symptoms",      link: "/symptoms",     modal: false },
                 { icon: <Zap size={20} />,         label: "Interactions",  link: "/interactions", modal: false },
-                { icon: <ScanLine size={20} />,    label: "Fake Detector", link: null,        modal: true },
+                { icon: <ScanLine size={20} />,    label: "Fake Detector", link: null,            modal: true  },
                 { icon: <FileText size={20} />,    label: "Prescription",  link: "/prescription", modal: false },
-                { icon: <Heart size={20} />,       label: "Dosage Calc",   link: "/search",   modal: false },
+                { icon: <Heart size={20} />,       label: "Dosage Calc",   link: "/search",       modal: false },
               ].map((item, i) => (
                 <button key={i}
                   onClick={() => item.modal ? setShowFakeModal(true) : navigate(item.link)}
-                  className={`flex items-center gap-4 p-5 border rounded-2xl transition-all text-left backdrop-blur-md group shadow-xl ${
-                    item.modal
-                      ? "bg-red-500/20 hover:bg-red-500/30 border-red-400/30"
-                      : "bg-white/5 hover:bg-white/15 border-white/10"
-                  }`}>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform ${
-                    item.modal ? "bg-red-400/30" : "bg-white/10"
-                  }`}>{item.icon}</div>
+                  className="flex items-center gap-4 p-5 border rounded-2xl transition-all text-left backdrop-blur-md group shadow-xl bg-white/5 hover:bg-white/15 border-white/10">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform bg-white/10">
+                    {item.icon}
+                  </div>
                   <span className="font-semibold text-sm">{item.label}</span>
                 </button>
               ))}
@@ -349,20 +345,12 @@ const Home = () => {
               {features.map((f, i) => (
                 <div key={i}
                   onClick={() => f.modal ? setShowFakeModal(true) : navigate(f.link)}
-                  className={`bg-white p-6 rounded-2xl border hover:shadow-xl transition-all cursor-pointer group ${
-                    f.modal
-                      ? "border-red-200 hover:border-red-500"
-                      : "border-gray-200 hover:border-blue-500"
-                  }`}
+                  className="bg-white p-6 rounded-2xl border border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer group"
                 >
-                  <div className={`mb-4 group-hover:scale-110 transition-transform inline-block ${
-                    f.modal ? "text-red-600" : "text-blue-600"
-                  }`}>{f.icon}</div>
+                  <div className="mb-4 group-hover:scale-110 transition-transform inline-block text-blue-600">{f.icon}</div>
                   <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
                   <p className="text-xs text-gray-500 leading-relaxed mb-4">{f.desc}</p>
-                  <div className={`flex items-center text-xs font-bold gap-1 ${
-                    f.modal ? "text-red-600" : "text-blue-600"
-                  }`}>
+                  <div className="flex items-center text-xs font-bold gap-1 text-blue-600">
                     Try Now <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -383,8 +371,8 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-300 transition">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
-                    <ShieldAlert size={20} className="text-red-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                    <ShieldAlert size={20} className="text-blue-600" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 mb-2">Always Consult Your Doctor</h3>
@@ -439,19 +427,19 @@ const Home = () => {
             </div>
 
             <div style={{
-                backgroundColor: isDark ? '#2d1515' : '#fff1f2',
-                borderColor: isDark ? '#7f1d1d' : '#fecaca'
+                backgroundColor: isDark ? '#0f1f3d' : '#eff6ff',
+                borderColor: isDark ? '#1e3a5f' : '#bfdbfe'
               }} className="border-2 rounded-lg p-6">
               <div className="flex items-start gap-4">
-                <ShieldAlert size={24} className="text-red-500 shrink-0" />
+                <ShieldAlert size={24} className="text-blue-600 shrink-0" />
                 <div>
-                  <h3 style={{ color: isDark ? '#fca5a5' : '#111827' }} className="font-bold mb-2">Warning: Counterfeit Medicines</h3>
-                  <p style={{ color: isDark ? '#fca5a5' : '#374151' }} className="text-sm leading-relaxed mb-3">
+                  <h3 style={{ color: isDark ? '#93c5fd' : '#111827' }} className="font-bold mb-2">Warning: Counterfeit Medicines</h3>
+                  <p style={{ color: isDark ? '#93c5fd' : '#374151' }} className="text-sm leading-relaxed mb-3">
                     Pakistan faces a serious issue with fake medicines. Always purchase from licensed pharmacies and verify packaging authenticity. Use our Fake Medicine Detector to scan suspicious products.
                   </p>
                   <button
                     onClick={() => setShowFakeModal(true)}
-                    className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-6 py-2 rounded-lg transition"
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-6 py-2 rounded-lg transition"
                   >
                     Detect Fake Medicine
                   </button>
@@ -469,7 +457,7 @@ const Home = () => {
               <p className="text-blue-100 mb-10 text-sm md:text-base max-w-xl mx-auto">Join thousands of users making safer healthcare choices with AI. Start searching now.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button onClick={() => navigate("/search")} style={{ backgroundColor: '#ffffff', color: '#1d4ed8' }} className="px-8 py-4 rounded-2xl font-black text-sm hover:shadow-2xl transition-all">Search Medicine</button>
-                <button onClick={() => setShowFakeModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2">
+                <button onClick={() => setShowFakeModal(true)} className="bg-blue-500 hover:bg-blue-400 text-white px-8 py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2">
                   <ShieldAlert size={18} /> Detect Fake Medicine
                 </button>
                 {!user && (

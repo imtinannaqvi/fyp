@@ -40,6 +40,7 @@ import SavedMedicines from "./pages/user/SavedMedicines";
 import SearchHistory from "./pages/user/SearchHistory";
 import Reminders from "./pages/user/Reminders";
 
+import NotFound from "./pages/NotFound";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -49,6 +50,9 @@ import OcrHistory from "./pages/admin/OcrHistory";
 import FakeReports from "./pages/admin/FakeReports";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminUsers from "./pages/admin/Users";
+
+
 
 
 function App() {
@@ -101,7 +105,7 @@ function App() {
           {/* --- ADMIN ROUTES --- */}
           <Route path="/admin" element={<AdminLayout />}>
   <Route index element={<AdminDashboard />} />
-  {/* <Route path="users" element={<AdminUsers />} /> */}
+  <Route path="users" element={<AdminUsers />} />
   <Route path="medicines" element={<AdminMedicines />} />
   <Route path="add-medicine" element={<AddMedicine />} />
   <Route path="ocr-history" element={<OcrHistory />} />
@@ -111,7 +115,7 @@ function App() {
 </Route>
 
           {/* Fallback for 404 */}
-          <Route path="*" element={<div className="flex items-center justify-center h-full py-20 font-bold text-gray-400">Page Not Found</div>} />
+<Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />

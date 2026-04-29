@@ -51,7 +51,6 @@ const FakeMedicineDetector = () => {
     const formData = new FormData();
     formData.append("image", file);
     try {
-      // ── Uses NEW dedicated fake detection endpoint ─────────────────────────
       const { data } = await API.post("/ocr/fake-detect", formData);
       setResult(data);
       setStep("result");
@@ -70,21 +69,19 @@ const FakeMedicineDetector = () => {
     setStep("upload");
   };
 
-  // Determine verdict from new endpoint response
   const getVerdict = () => {
     if (!result) return null;
-    if (result.verdict === "AUTHENTIC") return { type: "authentic", label: "✅ Packaging Appears Authentic",  color: "green"  };
-    if (result.verdict === "FAKE")      return { type: "fake",      label: "🚨 Counterfeit Signs Detected",  color: "red"    };
+    if (result.verdict === "AUTHENTIC") return { type: "authentic", label: "✅ Packaging Appears Authentic",    color: "green"  };
+    if (result.verdict === "FAKE")      return { type: "fake",      label: "🚨 Counterfeit Signs Detected",    color: "blue"   };
     return                                     { type: "suspicious", label: "⚠️ Suspicious — Verify Manually", color: "yellow" };
   };
 
   const verdict = getVerdict();
 
-  // Risk badge color
   const riskColor = {
     LOW:    "bg-green-100 text-green-700 border-green-200",
     MEDIUM: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    HIGH:   "bg-red-100 text-red-700 border-red-200",
+    HIGH:   "bg-blue-100 text-blue-700 border-blue-200",
   };
 
   return (
@@ -92,7 +89,7 @@ const FakeMedicineDetector = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-2">
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
@@ -100,7 +97,7 @@ const FakeMedicineDetector = () => {
             </div>
             <div>
               <h1 className="text-2xl font-black">Fake Medicine Detector</h1>
-              <p className="text-red-200 text-sm">AI analyzes packaging for counterfeit signs</p>
+              <p className="text-blue-200 text-sm">AI analyzes packaging for counterfeit signs</p>
             </div>
           </div>
 
@@ -113,7 +110,7 @@ const FakeMedicineDetector = () => {
               return (
                 <div key={i} className="flex items-center gap-2">
                   <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                    isActive ? "bg-white text-red-600" :
+                    isActive ? "bg-white text-blue-600" :
                     isDone   ? "bg-white/30 text-white" :
                                "bg-white/10 text-white/50"
                   }`}>
@@ -145,7 +142,7 @@ const FakeMedicineDetector = () => {
             <div className="bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden">
               <div className="p-4 border-b border-gray-100 dark:border-slate-700">
                 <p className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
-                  <Camera size={16} className="text-red-600" /> Medicine Image
+                  <Camera size={16} className="text-blue-600" /> Medicine Image
                 </p>
               </div>
 
@@ -155,12 +152,12 @@ const FakeMedicineDetector = () => {
                   onDragEnter={handleDrag} onDragLeave={handleDrag}
                   onDragOver={handleDrag}  onDrop={handleDrop}
                   className={`p-8 text-center cursor-pointer transition-all ${
-                    dragActive ? "bg-red-50 dark:bg-red-900/20" : "hover:bg-gray-50 dark:hover:bg-slate-700"
+                    dragActive ? "bg-blue-50 dark:bg-blue-900/20" : "hover:bg-gray-50 dark:hover:bg-slate-700"
                   }`}>
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all ${
-                    dragActive ? "bg-red-100" : "bg-gray-100 dark:bg-slate-700"
+                    dragActive ? "bg-blue-100" : "bg-gray-100 dark:bg-slate-700"
                   }`}>
-                    <Upload size={28} className={dragActive ? "text-red-600" : "text-gray-400"} />
+                    <Upload size={28} className={dragActive ? "text-blue-600" : "text-gray-400"} />
                   </div>
                   <p className="font-bold text-gray-900 dark:text-white text-sm mb-1">Upload Medicine Image</p>
                   <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">Drag & drop or click to browse</p>
@@ -183,7 +180,7 @@ const FakeMedicineDetector = () => {
 
             {preview && !result && (
               <button onClick={handleScan} disabled={loading}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-red-200 dark:shadow-red-900/30 transition flex items-center justify-center gap-3">
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-blue-900/30 transition flex items-center justify-center gap-3">
                 {loading
                   ? <><Loader size={20} className="animate-spin" /> Analyzing Packaging...</>
                   : <><ShieldAlert size={20} /> Detect Fake Medicine</>}
@@ -221,8 +218,8 @@ const FakeMedicineDetector = () => {
             {/* Loading */}
             {loading && (
               <div className="bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 rounded-2xl p-10 text-center">
-                <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Loader size={36} className="animate-spin text-red-600" />
+                <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Loader size={36} className="animate-spin text-blue-600" />
                 </div>
                 <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-4">Analyzing for Fake Signs...</h3>
                 <div className="space-y-2 text-left max-w-xs mx-auto">
@@ -235,8 +232,8 @@ const FakeMedicineDetector = () => {
                     "Generating authenticity verdict",
                   ].map((s, i) => (
                     <div key={i} className="flex items-center gap-3 text-sm text-gray-500 dark:text-slate-400">
-                      <div className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0">
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                      <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                       </div>
                       {s}
                     </div>
@@ -261,26 +258,26 @@ const FakeMedicineDetector = () => {
                 {/* Main Verdict */}
                 <div className={`border-2 rounded-2xl p-6 ${
                   verdict.type === "authentic"  ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" :
-                  verdict.type === "fake"       ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" :
+                  verdict.type === "fake"       ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800" :
                   "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
                 }`}>
                   <div className="flex items-start gap-4 mb-5">
                     <div className={`p-3 rounded-2xl shrink-0 ${
                       verdict.type === "authentic" ? "bg-green-100 dark:bg-green-900/40" :
-                      verdict.type === "fake"      ? "bg-red-100 dark:bg-red-900/40" :
+                      verdict.type === "fake"      ? "bg-blue-100 dark:bg-blue-900/40" :
                       "bg-yellow-100 dark:bg-yellow-900/40"
                     }`}>
                       {verdict.type === "authentic"
                         ? <ShieldCheck size={32} className="text-green-600" />
                         : verdict.type === "fake"
-                        ? <ShieldAlert size={32} className="text-red-600" />
+                        ? <ShieldAlert size={32} className="text-blue-600" />
                         : <AlertTriangle size={32} className="text-yellow-600" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h2 className={`text-xl font-black ${
                           verdict.type === "authentic" ? "text-green-800 dark:text-green-400" :
-                          verdict.type === "fake"      ? "text-red-800 dark:text-red-400" :
+                          verdict.type === "fake"      ? "text-blue-800 dark:text-blue-400" :
                           "text-yellow-800 dark:text-yellow-400"
                         }`}>{verdict.label}</h2>
                         {result.overallRisk && (
@@ -305,7 +302,7 @@ const FakeMedicineDetector = () => {
                     <div className="bg-gray-200 dark:bg-slate-700 rounded-full h-2.5">
                       <div className={`h-2.5 rounded-full transition-all ${
                         verdict.type === "authentic" ? "bg-green-500" :
-                        verdict.type === "fake"      ? "bg-red-500" : "bg-yellow-500"
+                        verdict.type === "fake"      ? "bg-blue-600" : "bg-yellow-500"
                       }`} style={{ width: `${result.confidenceScore}%` }} />
                     </div>
                   </div>
@@ -332,14 +329,14 @@ const FakeMedicineDetector = () => {
 
                 {/* Fake Indicators */}
                 {result.fakeIndicators?.length > 0 && (
-                  <div className="bg-white dark:bg-slate-800 border-2 border-red-200 dark:border-red-800 rounded-2xl p-5">
-                    <h3 className="font-bold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2 text-sm">
+                  <div className="bg-white dark:bg-slate-800 border-2 border-blue-200 dark:border-blue-800 rounded-2xl p-5">
+                    <h3 className="font-bold text-blue-700 dark:text-blue-400 mb-3 flex items-center gap-2 text-sm">
                       <XCircle size={16} /> Counterfeit Indicators Found ({result.fakeIndicators.length})
                     </h3>
                     <ul className="space-y-2">
                       {result.fakeIndicators.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-slate-300 bg-red-50 dark:bg-red-900/20 rounded-xl p-2.5">
-                          <XCircle size={14} className="text-red-500 shrink-0 mt-0.5" /> {item}
+                        <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-slate-300 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-2.5">
+                          <XCircle size={14} className="text-blue-500 shrink-0 mt-0.5" /> {item}
                         </li>
                       ))}
                     </ul>
@@ -385,7 +382,7 @@ const FakeMedicineDetector = () => {
                         <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">Spelling Errors Found</p>
                         <div className="flex flex-wrap gap-2">
                           {result.spellingErrors.map((item, i) => (
-                            <span key={i} className="text-xs bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 px-2.5 py-1 rounded-full font-mono">
+                            <span key={i} className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2.5 py-1 rounded-full font-mono">
                               {item}
                             </span>
                           ))}
@@ -414,7 +411,7 @@ const FakeMedicineDetector = () => {
                 {/* Report button if fake */}
                 {(verdict.type === "fake" || verdict.type === "suspicious") && (
                   <button onClick={() => navigate("/report-fake")}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-2xl transition flex items-center justify-center gap-2">
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition flex items-center justify-center gap-2">
                     <AlertTriangle size={18} /> Report This Medicine to Authorities
                   </button>
                 )}

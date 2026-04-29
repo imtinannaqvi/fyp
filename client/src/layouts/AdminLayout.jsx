@@ -1,11 +1,11 @@
-// layouts/AdminLayout.jsx
+// src/layouts/AdminLayout.jsx
 import { useState } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
-import { useAuth } from "../../src/context/AuthContext"
+import { useAuth } from "../context/AuthContext";
 import {
   LayoutDashboard, Users, Pill, ScanLine, Bell,
   AlertTriangle, BarChart2, LogOut, Menu, X,
-  ChevronRight, Shield, Settings, FileText
+  ChevronRight, Shield, Settings
 } from "lucide-react";
 
 const navItems = [
@@ -34,7 +34,8 @@ const AdminLayout = () => {
 
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* ── Sidebar ───────────────────────────────────────────────────────── */}
@@ -78,7 +79,9 @@ const AdminLayout = () => {
                   ? "bg-blue-600 text-white shadow-lg shadow-blue-900/30"
                   : "text-slate-400 hover:bg-slate-800 hover:text-white"
               }`}>
-              <span className={isActive(item.path) ? "text-white" : "text-slate-500"}>{item.icon}</span>
+              <span className={isActive(item.path) ? "text-white" : "text-slate-500"}>
+                {item.icon}
+              </span>
               {item.label}
               {isActive(item.path) && <ChevronRight size={14} className="ml-auto" />}
             </button>
@@ -99,7 +102,8 @@ const AdminLayout = () => {
 
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-4 shrink-0">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition">
+          <button onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition">
             <Menu size={20} className="text-gray-600" />
           </button>
           <div className="flex-1">
