@@ -292,3 +292,162 @@ export const getOcrHistory = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// ── Add this function to your ocr.controller.js ───────────────────────────────
+// POST /api/ocr/fake-detect
+
+export const fakeDetect = async (req, res) => {
+  try {
+    if (!req.file || !req.file.processedBuffer) {
+      return res.status(400).json({ message: "Image not uploaded or processed" });
+    }
+
+    const buffer   = req.file.processedBuffer;
+    const filename = req.file.originalname;
+    const mimetype = req.file.mimetype;
+
+    // ── Step 1: Run OCR ──────────────────────────────────────────────────────
+    const [text2, text1] = await Promise.all([
+      runOCR(buffer, filename, mimetype, 2),
+      runOCR(buffer, filename, mimetype, 1),
+    ]);
+
+    const rawText      = text2.length >= text1.length ? text2 : text1;
+    const combinedText = [text2, text1].filter(Boolean).join("\n").trim();
+
+    if (!combinedText || combinedText.length < 3) {
+      return res.status(422).json({
+        message: "Could not extract text from this image. Please upload a clearer, well-lit photo of the medicine packaging.",
+      });
+    }
+
+    // ── Step 2: AI Fake Detection Analysis ──────────────────────────────────
+    const fakeAnalysis = await groq().chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{
+        role: "user",
+        content: `You are a pharmaceutical expert specializing in counterfeit medicine detection in Pakistan.
+
+Analyze this text extracted from a medicine packaging image and determine if it shows signs of being FAKE or COUNTERFEIT.
+
+Extracted Text:
+"""${combinedText}"""
+
+Evaluate based on:
+1. Spelling errors in medicine name, manufacturer, or instructions
+2. Missing required information (batch number, expiry date, registration number)
+3. Incorrect or suspicious manufacturer name
+4. Poor grammar or unusual language
+5. Missing DRAP (Drug Regulatory Authority Pakistan) registration
+6. Suspicious or missing active ingredients
+7. Incorrect or incomplete dosage information
+8. Any other red flags for Pakistani medicine packaging
+
+Return ONLY valid JSON:
+{
+  "medicineName": "identified medicine name",
+  "manufacturer": "manufacturer name from packaging",
+  "batchNumber": "batch number if found or null",
+  "expiryDate": "expiry date if found or null",
+  "registrationNumber": "DRAP or registration number if found or null",
+  "verdict": "AUTHENTIC or FAKE or SUSPICIOUS",
+  "confidenceScore": 85,
+  "fakeIndicators": ["specific reason 1 why it seems fake", "specific reason 2"],
+  "authenticityFactors": ["specific reason 1 why it seems authentic", "specific reason 2"],
+  "missingElements": ["element 1 that should be on packaging but is missing"],
+  "spellingErrors": ["error 1 found in text"],
+  "overallRisk": "LOW or MEDIUM or HIGH",
+  "recommendation": "One sentence advice for the user",
+  "detectedIngredients": ["ingredient 1", "ingredient 2"],
+  "detectedDosage": "dosage information if found"
+}`
+      }],
+      max_tokens: 800,
+      temperature: 0.1,
+    });
+
+    const fakeContent = fakeAnalysis.choices[0]?.message?.content?.trim()
+      .replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+
+    let analysisResult;
+    try {
+      analysisResult = JSON.parse(fakeContent);
+    } catch {
+      return res.status(422).json({ message: "Could not analyze packaging. Please try a clearer image." });
+    }
+
+    // ── Step 3: Determine isFake from verdict ────────────────────────────────
+    const isFake      = analysisResult.verdict === "FAKE";
+    const isSuspicious = analysisResult.verdict === "SUSPICIOUS";
+    const confidence  = analysisResult.confidenceScore || 70;
+
+    // ── Step 4: Check DB for medicine match ──────────────────────────────────
+    let matchedWith     = null;
+    let medicineDetails = null;
+
+    if (analysisResult.medicineName) {
+      const cleanName = analysisResult.medicineName.toLowerCase().trim();
+      const words     = cleanName.split(" ").filter(w => w.length > 2);
+      const approved  = await Medicine.find({ isApproved: true }).select("name brand generic");
+
+      for (const med of approved) {
+        const mName  = med.name.toLowerCase().trim();
+        const mBrand = med.brand.toLowerCase().trim();
+        const match  =
+          words.some(w => mName.includes(w) || w.includes(mName) || mBrand.includes(w)) ||
+          cleanName.includes(mName) || cleanName.includes(mBrand);
+
+        if (match) {
+          matchedWith     = `${med.name} (${med.brand})`;
+          medicineDetails = await Medicine.findById(med._id).select("-createdBy -ocrData -__v");
+          break;
+        }
+      }
+    }
+
+    // ── Step 5: Save to OCRResult DB ─────────────────────────────────────────
+    await OCRResult.create({
+      imagePath:       req.file.path || null,
+      rawText:         combinedText,
+      medicineName:    analysisResult.medicineName || "Unknown",
+      confidence,
+      isFake:          isFake || isSuspicious,
+      matchedWith,
+      similarityScore: matchedWith ? 1 : 0,
+      scannedBy:       req.user?._id || null,
+    });
+
+    // ── Step 6: Respond ───────────────────────────────────────────────────────
+    res.json({
+      success:           true,
+      extractedText:     combinedText,
+      medicineName:      analysisResult.medicineName,
+      manufacturer:      analysisResult.manufacturer,
+      batchNumber:       analysisResult.batchNumber,
+      expiryDate:        analysisResult.expiryDate,
+      registrationNumber: analysisResult.registrationNumber,
+      verdict:           analysisResult.verdict,           // AUTHENTIC / FAKE / SUSPICIOUS
+      confidenceScore:   confidence,
+      fakeIndicators:    analysisResult.fakeIndicators || [],
+      authenticityFactors: analysisResult.authenticityFactors || [],
+      missingElements:   analysisResult.missingElements || [],
+      spellingErrors:    analysisResult.spellingErrors || [],
+      overallRisk:       analysisResult.overallRisk || "MEDIUM",
+      recommendation:    analysisResult.recommendation || "",
+      detectedIngredients: analysisResult.detectedIngredients || [],
+      detectedDosage:    analysisResult.detectedDosage || "",
+      matchedWith,
+      medicineDetails,
+      isFake:            isFake || isSuspicious,
+      message: analysisResult.verdict === "AUTHENTIC"
+        ? `✅ Packaging appears authentic${matchedWith ? ` — matched with ${matchedWith}` : ""}`
+        : analysisResult.verdict === "FAKE"
+        ? `🚨 Suspicious packaging detected — ${analysisResult.fakeIndicators?.[0] || "multiple red flags found"}`
+        : `⚠️ Cannot fully verify — please check with your pharmacist`,
+    });
+
+  } catch (error) {
+    console.error("Fake detect error:", error.message);
+    res.status(500).json({ message: "Analysis failed. Please try again." });
+  }
+};

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ArrowRight, X, ShieldAlert, Star, ChevronRight, Zap, ScanLine, FileText, Stethoscope, Heart, AlertTriangle, Pill, Activity, Camera, ClipboardList, Calculator } from "lucide-react";
+import { Search, X, ShieldAlert, Star, ChevronRight, Zap, ScanLine, FileText, Stethoscope, Heart, AlertTriangle, Pill, Activity, Camera, ClipboardList, Calculator, ShieldCheck, Upload, CheckCircle, ArrowRight } from "lucide-react";
 import { useMenu } from "../context/MenuContext";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -9,16 +9,9 @@ const features = [
   { icon: <Search size={32} />, title: "Smart Medicine Search",     desc: "Full details, dosage, side effects and AI explanation instantly.", link: "/search" },
   { icon: <Stethoscope size={32} />, title: "Symptom Checker",           desc: "AI-powered medicine suggestions based on your symptoms.",          link: "/symptoms" },
   { icon: <Zap size={32} />, title: "Drug Interaction Checker", desc: "Know if your medicines are safe to take together.",                link: "/interactions" },
-  { icon: <Camera size={32} />, title: "Fake Medicine Detector",   desc: "AI detects counterfeit or unregistered medicines via image.",      link: "/ocr" },
+  { icon: <Camera size={32} />, title: "Fake Medicine Detector",   desc: "AI detects counterfeit or unregistered medicines via image.",      link: null, modal: true },
   { icon: <ClipboardList size={32} />, title: "Prescription Scanner",      desc: "Scan prescriptions to get full info on all prescribed medicines.", link: "/prescription" },
   { icon: <Calculator size={32} />, title: "Personalized Dosage",       desc: "AI calculates your safe dose based on age, weight and conditions.", link: "/search" },
-];
-
-const risks = [
-  { title: "Wrong Diagnosis",         desc: "Treating the wrong condition can worsen your actual illness." },
-  { title: "Dangerous Side Effects",  desc: "Unmonitored drugs can trigger allergic reactions or organ damage." },
-  { title: "Antibiotic Resistance",   desc: "Misuse makes future bacterial infections harder to treat." },
-  { title: "Fatal Interactions",      desc: "Mixing medicines without advice can be life-threatening." },
 ];
 
 const techStack = [
@@ -67,20 +60,103 @@ const CountUp = ({ target, suffix = "" }) => {
   return <span ref={ref}>{isNaN(parseInt(target)) ? target : count}{suffix}</span>;
 };
 
+// ── Fake Medicine Modal ────────────────────────────────────────────────────
+const FakeMedicineModal = ({ onClose, onNavigate }) => {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  const steps = [
+    { icon: <Upload size={20} />,      step: "1", title: "Upload Image",  desc: "Take a photo of the medicine packaging or label" },
+    { icon: <ScanLine size={20} />,    step: "2", title: "AI Scan",       desc: "Our AI extracts text and checks against verified database" },
+    { icon: <ShieldCheck size={20} />, step: "3", title: "Get Verdict",   desc: "See if medicine is FAKE, AUTHENTIC, or SUSPICIOUS instantly" },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: "modalPop 0.3s ease-out forwards" }}
+      >
+        {/* Red header */}
+        <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 relative">
+          <div className="absolute inset-0 opacity-10"
+            style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+          <button onClick={onClose}
+            className="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition">
+            <X size={16} className="text-white" />
+          </button>
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+              <ShieldAlert size={28} className="text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-white">Fake Medicine Detector</h2>
+              <p className="text-red-200 text-xs mt-0.5">AI-powered counterfeit detection for Pakistan</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex gap-3">
+            <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 leading-relaxed">
+              <strong>Pakistan Alert:</strong> Up to 40% of medicines may be counterfeit. Verify before consuming any medicine.
+            </p>
+          </div>
+
+          <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">How It Works</p>
+          <div className="space-y-3 mb-6">
+            {steps.map((s, i) => (
+              <div key={i} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
+                <div className="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center shrink-0 text-red-600">
+                  {s.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-900">{s.title}</p>
+                  <p className="text-xs text-gray-500">{s.desc}</p>
+                </div>
+                <span className="text-xs font-black text-gray-300">0{s.step}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => { onClose(); onNavigate("/fake-detector"); }}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-2xl transition flex items-center justify-center gap-3 shadow-lg shadow-red-100">
+              <ShieldAlert size={20} /> Detect Fake Medicine Now
+            </button>
+            <button
+              onClick={() => { onClose(); onNavigate("/report-fake"); }}
+              className="w-full bg-white hover:bg-gray-50 text-gray-800 font-bold py-4 rounded-2xl border-2 border-gray-200 transition flex items-center justify-center gap-3">
+              <AlertTriangle size={20} className="text-red-500" /> Report Fake Medicine
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-400 text-center mt-4">
+            For educational purposes only. Always consult a pharmacist.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Home = () => {
   const navigate = useNavigate();
   const { isMenuOpen } = useMenu();
   const { user } = useAuth();
   const { isDark } = useTheme();
   const [query, setQuery] = useState("");
-  const [hoveredFeature, setHoveredFeature] = useState(null);
-  const [hoveredRisk, setHoveredRisk] = useState(null);
   const [showSticky, setShowSticky] = useState(false);
-  const footerRef = useRef(null);
+  const [showFakeModal, setShowFakeModal] = useState(false);
 
   const [aboutRef, aboutVisible]     = useFadeIn();
-  const [warningRef, warningVisible] = useFadeIn();
-  const [howRef, howVisible]         = useFadeIn();
   const [featRef, featVisible]       = useFadeIn();
   const [ctaRef, ctaVisible]         = useFadeIn();
 
@@ -89,16 +165,10 @@ const Home = () => {
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-      
-      // Show sticky after 600px scroll
       const shouldShow = scrollY > 600;
-      
-      // Hide sticky when near footer (within 300px of bottom)
       const nearFooter = scrollY + windowHeight > documentHeight - 300;
-      
       setShowSticky(shouldShow && !nearFooter);
     };
-    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -116,6 +186,7 @@ const Home = () => {
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeSlideLeft { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.92) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .hero-gradient { background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 50%, #312e81 100%); background-size: 200% 200%; animation: gradientShift 8s ease infinite; }
         .fade-up { animation: fadeSlideUp 0.6s ease-out forwards; }
         .animate-slideDown { animation: slideDown 0.3s ease-out; }
@@ -124,6 +195,14 @@ const Home = () => {
         .stagger-3 { animation-delay: 0.3s; opacity: 0; }
         .hero-search-input { background-color: transparent !important; color: #111827 !important; border: none !important; outline: none !important; }
       `}</style>
+
+      {/* Fake Medicine Modal */}
+      {showFakeModal && (
+        <FakeMedicineModal
+          onClose={() => setShowFakeModal(false)}
+          onNavigate={navigate}
+        />
+      )}
 
       <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100" style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
 
@@ -172,18 +251,26 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right: Feature Quick-Launch Grid (Visible on Desktop) */}
+            {/* Right: Feature Quick-Launch Grid */}
             <div className="hidden lg:grid grid-cols-2 gap-4">
               {[
-                { icon: <Search size={20} />, label: "Smart Search", link: "/search" },
-                { icon: <Stethoscope size={20} />, label: "Symptoms", link: "/symptoms" },
-                { icon: <Zap size={20} />, label: "Interactions", link: "/interactions" },
-                { icon: <ScanLine size={20} />, label: "Fake Detector", link: "/ocr" },
-                { icon: <FileText size={20} />, label: "Prescription", link: "/prescription" },
-                { icon: <Heart size={20} />, label: "Dosage Calc", link: "/search" },
+                { icon: <Search size={20} />,      label: "Smart Search",  link: "/search",   modal: false },
+                { icon: <Stethoscope size={20} />, label: "Symptoms",      link: "/symptoms", modal: false },
+                { icon: <Zap size={20} />,         label: "Interactions",  link: "/interactions", modal: false },
+                { icon: <ScanLine size={20} />,    label: "Fake Detector", link: null,        modal: true },
+                { icon: <FileText size={20} />,    label: "Prescription",  link: "/prescription", modal: false },
+                { icon: <Heart size={20} />,       label: "Dosage Calc",   link: "/search",   modal: false },
               ].map((item, i) => (
-                <button key={i} onClick={() => navigate(item.link)} className="flex items-center gap-4 p-5 bg-white/5 hover:bg-white/15 border border-white/10 rounded-2xl transition-all text-left backdrop-blur-md group shadow-xl">
-                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">{item.icon}</div>
+                <button key={i}
+                  onClick={() => item.modal ? setShowFakeModal(true) : navigate(item.link)}
+                  className={`flex items-center gap-4 p-5 border rounded-2xl transition-all text-left backdrop-blur-md group shadow-xl ${
+                    item.modal
+                      ? "bg-red-500/20 hover:bg-red-500/30 border-red-400/30"
+                      : "bg-white/5 hover:bg-white/15 border-white/10"
+                  }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform ${
+                    item.modal ? "bg-red-400/30" : "bg-white/10"
+                  }`}>{item.icon}</div>
                   <span className="font-semibold text-sm">{item.label}</span>
                 </button>
               ))}
@@ -191,7 +278,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* ── STATS (Responsive 2x2 or 4x1) ────────────────────────────────── */}
+        {/* ── STATS ─────────────────────────────────────────────────────── */}
         <section className="border-b border-gray-100 bg-gray-50">
           <div className="max-w-6xl mx-auto px-6 py-10 md:py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
@@ -249,7 +336,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* ── FEATURES (Responsive Grid) ─────────────────────────────────── */}
+        {/* ── FEATURES ───────────────────────────────────────────────────── */}
         <section ref={featRef} className="py-16 md:py-24 bg-gray-50"
           style={{ opacity: featVisible ? 1 : 0, transition: "opacity 1s ease" }}
         >
@@ -260,13 +347,22 @@ const Home = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {features.map((f, i) => (
-                <div key={i} onClick={() => navigate(f.link)}
-                  className="bg-white p-6 rounded-2xl border border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer group"
+                <div key={i}
+                  onClick={() => f.modal ? setShowFakeModal(true) : navigate(f.link)}
+                  className={`bg-white p-6 rounded-2xl border hover:shadow-xl transition-all cursor-pointer group ${
+                    f.modal
+                      ? "border-red-200 hover:border-red-500"
+                      : "border-gray-200 hover:border-blue-500"
+                  }`}
                 >
-                  <div className="text-blue-600 mb-4 group-hover:scale-110 transition-transform inline-block">{f.icon}</div>
+                  <div className={`mb-4 group-hover:scale-110 transition-transform inline-block ${
+                    f.modal ? "text-red-600" : "text-blue-600"
+                  }`}>{f.icon}</div>
                   <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
                   <p className="text-xs text-gray-500 leading-relaxed mb-4">{f.desc}</p>
-                  <div className="flex items-center text-blue-600 text-xs font-bold gap-1">
+                  <div className={`flex items-center text-xs font-bold gap-1 ${
+                    f.modal ? "text-red-600" : "text-blue-600"
+                  }`}>
                     Try Now <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -353,11 +449,11 @@ const Home = () => {
                   <p style={{ color: isDark ? '#fca5a5' : '#374151' }} className="text-sm leading-relaxed mb-3">
                     Pakistan faces a serious issue with fake medicines. Always purchase from licensed pharmacies and verify packaging authenticity. Use our Fake Medicine Detector to scan suspicious products.
                   </p>
-                  <button 
-                    onClick={() => navigate('/ocr')} 
-                    className="bg-blue-600 hover:bg-red-700 text-white text-sm font-semibold px-6 py-2 rounded-lg transition"
+                  <button
+                    onClick={() => setShowFakeModal(true)}
+                    className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-6 py-2 rounded-lg transition"
                   >
-                    Scan Medicine Now
+                    Detect Fake Medicine
                   </button>
                 </div>
               </div>
@@ -373,6 +469,9 @@ const Home = () => {
               <p className="text-blue-100 mb-10 text-sm md:text-base max-w-xl mx-auto">Join thousands of users making safer healthcare choices with AI. Start searching now.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button onClick={() => navigate("/search")} style={{ backgroundColor: '#ffffff', color: '#1d4ed8' }} className="px-8 py-4 rounded-2xl font-black text-sm hover:shadow-2xl transition-all">Search Medicine</button>
+                <button onClick={() => setShowFakeModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2">
+                  <ShieldAlert size={18} /> Detect Fake Medicine
+                </button>
                 {!user && (
                   <button onClick={() => navigate("/register")} className="bg-white/10 border border-white/20 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-white/20 transition-all">Create Free Account</button>
                 )}
