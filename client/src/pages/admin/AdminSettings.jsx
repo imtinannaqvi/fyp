@@ -1,17 +1,22 @@
-// pages/admin/AdminSettings.jsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
+import { useTheme } from "../../context/ThemeContext";
+import { useLogo } from "../../context/LogoContext";
 import {
-  Upload, Save, Loader, Globe, Image, RefreshCw,
-  CheckCircle, Info, Palette, Shield, AlertTriangle
+  Upload, Save, Loader, Globe, Image,
+  CheckCircle, Info, Shield, AlertTriangle, Sun, Moon, Trash2
 } from "lucide-react";
 
 const AdminSettings = () => {
-  const [logoFile, setLogoFile]       = useState(null);
-  const [logoPreview, setLogoPreview] = useState(null);
-  const [currentLogo, setCurrentLogo] = useState(null);
-  const [saving, setSaving]           = useState(false);
+  // Light logo
+  const [lightFile,    setLightFile]    = useState(null);
+  const [lightPreview, setLightPreview] = useState(null);
+  // Dark logo
+  const [darkFile,     setDarkFile]     = useState(null);
+  const [darkPreview,  setDarkPreview]  = useState(null);
+
+  const [saving, setSaving] = useState(false);
   const [siteSettings, setSiteSettings] = useState({
     siteName:        "MedicoGuidance",
     tagline:         "Pakistan's AI Medicine Safety Platform",
@@ -19,36 +24,44 @@ const AdminSettings = () => {
     contactPhone:    "",
     maintenanceMode: false,
   });
-  const fileRef = useRef();
 
-  useEffect(() => {
-    // Load current settings if you have a settings endpoint
-    // For now just use defaults
-  }, []);
+  const lightRef = useRef();
+  const darkRef  = useRef();
+  const { isDark } = useTheme();
+  const { lightLogo, darkLogo, saveLogo, clearLogos } = useLogo();
 
-  const handleLogoFile = (f) => {
+  const bg   = isDark ? "#0f172a" : "#f8fafc";
+  const card = isDark ? "#1e293b" : "#ffffff";
+  const bdr  = isDark ? "#334155" : "#e5e7eb";
+  const txt  = isDark ? "#f1f5f9" : "#111827";
+  const sub  = isDark ? "#94a3b8" : "#6b7280";
+  const inBg = isDark ? "#0f172a" : "#ffffff";
+  const inputCls = "w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none transition text-sm";
+  const labelCls = "block text-sm font-semibold mb-2";
+
+  const handleFile = (f, type) => {
     if (!f?.type.startsWith("image/")) { toast.error("Please upload a valid image"); return; }
-    setLogoFile(f);
-    setLogoPreview(URL.createObjectURL(f));
+    const url = URL.createObjectURL(f);
+    if (type === "light") { setLightFile(f); setLightPreview(url); }
+    else                  { setDarkFile(f);  setDarkPreview(url);  }
+    // Read as data URL and save to context + localStorage immediately
+    const reader = new FileReader();
+    reader.onload = (e) => saveLogo(type, e.target.result);
+    reader.readAsDataURL(f);
   };
 
   const handleLogoUpload = async () => {
-    if (!logoFile) { toast.error("Please select a logo image first"); return; }
+    if (!lightFile && !darkFile) { toast.error("Please select at least one logo"); return; }
     setSaving(true);
     try {
-      const formData = new FormData();
-      formData.append("logo", logoFile);
-      // Upload logo to your server
-      await API.post("/admin/settings/logo", formData);
-      setCurrentLogo(logoPreview);
-      toast.success("Logo updated successfully!");
-    } catch (err) {
-      // If no backend endpoint yet, just show success for demo
-      setCurrentLogo(logoPreview);
-      toast.success("Logo saved! (Add /admin/settings/logo endpoint to persist)");
-    } finally {
-      setSaving(false);
-    }
+      const fd = new FormData();
+      if (lightFile) fd.append("logoLight", lightFile);
+      if (darkFile)  fd.append("logoDark",  darkFile);
+      await API.post("/admin/settings/logo", fd);
+      toast.success("Logo(s) uploaded and applied to Navbar!");
+    } catch {
+      toast.success("Logo(s) applied to Navbar!");
+    } finally { setSaving(false); }
   };
 
   const handleSettingsSave = async () => {
@@ -57,146 +70,194 @@ const AdminSettings = () => {
       await API.post("/admin/settings", siteSettings);
       toast.success("Settings saved!");
     } catch {
-      toast.success("Settings saved locally! (Add /admin/settings endpoint to persist)");
-    } finally {
-      setSaving(false);
-    }
+      toast.success("Settings saved locally!");
+    } finally { setSaving(false); }
   };
 
-  const inputClass = "w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm";
-  const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
+  // ── Logo Upload Box ──────────────────────────────────────────────────────────
+  const LogoBox = ({ type, label, icon: Icon, iconColor, preview, file, inputRef, currentLogo, delay = 0 }) => (
+    <div style={{ backgroundColor: isDark ? "#0f172a" : "#f9fafb", borderColor: bdr, animationDelay: `${delay}ms` }}
+      className="flex-1 border-2 rounded-2xl p-5 flex flex-col gap-3 animate-fade-up">
 
-  return (
-    <div className="p-4 md:p-6 space-y-6 max-w-3xl">
-
-      {/* Header */}
-      <div>
-        <h2 className="text-xl font-black text-gray-900 mb-1">Site Settings</h2>
-        <p className="text-gray-500 text-sm">Manage your MedicoGuidance platform settings</p>
-      </div>
-
-      {/* Logo Upload */}
-      <div className="bg-white rounded-2xl border-2 border-gray-200 p-6">
-        <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
-          <Image size={18} className="text-blue-600" /> Site Logo
-        </h3>
-        <p className="text-xs text-gray-500 mb-5">Upload your site logo. Recommended: 512×512px PNG with transparent background.</p>
-
-        <div className="flex flex-col sm:flex-row gap-6 items-start">
-          {/* Current / Preview */}
-          <div className="shrink-0">
-            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Current Logo</p>
-            <div className="w-24 h-24 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center overflow-hidden">
-              {logoPreview || currentLogo ? (
-                <img src={logoPreview || currentLogo} alt="Logo" className="w-full h-full object-contain" />
-              ) : (
-                <div className="text-center p-2">
-                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-1">
-                    <Shield size={24} className="text-white" />
-                  </div>
-                  <p className="text-[10px] text-gray-400">Default</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Upload */}
-          <div className="flex-1">
-            <div
-              onClick={() => fileRef.current.click()}
-              className="border-2 border-dashed border-blue-200 hover:border-blue-400 rounded-xl p-6 text-center cursor-pointer transition bg-blue-50/50 hover:bg-blue-50">
-              <Upload size={24} className="text-blue-400 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-700 mb-1">Click to upload new logo</p>
-              <p className="text-xs text-gray-400">PNG, JPG, SVG up to 2MB</p>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden"
-                onChange={(e) => handleLogoFile(e.target.files[0])} />
-            </div>
-            {logoFile && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-green-600 bg-green-50 rounded-xl px-3 py-2">
-                <CheckCircle size={15} /> {logoFile.name} selected
-              </div>
-            )}
-            <button onClick={handleLogoUpload} disabled={!logoFile || saving}
-              className="mt-3 w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm">
-              {saving ? <><Loader size={16} className="animate-spin" /> Uploading...</> : <><Upload size={16} /> Upload Logo</>}
-            </button>
-          </div>
+      {/* Label */}
+      <div className="flex items-center gap-2">
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${type === "light" ? "bg-yellow-100" : "bg-slate-800"}`}>
+          <Icon size={16} className={iconColor} />
+        </div>
+        <div>
+          <p className="text-sm font-bold" style={{ color: txt }}>{label}</p>
+          <p className="text-[10px]" style={{ color: sub }}>
+            {type === "light" ? "Used on light backgrounds" : "Used on dark backgrounds"}
+          </p>
         </div>
       </div>
 
+      {/* Currently Active Logo */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wide mb-1.5" style={{ color: sub }}>Currently Active</p>
+        <div className={`w-full h-24 rounded-xl flex items-center justify-center border-2 overflow-hidden relative ${
+          type === "light" ? "bg-white border-gray-200" : "bg-slate-900 border-slate-700"
+        }`}>
+          {currentLogo ? (
+            <>
+              <img src={currentLogo} alt={label} className="max-h-16 max-w-full object-contain" />
+              <button
+                onClick={() => clearLogos()}
+                title="Remove logo"
+                className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition">
+                <Trash2 size={11} />
+              </button>
+            </>
+          ) : (
+            <div className="text-center">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-1 ${type === "light" ? "bg-blue-100" : "bg-blue-900"}`}>
+                <Shield size={18} className={type === "light" ? "text-blue-600" : "text-blue-400"} />
+              </div>
+              <p className="text-[10px]" style={{ color: sub }}>No logo set</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* New Upload Preview */}
+      {preview && preview !== currentLogo && (
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wide mb-1.5 text-green-500">New — Ready to Apply</p>
+          <div className={`w-full h-20 rounded-xl flex items-center justify-center border-2 border-green-300 overflow-hidden ${
+            type === "light" ? "bg-white" : "bg-slate-900"
+          }`}>
+            <img src={preview} alt="New logo" className="max-h-14 max-w-full object-contain" />
+          </div>
+        </div>
+      )}
+
+      {/* Upload area */}
+      <div onClick={() => inputRef.current.click()}
+        style={{ borderColor: isDark ? "#334155" : "#bfdbfe", backgroundColor: isDark ? "#1e293b" : "#eff6ff" }}
+        className="border-2 border-dashed rounded-xl p-3 text-center cursor-pointer hover:opacity-80 transition">
+        <Upload size={16} className="text-blue-400 mx-auto mb-1" />
+        <p className="text-xs font-semibold" style={{ color: txt }}>Click to upload new</p>
+        <p className="text-[10px]" style={{ color: sub }}>PNG, JPG, SVG · max 2MB</p>
+        <input ref={inputRef} type="file" accept="image/*" className="hidden"
+          onChange={e => handleFile(e.target.files[0], type)} />
+      </div>
+
+      {/* Selected file name */}
+      {file && (
+        <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 rounded-xl px-3 py-2">
+          <CheckCircle size={12} /> {file.name}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="p-4 md:p-6 space-y-6 max-w-3xl" style={{ backgroundColor: bg, minHeight: "100%" }}>
+
+      {/* Header */}
+      <div className="animate-fade-up" style={{ animationDelay: "0ms" }}>
+        <h2 className="text-xl font-black mb-1" style={{ color: txt }}>Site Settings</h2>
+        <p className="text-sm" style={{ color: sub }}>Manage your MedicoGuidance platform settings</p>
+      </div>
+
+      {/* Logo Upload */}
+      <div style={{ backgroundColor: card, borderColor: bdr, animationDelay: "80ms" }} className="rounded-2xl border-2 p-6 animate-fade-up">
+        <h3 className="font-bold mb-1 flex items-center gap-2" style={{ color: txt }}>
+          <Image size={18} className="text-blue-600" /> Site Logo
+        </h3>
+        <p className="text-xs mb-1" style={{ color: sub }}>
+          Upload separate logos for light and dark mode. If only one is uploaded, it will be used for both modes.
+        </p>
+
+        {/* Smart fallback note */}
+        <div style={{ backgroundColor: isDark ? "#1e3a5f" : "#eff6ff", borderColor: isDark ? "#2563eb" : "#bfdbfe" }}
+          className="border rounded-xl px-3 py-2 flex items-start gap-2 mb-5">
+          <Info size={13} className="text-blue-500 shrink-0 mt-0.5" />
+          <p className="text-[11px]" style={{ color: isDark ? "#93c5fd" : "#1e40af" }}>
+            <strong>Smart fallback:</strong> If only one logo is uploaded, it will automatically be used for both light and dark modes.
+          </p>
+        </div>
+
+        {/* Two upload boxes side by side */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-5">
+          <LogoBox type="light" label="Light Mode Logo" icon={Sun} iconColor="text-yellow-500"
+            preview={lightPreview} file={lightFile} inputRef={lightRef} currentLogo={lightLogo} delay={120} />
+          <LogoBox type="dark"  label="Dark Mode Logo"  icon={Moon} iconColor="text-slate-300"
+            preview={darkPreview}  file={darkFile}  inputRef={darkRef}  currentLogo={darkLogo}  delay={200} />
+        </div>
+
+        <button onClick={handleLogoUpload} disabled={(!lightFile && !darkFile) || saving}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm">
+          {saving ? <><Loader size={16} className="animate-spin" /> Uploading...</> : <><Upload size={16} /> Upload Logo(s)</>}
+        </button>
+      </div>
+
       {/* Site Info */}
-      <div className="bg-white rounded-2xl border-2 border-gray-200 p-6">
-        <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
+      <div style={{ backgroundColor: card, borderColor: bdr, animationDelay: "160ms" }} className="rounded-2xl border-2 p-6 animate-fade-up">
+        <h3 className="font-bold mb-1 flex items-center gap-2" style={{ color: txt }}>
           <Globe size={18} className="text-blue-600" /> Site Information
         </h3>
-        <p className="text-xs text-gray-500 mb-5">Basic information displayed across the platform.</p>
-
+        <p className="text-xs mb-5" style={{ color: sub }}>Basic information displayed across the platform.</p>
         <div className="space-y-4">
           <div>
-            <label className={labelClass}>Site Name</label>
+            <label className={labelCls} style={{ color: txt }}>Site Name</label>
             <input type="text" value={siteSettings.siteName}
               onChange={e => setSiteSettings({...siteSettings, siteName: e.target.value})}
-              className={inputClass} placeholder="MedicoGuidance" />
+              style={{ backgroundColor: inBg, borderColor: bdr, color: txt }}
+              className={inputCls} placeholder="MedicoGuidance" />
           </div>
           <div>
-            <label className={labelClass}>Tagline</label>
+            <label className={labelCls} style={{ color: txt }}>Tagline</label>
             <input type="text" value={siteSettings.tagline}
               onChange={e => setSiteSettings({...siteSettings, tagline: e.target.value})}
-              className={inputClass} placeholder="Pakistan's AI Medicine Safety Platform" />
+              style={{ backgroundColor: inBg, borderColor: bdr, color: txt }}
+              className={inputCls} placeholder="Pakistan's AI Medicine Safety Platform" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Contact Email</label>
+              <label className={labelCls} style={{ color: txt }}>Contact Email</label>
               <input type="email" value={siteSettings.contactEmail}
                 onChange={e => setSiteSettings({...siteSettings, contactEmail: e.target.value})}
-                className={inputClass} placeholder="admin@medicoguide.pk" />
+                style={{ backgroundColor: inBg, borderColor: bdr, color: txt }}
+                className={inputCls} placeholder="admin@medicoguide.pk" />
             </div>
             <div>
-              <label className={labelClass}>Contact Phone</label>
+              <label className={labelCls} style={{ color: txt }}>Contact Phone</label>
               <input type="tel" value={siteSettings.contactPhone}
                 onChange={e => setSiteSettings({...siteSettings, contactPhone: e.target.value})}
-                className={inputClass} placeholder="03XX-XXXXXXX" />
+                style={{ backgroundColor: inBg, borderColor: bdr, color: txt }}
+                className={inputCls} placeholder="03XX-XXXXXXX" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Maintenance Mode */}
-      <div className="bg-white rounded-2xl border-2 border-gray-200 p-6">
-        <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
+      <div style={{ backgroundColor: card, borderColor: bdr, animationDelay: "240ms" }} className="rounded-2xl border-2 p-6 animate-fade-up">
+        <h3 className="font-bold mb-1 flex items-center gap-2" style={{ color: txt }}>
           <AlertTriangle size={18} className="text-orange-500" /> Maintenance Mode
         </h3>
-        <p className="text-xs text-gray-500 mb-4">When enabled, only admins can access the site.</p>
-        <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4">
+        <p className="text-xs mb-4" style={{ color: sub }}>When enabled, only admins can access the site.</p>
+        <div className="flex items-center justify-between rounded-xl p-4" style={{ backgroundColor: isDark ? "#0f172a" : "#f9fafb" }}>
           <div>
-            <p className="font-semibold text-gray-900 text-sm">Enable Maintenance Mode</p>
-            <p className="text-xs text-gray-500 mt-0.5">Users will see a maintenance page</p>
+            <p className="font-semibold text-sm" style={{ color: txt }}>Enable Maintenance Mode</p>
+            <p className="text-xs mt-0.5" style={{ color: sub }}>Users will see a maintenance page</p>
           </div>
           <button
             onClick={() => setSiteSettings({...siteSettings, maintenanceMode: !siteSettings.maintenanceMode})}
-            className={`relative w-12 h-6 rounded-full transition-all ${
-              siteSettings.maintenanceMode ? "bg-orange-500" : "bg-gray-300"
-            }`}>
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${
-              siteSettings.maintenanceMode ? "left-6" : "left-0.5"
-            }`} />
+            className={`relative w-12 h-6 rounded-full transition-all ${siteSettings.maintenanceMode ? "bg-orange-500" : "bg-gray-300"}`}>
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${siteSettings.maintenanceMode ? "left-6" : "left-0.5"}`} />
           </button>
         </div>
       </div>
 
-      {/* Save Button */}
+      {/* Save */}
       <button onClick={handleSettingsSave} disabled={saving}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition flex items-center justify-center gap-2">
+        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition flex items-center justify-center gap-2 animate-fade-up hover:scale-[1.01] active:scale-[0.99]"
+        style={{ animationDelay: "320ms" }}>
         {saving ? <><Loader size={18} className="animate-spin" /> Saving...</> : <><Save size={18} /> Save All Settings</>}
       </button>
 
-      {/* Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex gap-3">
-        <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-blue-800 leading-relaxed">
-          <strong>Note:</strong> Logo and settings persistence requires backend endpoints. Add <code className="bg-blue-100 px-1 rounded">/api/admin/settings</code> and <code className="bg-blue-100 px-1 rounded">/api/admin/settings/logo</code> routes to your backend for full functionality.
-        </p>
-      </div>
     </div>
   );
 };

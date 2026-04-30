@@ -137,7 +137,7 @@ const SmartSearch = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50" style={{ backgroundColor: isDark ? '#0f172a' : '#f9fafb' }}>
+      <div className="min-h-screen bg-gray-50 page-enter" style={{ backgroundColor: isDark ? '#0f172a' : '#f9fafb' }}>
         {/* Search Header */}
         <div style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderBottom: isDark ? '1px solid #334155' : '1px solid #e5e7eb' }} className="sticky top-0 md:top-16 z-10 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 py-6">

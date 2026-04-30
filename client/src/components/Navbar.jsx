@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
+import { useLogo } from "../context/LogoContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -63,23 +64,37 @@ const Navbar = () => {
   ];
 
   const { isDark } = useTheme();
+  const { lightLogo, darkLogo } = useLogo();
+  // Smart fallback: use whichever logo is available for current mode
+  const activeLogo = isDark ? (darkLogo || lightLogo) : (lightLogo || darkLogo);
 
   return (
     <>
-      <nav style={{ backgroundColor: isDark ? '#111827' : '#ffffff', borderBottom: isDark ? '1px solid #1f2937' : '1px solid #e5e7eb', boxShadow: scrolled ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none' }} className="sticky top-0 z-50 transition-shadow duration-300">
+      <nav style={{ backgroundColor: isDark ? '#111827' : '#ffffff', borderBottom: isDark ? '1px solid #1f2937' : '1px solid #e5e7eb', boxShadow: scrolled ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none' }} className="sticky top-0 z-[70] transition-shadow duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="h-16 sm:h-20 flex items-center justify-between gap-4 sm:gap-8">
 
             {/* Logo */}
             <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 sm:gap-3.5 shrink-0 group">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-md">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                </svg>
-              </div>
-              <span style={{ color: isDark ? '#ffffff' : '#111827' }} className="font-extrabold text-lg sm:text-xl tracking-tight">
-                Medico<span className="text-blue-600">Guidance</span>
-              </span>
+              {activeLogo ? (
+                <img
+                  src={activeLogo}
+                  alt="Logo"
+                  className="h-10 sm:h-14 w-auto object-contain"
+                  style={{ maxWidth: "160px" }}
+                />
+              ) : (
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-md">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                  </svg>
+                </div>
+              )}
+              {!activeLogo && (
+                <span style={{ color: isDark ? '#ffffff' : '#111827' }} className="font-extrabold text-lg sm:text-xl tracking-tight">
+                  Medico<span className="text-blue-600">Guidance</span>
+                </span>
+              )}
             </Link>
 
             {/* Desktop Nav */}
@@ -307,7 +322,7 @@ const Navbar = () => {
         )}
       </nav>
 
-      {userDropdown && <div className="fixed inset-0 z-40" onClick={() => setUserDropdown(false)} />}
+      {userDropdown && <div className="fixed inset-0 z-[65]" onClick={() => setUserDropdown(false)} />}
     </>
   );
 };

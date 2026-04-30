@@ -165,13 +165,133 @@
 .dark .text-purple-700 { color: #d8b4fe !important; }
 .dark .text-yellow-700 { color: #fde047 !important; }
 
-/* Animations */
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS — Global
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.35); }
+  50%       { box-shadow: 0 0 0 8px rgba(37,99,235,0); }
+}
 
-.animate-fade-up {
-  opacity: 0;
-  animation: fade-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+/* ── Utility classes ─────────────────────────────────────────────────────────────── */
+.animate-fade-up    { opacity:0; animation: fade-up 0.5s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+.animate-fade-in    { opacity:0; animation: fade-in 0.4s ease forwards; }
+.animate-slide-left { opacity:0; animation: slide-in-left 0.4s ease forwards; }
+.animate-scale-in   { opacity:0; animation: scale-in 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.animate-float      { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease infinite; }
+
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+.dark .skeleton {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+}
+
+/* Stagger delays */
+.delay-75  { animation-delay: 75ms;  }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+
+/* ── Hover effects ─────────────────────────────────────────────────────────────── */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.hover-lift:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+.hover-scale {
+  transition: transform 0.15s ease !important;
+}
+.hover-scale:hover { transform: scale(1.04) !important; }
+
+/* ── Page wrappers ─────────────────────────────────────────────────────────────── */
+.page-enter {
+  animation: fade-up 0.45s ease forwards;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+/* Only animate direct children of page wrappers, not every nested rounded div */
+.page-enter > .rounded-2xl,
+.page-enter > .rounded-xl,
+.page-enter > div > .rounded-2xl,
+.page-enter > div > .rounded-xl {
+  animation: fade-up 0.5s ease both;
+}
+
+/* Stagger children */
+.page-enter > .rounded-2xl:nth-child(1), .page-enter > div > .rounded-2xl:nth-child(1) { animation-delay: 0ms; }
+.page-enter > .rounded-2xl:nth-child(2), .page-enter > div > .rounded-2xl:nth-child(2) { animation-delay: 60ms; }
+.page-enter > .rounded-2xl:nth-child(3), .page-enter > div > .rounded-2xl:nth-child(3) { animation-delay: 120ms; }
+.page-enter > .rounded-2xl:nth-child(4), .page-enter > div > .rounded-2xl:nth-child(4) { animation-delay: 180ms; }
+.page-enter > .rounded-2xl:nth-child(5), .page-enter > div > .rounded-2xl:nth-child(5) { animation-delay: 240ms; }
+
+/* ── Table rows stagger ─────────────────────────────────────────────────────────────── */
+tbody tr:nth-child(1)  { animation-delay: 0ms;   }
+tbody tr:nth-child(2)  { animation-delay: 40ms;  }
+tbody tr:nth-child(3)  { animation-delay: 80ms;  }
+tbody tr:nth-child(4)  { animation-delay: 120ms; }
+tbody tr:nth-child(5)  { animation-delay: 160ms; }
+tbody tr:nth-child(6)  { animation-delay: 200ms; }
+tbody tr:nth-child(7)  { animation-delay: 240ms; }
+tbody tr:nth-child(8)  { animation-delay: 280ms; }
+tbody tr:nth-child(9)  { animation-delay: 320ms; }
+tbody tr:nth-child(10) { animation-delay: 360ms; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+button:not(:disabled):active {
+  transform: scale(0.97);
+  transition: transform 0.08s ease;
+}
+button, a {
+  transition: background-color 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease, box-shadow 0.15s ease,
+              transform 0.1s ease, opacity 0.15s ease;
+}
+
+/* ── Inputs ─────────────────────────────────────────────────────────────── */
+input:focus, textarea:focus, select:focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* ── Nav ─────────────────────────────────────────────────────────────── */
+nav a, nav button {
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease !important;
 }

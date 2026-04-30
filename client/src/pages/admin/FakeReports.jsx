@@ -93,7 +93,7 @@ const FakeReports = () => {
     <div className="min-h-screen pb-10" style={{ backgroundColor: bg }}>
 
       {/* Header */}
-      <div className="border-b px-4 py-6" style={{ backgroundColor: headBg, borderColor: headBdr }}>
+      <div className="border-b px-4 py-6 animate-fade-up" style={{ backgroundColor: headBg, borderColor: headBdr, animationDelay: "0ms" }}>
         <div className="max-w-6xl mx-auto flex items-center gap-3">
           <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
             <AlertTriangle size={20} className="text-red-600" />
@@ -108,8 +108,8 @@ const FakeReports = () => {
       <div className="max-w-6xl mx-auto px-4 py-6 space-y-4">
 
         {/* Search */}
-        <div className="flex items-center gap-2 rounded-xl px-3 py-2 w-full sm:w-72 border"
-          style={{ backgroundColor: inputBg, borderColor: inputBdr }}>
+        <div className="flex items-center gap-2 rounded-xl px-3 py-2 w-full sm:w-72 border animate-fade-up"
+          style={{ backgroundColor: inputBg, borderColor: inputBdr, animationDelay: "80ms" }}>
           <Search size={14} style={{ color: textSub }} />
           <input
             type="text"
@@ -122,7 +122,7 @@ const FakeReports = () => {
         </div>
 
         {/* Table Card */}
-        <div className="rounded-2xl border shadow-sm overflow-hidden" style={{ backgroundColor: card, borderColor: border }}>
+        <div className="rounded-2xl border shadow-sm overflow-hidden animate-fade-up" style={{ backgroundColor: card, borderColor: border, animationDelay: "160ms" }}>
           {loading ? (
             <div className="flex justify-center py-16">
               <Loader size={28} className="animate-spin text-blue-600" />
@@ -221,7 +221,7 @@ const FakeReports = () => {
       {/* Detail Modal */}
       {selected && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4">
-          <div className="rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+          <div className="rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-scale-in"
             style={{ backgroundColor: card, border: `1px solid ${border}` }}>
 
             {/* Modal Header */}
