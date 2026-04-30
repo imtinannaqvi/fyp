@@ -126,7 +126,7 @@ const InteractionChecker = () => {
 
   return (
     <>
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white page-enter">
       <main className="w-full max-w-5xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Drug Interaction Checker</h1>

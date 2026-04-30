@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import './App.css'; // uppercase 'A'
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -56,11 +56,14 @@ import AdminUsers from "./pages/admin/Users";
 
 
 function App() {
+  const location = useLocation();
+  const isAdmin  = location.pathname.startsWith("/admin");
+
   return (
     <MenuProvider>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <ScrollToTop />
-        <Navbar />
+        {!isAdmin && <Navbar />}
         <main className="flex-1">
           <Routes>
           {/* --- PUBLIC ROUTES --- */}
@@ -118,8 +121,8 @@ function App() {
 <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
-        <Footer />
-        <MediBot />
+        {!isAdmin && <Footer />}
+        {!isAdmin && <MediBot />}
       </div>
     </MenuProvider>
   );
