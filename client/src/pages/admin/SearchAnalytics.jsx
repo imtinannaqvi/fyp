@@ -1,4 +1,3 @@
-// pages/admin/SearchAnalytics.jsx
 import { useState, useEffect } from "react";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
