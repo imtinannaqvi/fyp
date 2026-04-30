@@ -451,3 +451,12 @@ Return ONLY valid JSON:
     res.status(500).json({ message: "Analysis failed. Please try again." });
   }
 };
+
+export const deleteOcrResult = async (req, res) => {
+  try {
+    await OCRResult.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: "Scan deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
