@@ -122,24 +122,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-16 pt-10">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-            <div className="text-center lg:text-left">
-              <p className="text-sm text-gray-400 font-medium">
-                © {new Date().getFullYear()} <span className="text-white font-bold">MedicoGuidance</span>. Final Year Project.
-              </p>
-              <p className="text-xs text-gray-500 mt-1">All rights reserved.</p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap justify-center">
-              <span className="text-sm text-gray-400">Built with</span>
-              <span className="px-3 py-1 bg-blue-950/50 text-blue-400 text-xs font-bold rounded-lg border border-blue-900/50">React</span>
-              <span className="px-3 py-1 bg-green-950/50 text-green-400 text-xs font-bold rounded-lg border border-green-900/50">Node.js</span>
-              <span className="px-3 py-1 bg-emerald-950/50 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-900/50">MongoDB</span>
-              <span className="px-3 py-1 bg-purple-950/50 text-purple-400 text-xs font-bold rounded-lg border border-purple-900/50">Groq AI</span>
-            </div>
-          </div>
-        </div>
+       
       </div>
     </footer>
   );
