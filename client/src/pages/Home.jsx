@@ -154,9 +154,11 @@ const Home = () => {
   const [showSticky, setShowSticky] = useState(false);
   const [showFakeModal, setShowFakeModal] = useState(false);
 
-  const [aboutRef, aboutVisible]     = useFadeIn();
-  const [featRef, featVisible]       = useFadeIn();
-  const [ctaRef, ctaVisible]         = useFadeIn();
+  const [aboutRef, aboutVisible] = useFadeIn();
+  const [statsRef, statsVisible] = useFadeIn();
+  const [featRef, featVisible]   = useFadeIn();
+  const [safetyRef, safetyVisible] = useFadeIn();
+  const [ctaRef, ctaVisible]     = useFadeIn();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -296,7 +298,9 @@ const Home = () => {
         </section>
 
         {/* ── STATS ─────────────────────────────────────────────────────── */}
-        <section className="border-b border-gray-100 bg-gray-50">
+        <section ref={statsRef} className="border-b border-gray-100 bg-gray-50"
+          style={{ opacity: statsVisible ? 1 : 0, transform: statsVisible ? "none" : "translateY(24px)", transition: "opacity 0.7s ease, transform 0.7s ease" }}
+        >
           <div className="max-w-6xl mx-auto px-6 py-10 md:py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { value: "10000", suffix: "+", label: "Medicines" },
@@ -314,7 +318,7 @@ const Home = () => {
 
         {/* ── ABOUT ──────────────────────────────────────────────────────── */}
         <section ref={aboutRef} className="py-20 md:py-28 bg-white border-b border-gray-100 overflow-hidden"
-          style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? "none" : "translateY(20px)", transition: "all 0.8s ease" }}
+          style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? "none" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}
         >
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
@@ -355,7 +359,7 @@ const Home = () => {
 
         {/* ── FEATURES ───────────────────────────────────────────────────── */}
         <section ref={featRef} className="py-16 md:py-24 bg-gray-50"
-          style={{ opacity: featVisible ? 1 : 0, transition: "opacity 1s ease" }}
+          style={{ opacity: featVisible ? 1 : 0, transform: featVisible ? "none" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}
         >
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16">
@@ -381,7 +385,9 @@ const Home = () => {
         </section>
 
         {/* ── MEDICINE SAFETY AWARENESS ──────────────────────────────────── */}
-        <section className="py-16 md:py-24 border-t border-gray-100">
+        <section ref={safetyRef} className="py-16 md:py-24 border-t border-gray-100"
+          style={{ opacity: safetyVisible ? 1 : 0, transform: safetyVisible ? "none" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}
+        >
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-12">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 mb-4">Important Safety Information</p>
@@ -471,7 +477,9 @@ const Home = () => {
         </section>
 
         {/* ── CTA ────────────────────────────────────────────────────────── */}
-        <section ref={ctaRef} className="py-12 px-4">
+        <section ref={ctaRef} className="py-12 px-4"
+          style={{ opacity: ctaVisible ? 1 : 0, transform: ctaVisible ? "none" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}
+        >
           <div className="max-w-5xl mx-auto hero-gradient rounded-[2rem] p-8 md:p-16 text-center relative overflow-hidden">
             <div className="relative z-10">
               <h2 className="text-3xl md:text-5xl font-black text-white mb-6">Ready to Stay Safe?</h2>

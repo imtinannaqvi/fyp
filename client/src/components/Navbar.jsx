@@ -64,33 +64,60 @@ const Navbar = () => {
   ];
 
   const { isDark } = useTheme();
-  const { lightLogo, darkLogo } = useLogo();
-  // Smart fallback: use whichever logo is available for current mode
+  const { lightLogo, darkLogo, showSiteName, siteName, tagline } = useLogo();
   const activeLogo = isDark ? (darkLogo || lightLogo) : (lightLogo || darkLogo);
+  const [logoError, setLogoError] = useState(false);
+  useEffect(() => { setLogoError(false); }, [activeLogo]);
+  const showLogo = activeLogo && !logoError;
 
   return (
     <>
+      <style>{`
+        @keyframes linkSlideIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .nav-link-anim {
+          opacity: 0;
+          animation: linkSlideIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+      `}</style>
       <nav style={{ backgroundColor: isDark ? '#111827' : '#ffffff', borderBottom: isDark ? '1px solid #1f2937' : '1px solid #e5e7eb', boxShadow: scrolled ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none' }} className="sticky top-0 z-[70] transition-shadow duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="h-16 sm:h-20 flex items-center justify-between gap-4 sm:gap-8">
 
             {/* Logo */}
-            <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 sm:gap-3.5 shrink-0 group">
-              {activeLogo ? (
+            <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 sm:gap-3 shrink-0 group">
+              {showLogo ? (
                 <img
                   src={activeLogo}
                   alt="Logo"
-                  className="h-10 sm:h-14 w-auto object-contain"
-                  style={{ maxWidth: "160px" }}
+                  onError={() => setLogoError(true)}
+                  className={`w-auto object-contain ${
+                    showSiteName ? "h-7 sm:h-8" : "h-10 sm:h-14"
+                  }`}
+                  style={{ maxWidth: showSiteName ? "100px" : "160px" }}
                 />
-              ) : (
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-md">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                  </svg>
+              ) : null}
+              {showSiteName && (
+                <div className="flex flex-col leading-tight min-w-0">
+                  <span
+                    className="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent whitespace-nowrap"
+                    style={{ WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+                  >
+                    {siteName || "MedicoGuidance"}
+                  </span>
+                  {tagline && (
+                    <span
+                      className="text-[9px] sm:text-[10px] font-semibold tracking-wide hidden sm:block truncate"
+                      style={{ color: isDark ? "#64748b" : "#94a3b8" }}
+                    >
+                      {tagline}
+                    </span>
+                  )}
                 </div>
               )}
-              {!activeLogo && (
+              {!showLogo && !showSiteName && (
                 <span style={{ color: isDark ? '#ffffff' : '#111827' }} className="font-extrabold text-lg sm:text-xl tracking-tight">
                   Medico<span className="text-blue-600">Guidance</span>
                 </span>
@@ -99,10 +126,13 @@ const Navbar = () => {
 
             {/* Desktop Nav */}
             <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-              {navLinks.map((link) => (
+              {navLinks.map((link, i) => (
                 <Link key={link.path} to={link.path}
-                  style={!isActive(link.path) ? { color: isDark ? '#e2e8f0' : '#374151' } : {}}
-                  className={`flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                  style={{
+                    ...(!isActive(link.path) ? { color: isDark ? '#e2e8f0' : '#374151' } : {}),
+                    animationDelay: `${i * 0.07}s`,
+                  }}
+                  className={`nav-link-anim flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-semibold transition-all ${
                     isActive(link.path)
                       ? "text-white bg-blue-600 shadow-md"
                       : isDark
@@ -201,10 +231,13 @@ const Navbar = () => {
         <div style={{ background: 'linear-gradient(to right, #2563eb, #1d4ed8, #1e40af)' }}>
           <div className="max-w-7xl mx-auto px-6">
             <div className="hidden md:flex items-center justify-center gap-1 py-2.5">
-              {secondaryLinks.map((link) => (
+              {secondaryLinks.map((link, i) => (
                 <Link key={link.path} to={link.path}
-                  style={isActive(link.path) ? { backgroundColor: '#ffffff', color: '#1d4ed8' } : {}}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  style={{
+                    ...(isActive(link.path) ? { backgroundColor: '#ffffff', color: '#1d4ed8' } : {}),
+                    animationDelay: `${i * 0.06}s`,
+                  }}
+                  className={`nav-link-anim flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold transition-all ${
                     isActive(link.path)
                       ? ""
                       : "text-white/90 hover:text-white hover:bg-white/10"
