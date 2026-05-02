@@ -73,13 +73,29 @@ const Navbar = () => {
   return (
     <>
       <style>{`
-        @keyframes linkSlideIn {
-          from { opacity: 0; transform: translateY(-10px); }
+        @keyframes slideFromLeft {
+          from { opacity: 0; transform: translateX(-30px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideFromRight {
+          from { opacity: 0; transform: translateX(30px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideFromTop {
+          from { opacity: 0; transform: translateY(-12px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        .nav-link-l {
+          opacity: 0;
+          animation: slideFromLeft 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+        .nav-link-r {
+          opacity: 0;
+          animation: slideFromRight 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
         }
         .nav-link-anim {
           opacity: 0;
-          animation: linkSlideIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+          animation: slideFromTop 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
         }
       `}</style>
       <nav style={{ backgroundColor: isDark ? '#111827' : '#ffffff', borderBottom: isDark ? '1px solid #1f2937' : '1px solid #e5e7eb', boxShadow: scrolled ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none' }} className="sticky top-0 z-[70] transition-shadow duration-300">
@@ -124,15 +140,15 @@ const Navbar = () => {
               )}
             </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
+            {/* Desktop Nav - Layer 1: slide from left, re-animates on route change */}
+            <div key={`nav1-${location.pathname}`} className="hidden lg:flex items-center gap-1 flex-1 justify-center">
               {navLinks.map((link, i) => (
                 <Link key={link.path} to={link.path}
                   style={{
                     ...(!isActive(link.path) ? { color: isDark ? '#e2e8f0' : '#374151' } : {}),
-                    animationDelay: `${i * 0.07}s`,
+                    animationDelay: `${i * 0.15}s`,
                   }}
-                  className={`nav-link-anim flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                  className={`nav-link-l flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-semibold transition-all ${
                     isActive(link.path)
                       ? "text-white bg-blue-600 shadow-md"
                       : isDark
@@ -227,17 +243,17 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Secondary Bar - Desktop */}
+        {/* Secondary Bar - Desktop: slide from right */}
         <div style={{ background: 'linear-gradient(to right, #2563eb, #1d4ed8, #1e40af)' }}>
           <div className="max-w-7xl mx-auto px-6">
-            <div className="hidden md:flex items-center justify-center gap-1 py-2.5">
+            <div key={`nav2-${location.pathname}`} className="hidden md:flex items-center justify-center gap-1 py-2.5">
               {secondaryLinks.map((link, i) => (
                 <Link key={link.path} to={link.path}
                   style={{
                     ...(isActive(link.path) ? { backgroundColor: '#ffffff', color: '#1d4ed8' } : {}),
-                    animationDelay: `${i * 0.06}s`,
+                    animationDelay: `${0.1 + i * 0.15}s`,
                   }}
-                  className={`nav-link-anim flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  className={`nav-link-r flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold transition-all ${
                     isActive(link.path)
                       ? ""
                       : "text-white/90 hover:text-white hover:bg-white/10"

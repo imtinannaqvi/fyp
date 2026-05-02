@@ -183,36 +183,38 @@ const Home = () => {
       <style>{`
         @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeSlideLeft { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes fadeSlideRight { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideLeft { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeSlideRight { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes modalPop { from { opacity: 0; transform: scale(0.92) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); } 70% { box-shadow: 0 0 0 12px rgba(37,99,235,0); } 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); } }
+        @keyframes shimmerBg { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         .hero-gradient { background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 50%, #312e81 100%); background-size: 200% 200%; animation: gradientShift 8s ease infinite; }
-        .fade-up  { animation: fadeSlideUp   0.65s cubic-bezier(0.2,0.8,0.2,1) forwards; }
-        .fade-right { animation: fadeSlideRight 0.65s cubic-bezier(0.2,0.8,0.2,1) forwards; }
-        .fade-left  { animation: fadeSlideLeft  0.65s cubic-bezier(0.2,0.8,0.2,1) forwards; }
-        .scale-in   { animation: scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        .fade-up   { animation: fadeSlideUp   0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .fade-right { animation: fadeSlideRight 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .fade-left  { animation: fadeSlideLeft  0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .scale-in   { animation: scaleIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards; }
         .animate-slideDown { animation: slideDown 0.3s ease-out; }
         .animate-float { animation: floatY 3s ease-in-out infinite; }
-        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
-        .stagger-2 { animation-delay: 0.2s; opacity: 0; }
-        .stagger-3 { animation-delay: 0.3s; opacity: 0; }
-        .stagger-4 { animation-delay: 0.4s; opacity: 0; }
-        .stagger-5 { animation-delay: 0.5s; opacity: 0; }
-        .stagger-6 { animation-delay: 0.6s; opacity: 0; }
+        .stagger-1 { animation-delay: 0.15s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.3s;  opacity: 0; }
+        .stagger-3 { animation-delay: 0.45s; opacity: 0; }
+        .stagger-4 { animation-delay: 0.6s;  opacity: 0; }
+        .stagger-5 { animation-delay: 0.75s; opacity: 0; }
+        .stagger-6 { animation-delay: 0.9s;  opacity: 0; }
         .hero-search-input { background-color: transparent !important; color: #111827 !important; border: none !important; outline: none !important; }
-        .feature-card { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
-        .feature-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .stat-card { transition: transform 0.2s ease; }
-        .stat-card:hover { transform: scale(1.05); }
-        .safety-card { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-        .safety-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.08); }
-        .hero-btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
-        .hero-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .feature-card { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease; }
+        .feature-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 24px 48px rgba(0,0,0,0.12); }
+        .stat-card { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+        .stat-card:hover { transform: scale(1.08); }
+        .safety-card { transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
+        .safety-card:hover { transform: translateY(-5px); box-shadow: 0 16px 32px rgba(0,0,0,0.1); border-color: #93c5fd !important; }
+        .tech-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .tech-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); }
+        .hero-btn { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .hero-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
         .hero-btn:active { transform: scale(0.97); }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -298,17 +300,20 @@ const Home = () => {
         </section>
 
         {/* ── STATS ─────────────────────────────────────────────────────── */}
-        <section ref={statsRef} className="border-b border-gray-100 bg-gray-50"
-          style={{ opacity: statsVisible ? 1 : 0, transform: statsVisible ? "none" : "translateY(24px)", transition: "opacity 0.7s ease, transform 0.7s ease" }}
-        >
+        <section ref={statsRef} className="border-b border-gray-100 bg-gray-50">
           <div className="max-w-6xl mx-auto px-6 py-10 md:py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { value: "10000", suffix: "+", label: "Medicines" },
               { value: "3", suffix: "-Layer", label: "AI Pipeline" },
               { value: "100", suffix: "%", label: "Free" },
               { value: "24", suffix: "/7", label: "Available" },
-            ].map((s) => (
-              <div key={s.label} className="text-center">
+            ].map((s, i) => (
+              <div key={s.label} className="text-center stat-card"
+                style={{
+                  opacity: statsVisible ? 1 : 0,
+                  transform: statsVisible ? "none" : "translateY(30px)",
+                  transition: `opacity 0.7s ease ${i * 0.15}s, transform 0.7s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.15}s`
+                }}>
                 <p className="text-2xl md:text-3xl font-black text-blue-600"><CountUp target={s.value} suffix={s.suffix} /></p>
                 <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400 mt-1">{s.label}</p>
               </div>
@@ -317,11 +322,15 @@ const Home = () => {
         </section>
 
         {/* ── ABOUT ──────────────────────────────────────────────────────── */}
-        <section ref={aboutRef} className="py-20 md:py-28 bg-white border-b border-gray-100 overflow-hidden"
-          style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? "none" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}
-        >
+        <section ref={aboutRef} className="py-20 md:py-28 bg-white border-b border-gray-100 overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="order-2 lg:order-1">
+            {/* Left — slides from left */}
+            <div className="order-2 lg:order-1"
+              style={{
+                opacity: aboutVisible ? 1 : 0,
+                transform: aboutVisible ? "none" : "translateX(-50px)",
+                transition: "opacity 0.9s ease, transform 0.9s cubic-bezier(0.16,1,0.3,1)"
+              }}>
               <p className="text-sm font-bold uppercase tracking-wider text-blue-600 mb-4">The Mission</p>
               <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
                 Built for Pakistan's<br />
@@ -332,7 +341,12 @@ const Home = () => {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {techStack.map((t, i) => (
-                  <div key={i} className="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-2xl hover:shadow-lg hover:border-blue-300 transition-all group">
+                  <div key={i} className="tech-card flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-2xl group"
+                    style={{
+                      opacity: aboutVisible ? 1 : 0,
+                      transform: aboutVisible ? "none" : "translateY(20px)",
+                      transition: `opacity 0.7s ease ${0.3 + i * 0.12}s, transform 0.7s ease ${0.3 + i * 0.12}s`
+                    }}>
                     <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-all flex-shrink-0">
                       <span className="text-blue-600">{t.icon}</span>
                     </div>
@@ -344,10 +358,16 @@ const Home = () => {
                 ))}
               </div>
             </div>
-            <div className="order-1 lg:order-2 relative">
+            {/* Right — slides from right */}
+            <div className="order-1 lg:order-2 relative"
+              style={{
+                opacity: aboutVisible ? 1 : 0,
+                transform: aboutVisible ? "none" : "translateX(50px)",
+                transition: "opacity 0.9s ease 0.2s, transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s"
+              }}>
               <div className="aspect-square bg-gradient-to-br from-blue-100 to-blue-50 rounded-3xl rotate-2 absolute inset-0 opacity-40 scale-95" />
               <div className="aspect-square bg-white border-2 border-gray-200 rounded-3xl shadow-xl relative flex flex-col items-center justify-center p-8 text-center hover:shadow-2xl transition-all">
-                 <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center mb-4 shadow-md">
+                 <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center mb-4 shadow-md animate-float">
                     <ShieldAlert size={32} className="text-blue-600" />
                  </div>
                  <h3 className="text-xl font-bold text-gray-900 mb-2">Verified Data</h3>
@@ -358,11 +378,10 @@ const Home = () => {
         </section>
 
         {/* ── FEATURES ───────────────────────────────────────────────────── */}
-        <section ref={featRef} className="py-16 md:py-24 bg-gray-50"
-          style={{ opacity: featVisible ? 1 : 0, transform: featVisible ? "none" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}
-        >
+        <section ref={featRef} className="py-16 md:py-24 bg-gray-50">
           <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-16">
+            <div className="text-center mb-16"
+              style={{ opacity: featVisible ? 1 : 0, transform: featVisible ? "none" : "translateY(24px)", transition: "opacity 0.7s ease, transform 0.7s ease" }}>
               <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 mb-4">Platform Features</p>
               <h2 className="text-3xl md:text-4xl font-black text-gray-900">Everything You Need</h2>
             </div>
@@ -370,7 +389,12 @@ const Home = () => {
               {features.map((f, i) => (
                 <div key={i}
                   onClick={() => f.modal ? setShowFakeModal(true) : navigate(f.link)}
-                  className="bg-white p-6 rounded-2xl border border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer group"
+                  className="feature-card bg-white p-6 rounded-2xl border border-gray-200 hover:border-blue-500 cursor-pointer group"
+                  style={{
+                    opacity: featVisible ? 1 : 0,
+                    transform: featVisible ? "none" : "translateY(50px) scale(0.95)",
+                    transition: `opacity 0.7s ease ${i * 0.12}s, transform 0.7s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.12}s`
+                  }}
                 >
                   <div className="mb-4 group-hover:scale-110 transition-transform inline-block text-blue-600">{f.icon}</div>
                   <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
