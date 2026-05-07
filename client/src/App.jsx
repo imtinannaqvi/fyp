@@ -94,8 +94,8 @@ function App() {
           <Route path="/report-fake" element={<ProtectedRoute><ReportFakeMedicine /></ProtectedRoute>} />
           <Route path="/health-blog" element={<ProtectedRoute><HealthBlog /></ProtectedRoute>} />
           <Route path="/health-calculator" element={<ProtectedRoute><HealthCalculator /></ProtectedRoute>} />
-          <Route path="/awareness" element={<SelfMedicationAwareness />} />
-          <Route path="/compare" element={<Compare />} />
+          <Route path="/awareness" element={<ProtectedRoute><SelfMedicationAwareness /></ProtectedRoute>} />
+<Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
 
           {/* <Route path="/first-aid" element={<ProtectedRoute><FirstAidGuide /></ProtectedRoute>} /> */}
 
