@@ -23,6 +23,10 @@ const SmartSearch = () => {
   const dropdownRef = useRef(null);
   const debounceRef = useRef(null);
 
+  // ✅ Fix: use ref for user so doSearch stays stable
+  const userRef = useRef(user);
+  useEffect(() => { userRef.current = user; }, [user]);
+
   const doSearch = useCallback(async (searchQuery) => {
     const term = searchQuery?.trim();
     if (!term) {
@@ -34,11 +38,12 @@ const SmartSearch = () => {
     setShowDropdown(false);
     try {
       const { data } = await API.get(`/medicine/smart-search?q=${encodeURIComponent(term)}`);
+      console.log("API Response:", data); // ← debug log, remove after fix confirmed
       setResults(data);
 
       // ✅ Only log search history if user is logged in with a valid token
       const token = localStorage.getItem("token");
-      if (user && token) {
+      if (userRef.current && token) {
         API.post("/user/search-history", { query: term }).catch(() => {});
       }
     } catch (err) {
@@ -48,7 +53,7 @@ const SmartSearch = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []); // ✅ Fix: stable, no dependencies
 
   const fetchSuggestions = useCallback(async (searchQuery) => {
     const term = searchQuery?.trim();

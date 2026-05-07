@@ -14,7 +14,6 @@ import {
   rejectMedicine,
 } from "../Controllers/medicine.controller.js";
 import { smartSearch } from "../Controllers/smartSearch.controller.js";
-
 const router = express.Router();
 
 const isAdmin = (req, res, next) => {
@@ -24,6 +23,9 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
+// router.get("/smart-search", (req, res) => {
+//   res.json({ test: "route works", q: req.query.q });
+// });
 // ─── Public routes ────────────────────────────────────────────────────────────
 router.get("/autocomplete",  autocompleteMedicines);
 router.get("/smart-search",  smartSearch);

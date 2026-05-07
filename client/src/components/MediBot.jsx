@@ -223,7 +223,7 @@ const MedicineCard = ({ medicine, onSearch }) => {
           <>
             <button onClick={() => setExpanded(!expanded)}
               className="text-[10px] text-blue-600 font-medium hover:underline w-full text-left mt-1">
-              {expanded ? <><ChevronUp size={12} className="inline" /> Hide details</> : <><ChevronDown size={12} className="inline" /> Show side effects & warnings</>}
+              {expanded ? "▲ Hide details" : "▼ Show side effects & warnings"}
             </button>
             {expanded && (
               <div className="flex items-start gap-1.5 pt-1">
@@ -338,6 +338,7 @@ const MediBot = () => {
         .medibot-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
       `}</style>
 
+      {/* ✅ Fix: position the whole container at bottom-right, chat window grows upward */}
       <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[60] flex flex-col items-end gap-2">
 
         {!open && (
@@ -347,9 +348,30 @@ const MediBot = () => {
           </div>
         )}
 
+        {/* Toggle Button — always at bottom */}
+        <button onClick={() => setOpen(!open)}
+          className="w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 relative shrink-0"
+          style={{ background: open ? "#000000" : "linear-gradient(135deg, #2563eb, #7c3aed)" }}>
+          <Bot size={26} className="text-white" />
+          {!open && (
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white">
+              <span className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75" />
+            </span>
+          )}
+        </button>
+
+        {/* ✅ Fix: chat window rendered ABOVE the button using order, with correct max height */}
         {open && (
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[300px] md:w-[320px] mb-2 flex flex-col"
-            style={{ animation: "slideUp 0.2s ease-out", maxHeight: "calc(100vh - 140px)" }}>
+          <div
+            className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[300px] md:w-[340px] flex flex-col"
+            style={{
+              animation: "slideUp 0.2s ease-out",
+              position: "fixed",
+              bottom: "90px",
+              right: "16px",
+              height: "min(400px, calc(100vh - 290px))",
+            }}
+          >
 
             {/* Header */}
             <div className="bg-gray-900 px-4 py-3 flex items-center justify-between rounded-t-2xl shrink-0">
@@ -420,18 +442,6 @@ const MediBot = () => {
             </p>
           </div>
         )}
-
-        {/* Toggle Button */}
-        <button onClick={() => setOpen(!open)}
-          className="w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 relative"
-          style={{ background: open ? "#000000" : "linear-gradient(135deg, #2563eb, #7c3aed)" }}>
-          <Bot size={26} className="text-white" />
-          {!open && (
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white">
-              <span className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75" />
-            </span>
-          )}
-        </button>
 
       </div>
     </>
