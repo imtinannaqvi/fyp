@@ -136,7 +136,7 @@ const MedicineCard = ({ medicine, source, savedIds = [], onSaveToggle }) => {
         <div style={{ background: "linear-gradient(90deg,#1d4ed8,#2563eb)" }}
           className="px-5 py-2 flex items-center gap-2 text-xs font-semibold text-white">
           <Info size={13} />
-          {source === "OpenFDA" ? "Data sourced from U.S. FDA OpenFDA database" : "AI-generated information — not in local database"}
+          {source === "OpenFDA" ? "Data sourced from U.S. FDA OpenFDA database" : "AI-generated information"}
         </div>
       )}
 

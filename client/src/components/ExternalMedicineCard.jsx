@@ -105,7 +105,6 @@ const ExternalMedicineCard = ({ medicine, source }) => {
           </span>
           <span style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)" }}
             className="text-[10px] text-white px-2 py-0.5 rounded-full font-medium hidden sm:inline">
-            Not in local DB
           </span>
         </div>
         <button onClick={handleLangToggle} disabled={translating}

@@ -116,7 +116,7 @@ const OcrScanner = () => {
                 <div>
                   <p className={`font-bold text-base ${result.isFake ? "text-orange-700" : "text-green-700"}`}>
                     {result.isFake
-                      ? <span className="flex items-center gap-1.5"><Search size={15} /> {ai.medicineName || "Medicine"} — Not in Local DB</span>
+                      ? <span className="flex items-center gap-1.5"><Search size={15} /> {ai.medicineName || "Medicine"}</span>
                       : <span className="flex items-center gap-1.5"><CheckCircle size={15} /> Matched: {result.matchedWith}</span>}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
