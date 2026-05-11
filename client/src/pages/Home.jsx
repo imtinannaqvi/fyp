@@ -181,20 +181,20 @@ const Home = () => {
   return (
     <>
       <style>{`
-        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeSlideLeft { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes fadeSlideRight { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideUp { from { transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideUp { from { transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideLeft { from { transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeSlideRight { from { transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes modalPop { from { opacity: 0; transform: scale(0.92) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes modalPop { from { transform: scale(0.92) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes shimmerBg { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.35); } 70% { box-shadow: 0 0 0 18px rgba(37,99,235,0); } 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); } }
         @keyframes badgePop { 0% { transform: scale(0) rotate(-12deg); opacity: 0; } 70% { transform: scale(1.15) rotate(3deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
         @keyframes borderGlow { 0%,100% { border-color: #e5e7eb; box-shadow: none; } 50% { border-color: #93c5fd; box-shadow: 0 0 28px rgba(147,197,253,0.45); } }
-        @keyframes textReveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes textReveal { from { transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
         .mission-pulse { animation: pulseRing 2.2s cubic-bezier(0.455,0.03,0.515,0.955) infinite; }
         .mission-badge-pop { animation: badgePop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.8s both; }
         .mission-card-glow { animation: borderGlow 3s ease-in-out infinite; }
@@ -205,12 +205,12 @@ const Home = () => {
         .scale-in   { animation: scaleIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards; }
         .animate-slideDown { animation: slideDown 0.3s ease-out; }
         .animate-float { animation: floatY 3s ease-in-out infinite; }
-        .stagger-1 { animation-delay: 0.15s; opacity: 0; }
-        .stagger-2 { animation-delay: 0.3s;  opacity: 0; }
-        .stagger-3 { animation-delay: 0.45s; opacity: 0; }
-        .stagger-4 { animation-delay: 0.6s;  opacity: 0; }
-        .stagger-5 { animation-delay: 0.75s; opacity: 0; }
-        .stagger-6 { animation-delay: 0.9s;  opacity: 0; }
+        .stagger-1 { animation-delay: 0.15s; }
+        .stagger-2 { animation-delay: 0.3s;  }
+        .stagger-3 { animation-delay: 0.45s; }
+        .stagger-4 { animation-delay: 0.6s;  }
+        .stagger-5 { animation-delay: 0.75s; }
+        .stagger-6 { animation-delay: 0.9s;  }
         .hero-search-input { background-color: transparent !important; color: #111827 !important; border: none !important; outline: none !important; }
         .feature-card { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease; }
         .feature-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 24px 48px rgba(0,0,0,0.12); }
@@ -228,65 +228,65 @@ const Home = () => {
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        @keyframes heroFadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes heroFadeRight { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
-        .hero-item { opacity: 0; animation: heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .hero-item-right { opacity: 0; animation: heroFadeRight 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .hero-d1 { animation-delay: 0.1s; } .hero-d2 { animation-delay: 0.25s; } .hero-d3 { animation-delay: 0.4s; }
-        .hero-d4 { animation-delay: 0.55s; } .hero-d5 { animation-delay: 0.7s; }
-        .hero-r1 { animation-delay: 0.2s; } .hero-r2 { animation-delay: 0.32s; } .hero-r3 { animation-delay: 0.44s; }
-        .hero-r4 { animation-delay: 0.56s; } .hero-r5 { animation-delay: 0.68s; } .hero-r6 { animation-delay: 0.8s; }
-        @keyframes statFadeUp { from { opacity: 0; transform: translateY(36px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes heroFadeUp { from { transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes heroFadeRight { from { transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
+        .hero-item { animation: heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .hero-item-right { animation: heroFadeRight 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .hero-d1 { animation-delay: 0s; } .hero-d2 { animation-delay: 0s; } .hero-d3 { animation-delay: 0s; }
+        .hero-d4 { animation-delay: 0s; } .hero-d5 { animation-delay: 0s; }
+        .hero-r1 { animation-delay: 0s; } .hero-r2 { animation-delay: 0s; } .hero-r3 { animation-delay: 0s; }
+        .hero-r4 { animation-delay: 0s; } .hero-r5 { animation-delay: 0s; } .hero-r6 { animation-delay: 0s; }
+        @keyframes statFadeUp { from { transform: translateY(36px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes statLineGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-        .stat-enter { opacity: 0; }
+        .stat-enter { }
         .stat-enter.stat-visible { animation: statFadeUp 0.65s cubic-bezier(0.16,1,0.3,1) forwards; }
         .stat-line { transform-origin: left; transform: scaleX(0); transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
         .stat-line.stat-visible { transform: scaleX(1); }
-        @keyframes missionFadeLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes missionFadeRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes missionFadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes missionCardPop { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes labelSlide { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes missionFadeLeft { from { transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes missionFadeRight { from { transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes missionFadeUp { from { transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes missionCardPop { from { transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes labelSlide { from { transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes shieldPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.3); } 50% { box-shadow: 0 0 0 12px rgba(37,99,235,0); } }
-        .mission-label { opacity: 0; }
+        .mission-label { }
         .mission-label.about-visible { animation: labelSlide 0.5s cubic-bezier(0.16,1,0.3,1) 0.1s forwards; }
-        .mission-heading { opacity: 0; }
+        .mission-heading { }
         .mission-heading.about-visible { animation: missionFadeUp 0.65s cubic-bezier(0.16,1,0.3,1) 0.22s forwards; }
-        .mission-para { opacity: 0; }
+        .mission-para { }
         .mission-para.about-visible { animation: missionFadeUp 0.65s cubic-bezier(0.16,1,0.3,1) 0.36s forwards; }
-        .mission-left { opacity: 0; }
+        .mission-left { }
         .mission-left.about-visible { animation: missionFadeLeft 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .mission-right { opacity: 0; }
+        .mission-right { }
         .mission-right.about-visible { animation: missionFadeRight 0.8s cubic-bezier(0.16,1,0.3,1) 0.15s forwards; }
-        .mission-tech-card { opacity: 0; }
+        .mission-tech-card { }
         .mission-tech-card.about-visible { animation: missionCardPop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards; }
         .shield-pulse { animation: shieldPulse 2.4s ease-in-out infinite; }
-        @keyframes featHeadFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes featCardIn { from { opacity: 0; transform: translateY(40px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes featIconPop { from { opacity: 0; transform: scale(0.5) rotate(-10deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
-        .feat-head { opacity: 0; }
+        @keyframes featHeadFade { from { transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes featCardIn { from { transform: translateY(40px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes featIconPop { from { transform: scale(0.5) rotate(-10deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
+        .feat-head { }
         .feat-head.feat-visible { animation: featHeadFade 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .feat-subhead { opacity: 0; }
+        .feat-subhead { }
         .feat-subhead.feat-visible { animation: featHeadFade 0.6s cubic-bezier(0.16,1,0.3,1) 0.15s forwards; }
-        .feat-card { opacity: 0; }
+        .feat-card { }
         .feat-card.feat-visible { animation: featCardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .feat-icon { opacity: 0; }
+        .feat-icon { }
         .feat-icon.feat-visible { animation: featIconPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-        @keyframes safetyFadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes safetyCardIn { from { opacity: 0; transform: translateY(32px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes safetyIconPop { from { opacity: 0; transform: scale(0.4) rotate(-15deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
-        @keyframes safetyWarnSlide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .safety-head { opacity: 0; }
+        @keyframes safetyFadeUp { from { transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes safetyCardIn { from { transform: translateY(32px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes safetyIconPop { from { transform: scale(0.4) rotate(-15deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
+        @keyframes safetyWarnSlide { from { transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .safety-head { }
         .safety-head.safety-visible { animation: safetyFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .safety-subhead { opacity: 0; }
+        .safety-subhead { }
         .safety-subhead.safety-visible { animation: safetyFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.12s forwards; }
-        .safety-para { opacity: 0; }
+        .safety-para { }
         .safety-para.safety-visible { animation: safetyFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.22s forwards; }
-        .safety-card { opacity: 0; }
+        .safety-card { }
         .safety-card.safety-visible { animation: safetyCardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .safety-icon { opacity: 0; }
+        .safety-icon { }
         .safety-icon.safety-visible { animation: safetyIconPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-        .safety-warn { opacity: 0; }
+        .safety-warn { }
         .safety-warn.safety-visible { animation: safetyWarnSlide 0.6s cubic-bezier(0.16,1,0.3,1) 0.55s forwards; }
       `}</style>
 
@@ -386,7 +386,7 @@ const Home = () => {
                   <div
                     className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300"
                     style={{
-                      opacity: statsVisible ? 1 : 0,
+                      opacity: 1,
                       transform: statsVisible ? 'scale(1)' : 'scale(0.5)',
                       transition: `opacity 0.5s ease ${0.1 + i * 0.13}s, transform 0.5s cubic-bezier(0.34,1.56,0.64,1) ${0.1 + i * 0.13}s`
                     }}
@@ -457,18 +457,18 @@ const Home = () => {
 
                 <h3
                   className="text-xl font-bold text-gray-900 mb-3"
-                  style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? 'none' : 'translateY(12px)', transition: 'opacity 0.5s ease 0.55s, transform 0.5s ease 0.55s' }}
+                  style={{ opacity: 1, transform: aboutVisible ? 'none' : 'translateY(12px)', transition: 'opacity 0.5s ease 0.55s, transform 0.5s ease 0.55s' }}
                 >Verified Data</h3>
 
                 <p
                   className="text-sm text-gray-500 leading-relaxed max-w-[220px]"
-                  style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? 'none' : 'translateY(10px)', transition: 'opacity 0.5s ease 0.68s, transform 0.5s ease 0.68s' }}
+                  style={{ opacity: 1, transform: aboutVisible ? 'none' : 'translateY(10px)', transition: 'opacity 0.5s ease 0.68s, transform 0.5s ease 0.68s' }}
                 >Aggregating OpenFDA, local pharmacopeia, and Groq-processed AI insights for 99% accuracy.</p>
 
                 {/* Animated divider line */}
                 <div
                   className="h-0.5 bg-gradient-to-r from-transparent via-blue-300 to-transparent rounded-full mt-6 w-full"
-                  style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? 'scaleX(1)' : 'scaleX(0)', transformOrigin: 'center', transition: 'opacity 0.5s ease 0.75s, transform 0.6s cubic-bezier(0.16,1,0.3,1) 0.75s' }}
+                  style={{ opacity: 1, transform: aboutVisible ? 'scaleX(1)' : 'scaleX(0)', transformOrigin: 'center', transition: 'opacity 0.5s ease 0.75s, transform 0.6s cubic-bezier(0.16,1,0.3,1) 0.75s' }}
                 />
 
                 {/* 3 stat pills */}
@@ -477,7 +477,7 @@ const Home = () => {
                     <span
                       key={tag}
                       className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100"
-                      style={{ opacity: aboutVisible ? 1 : 0, transform: aboutVisible ? 'translateY(0)' : 'translateY(10px)', transition: `opacity 0.4s ease ${0.82 + i * 0.1}s, transform 0.4s ease ${0.82 + i * 0.1}s` }}
+                      style={{ opacity: 1, transform: aboutVisible ? 'translateY(0)' : 'translateY(10px)', transition: `opacity 0.4s ease ${0.82 + i * 0.1}s, transform 0.4s ease ${0.82 + i * 0.1}s` }}
                     >{tag}</span>
                   ))}
                 </div>
@@ -587,7 +587,7 @@ const Home = () => {
 
         {/* ── CTA ────────────────────────────────────────────────────────── */}
         <section ref={ctaRef} className="py-12 px-4"
-          style={{ opacity: ctaVisible ? 1 : 0, transform: ctaVisible ? "none" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}
+          style={{ opacity: 1, transform: ctaVisible ? "none" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}
         >
           <div className="max-w-5xl mx-auto hero-gradient rounded-[2rem] p-8 md:p-16 text-center relative overflow-hidden">
             <div className="relative z-10">

@@ -26,10 +26,8 @@ const Login = () => {
       const userData = { ...data.user, role: data.role || data.user?.role };
 
       login(userData, data.token);
-
       toast.success("Welcome back!");
-
-      navigate(userData.role === "admin" ? "/admin" : "/");
+      window.location.href = userData.role === "admin" ? "/admin" : "/";
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {

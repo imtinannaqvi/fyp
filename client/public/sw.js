@@ -1,6 +1,6 @@
 // public/sw.js — Service Worker for Medico Guidance PWA
 
-const CACHE_NAME = "medico-guidance-v1";
+const CACHE_NAME = "medico-guidance-v2";
 
 // Files to cache for offline use
 const STATIC_ASSETS = [
@@ -36,35 +36,35 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// ── Fetch: network first, fallback to cache ───────────────────────────────────
+// ── Fetch: skip all navigation requests (SPA — React Router handles routing)
+// Only cache static assets like icons/manifest, never HTML or JS chunks
 self.addEventListener("fetch", (event) => {
-  // Skip non-GET and API requests — always fetch fresh from network
+  const url = event.request.url;
+
+  // Let the browser handle: navigations, API calls, JS/CSS chunks
   if (
     event.request.method !== "GET" ||
-    event.request.url.includes("/api/")
+    event.request.mode === "navigate" ||
+    url.includes("/api/") ||
+    url.includes(".js") ||
+    url.includes(".css") ||
+    url.includes(".jsx")
   ) {
     return;
   }
 
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Cache a copy of successful responses
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      })
-      .catch(() => {
-        // Network failed — serve from cache
-        return caches.match(event.request).then((cached) => {
-          if (cached) return cached;
-          // Fallback to index.html for navigation requests (SPA)
-          if (event.request.mode === "navigate") {
-            return caches.match("/index.html");
+  // Only cache icons and manifest
+  if (url.includes("/icons/") || url.includes("/manifest.json")) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        return cached || fetch(event.request).then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           }
+          return response;
         });
       })
-  );
+    );
+  }
 });

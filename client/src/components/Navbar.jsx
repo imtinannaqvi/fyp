@@ -33,9 +33,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
-    setIsMenuOpen(false);
-    setUserDropdown(false);
+    window.location.href = "/login";
   };
 
   const isActive = (path) => location.pathname === path;
@@ -86,15 +84,12 @@ const Navbar = () => {
           to   { opacity: 1; transform: translateY(0); }
         }
         .nav-link-l {
-          opacity: 0;
           animation: slideFromLeft 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
         }
         .nav-link-r {
-          opacity: 0;
           animation: slideFromRight 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
         }
         .nav-link-anim {
-          opacity: 0;
           animation: slideFromTop 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
         }
       `}</style>

@@ -61,7 +61,7 @@ function App() {
 
   return (
     <MenuProvider>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-gray-50 flex flex-col" style={{ opacity: 1 }}>
         <ScrollToTop />
         {!isAdmin && <Navbar />}
         <main className="flex-1">
@@ -76,7 +76,7 @@ function App() {
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/fake-detector" element={<FakeMedicineDetector />} />
+          <Route path="/fake-detector" element={<ProtectedRoute><FakeMedicineDetector /></ProtectedRoute>} />
 
           {/* --- PROTECTED ROUTES (Registration Required) --- */}
           
@@ -94,8 +94,8 @@ function App() {
           <Route path="/report-fake" element={<ProtectedRoute><ReportFakeMedicine /></ProtectedRoute>} />
           <Route path="/health-blog" element={<ProtectedRoute><HealthBlog /></ProtectedRoute>} />
           <Route path="/health-calculator" element={<ProtectedRoute><HealthCalculator /></ProtectedRoute>} />
-          <Route path="/awareness" element={<SelfMedicationAwareness />} />
-          <Route path="/compare" element={<Compare />} />
+          <Route path="/awareness" element={<ProtectedRoute><SelfMedicationAwareness /></ProtectedRoute>} />
+          <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
 
           {/* <Route path="/first-aid" element={<ProtectedRoute><FirstAidGuide /></ProtectedRoute>} /> */}
 

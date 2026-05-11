@@ -332,7 +332,7 @@ const MediBot = () => {
   return (
     <>
       <style>{`
-        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .medibot-scroll::-webkit-scrollbar { width: 4px; }
         .medibot-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .medibot-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }

@@ -31,7 +31,7 @@ const AdminLayout = () => {
   const isActive = (path) =>
     path === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(path);
 
-  const handleLogout = () => { logout(); navigate("/login"); };
+  const handleLogout = () => { logout(); window.location.href = "/login"; };
 
   const currentLabel = navItems.find(n => isActive(n.path))?.label || "Admin Panel";
 
