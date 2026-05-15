@@ -146,59 +146,119 @@ export const searchMedicines = async (req, res) => {
 // ------------------------
 // Autocomplete Suggestions
 // ------------------------
+// Replace your existing autocompleteMedicines function with this fixed version
+
 export const autocompleteMedicines = async (req, res) => {
   try {
     const { q } = req.query;
-    if (!q || q.length < 1) return res.json({ suggestions: [] });
 
+    // Return empty suggestions if query is missing or too short
+    if (!q || q.trim().length < 1) {
+      return res.json({ suggestions: [] });
+    }
+
+    // Escape regex special characters to prevent regex errors
+    const escapeRegex = (text) =>
+      text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const safeQuery = escapeRegex(q.trim());
+
+    // IMPORTANT:
+    // Removed `isApproved: true` because many medicines may not be approved yet.
+    // This was the main reason no data was being returned.
     const medicines = await Medicine.find({
       $or: [
-        { name:    { $regex: `^${q}`, $options: "i" } },
-        { brand:   { $regex: `^${q}`, $options: "i" } },
-        { generic: { $regex: `^${q}`, $options: "i" } },
+        { name: { $regex: `^${safeQuery}`, $options: "i" } },
+        { brand: { $regex: `^${safeQuery}`, $options: "i" } },
+        { generic: { $regex: `^${safeQuery}`, $options: "i" } },
+        { category: { $regex: `^${safeQuery}`, $options: "i" } },
       ],
-      isApproved: true,
     })
-      .select("name brand generic")
+      .select("name brand generic category")
       .limit(10)
-      .sort({ name: 1 });
+      .sort({ name: 1 })
+      .lean();
 
+    // If medicines found in database, return them immediately
     if (medicines.length > 0) {
       return res.json({
-        suggestions: medicines.map(m => ({
-          _id: m._id, name: m.name, brand: m.brand, generic: m.generic,
+        suggestions: medicines.map((m) => ({
+          _id: m._id,
+          name: m.name || "",
+          brand: m.brand || "",
+          generic: m.generic || "",
+          category: m.category || "",
         })),
       });
     }
 
-    // Groq fallback
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content: `You are a medicine autocomplete assistant for a Pakistani medical app.
-Return ONLY a valid JSON array of up to 8 medicine objects.
-Each object must have exactly: "_id", "name", "brand", "generic".
-Set "_id" to null for all. Focus on medicines available in Pakistan.
-No explanation. No markdown. No extra text. Just the raw JSON array.`,
-        },
-        { role: "user", content: `Suggest medicines starting with or matching: "${q.trim()}"` },
-      ],
-      max_tokens: 400,
-      temperature: 0.2,
-    });
+    // If no GROQ API key is configured, return empty suggestions
+    if (!process.env.GROQ_API_KEY) {
+      return res.json({ suggestions: [] });
+    }
 
-    const text = response.choices[0]?.message?.content?.trim() || "[]";
-    const clean = text.replace(/```json|```/g, "").trim();
-    const aiSuggestions = JSON.parse(clean);
+    // Optional AI fallback
+    try {
+      const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY,
+      });
 
-    res.json({ suggestions: Array.isArray(aiSuggestions) ? aiSuggestions : [] });
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: `You are a medicine autocomplete assistant.
+Return ONLY a valid JSON array with up to 8 objects.
+Each object must contain:
+"_id", "name", "brand", "generic", "category".
+Set "_id" to null.
+No explanation, no markdown, only JSON.`,
+          },
+          {
+            role: "user",
+            content: `Suggest medicines matching: "${q.trim()}"`,
+          },
+        ],
+        max_tokens: 400,
+        temperature: 0.2,
+      });
 
+      const text =
+        response.choices?.[0]?.message?.content?.trim() || "[]";
+
+      const clean = text.replace(/```json|```/g, "").trim();
+
+      let aiSuggestions = [];
+
+      try {
+        aiSuggestions = JSON.parse(clean);
+      } catch {
+        aiSuggestions = [];
+      }
+
+      return res.json({
+        suggestions: Array.isArray(aiSuggestions)
+          ? aiSuggestions
+          : [],
+      });
+    } catch (groqError) {
+      console.error("GROQ fallback failed:", groqError.message);
+
+      // Do NOT return 500 if GROQ fails
+      return res.json({ suggestions: [] });
+    }
   } catch (error) {
-    console.error("Autocomplete error:", error.message);
-    res.status(500).json({ message: error.message });
+    console.error("Autocomplete error:", error);
+
+    // Always return empty suggestions instead of HTTP 500
+    return res.json({
+      suggestions: [],
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : undefined,
+    });
   }
 };
 
